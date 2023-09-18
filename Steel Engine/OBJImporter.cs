@@ -32,6 +32,9 @@ namespace Steel_Engine
             List<string> newTextureData = ExtractTextureData(newObjData);
             List<string> newTextureIndices = ExtractTextureIndices(newObjData);
 
+            // Triangulation
+            //TriangulationManager.TriangulateQuad()
+
             Vector3[] parsedVertexData = OBJParser.ParseVertexData(newVertexData);
             Vector3[] parsedFaceData = OBJParser.ParseFaceData(newFaceData);
             Vector2[] parsedTextureData = OBJParser.ParseTextureData(newTextureData);
@@ -91,26 +94,26 @@ namespace Steel_Engine
             List<string> newFaceData = new List<string>();
             foreach (string line in originalFaceData)
             {
-                string data = line.AsSpan(2, line.Length - 2).ToString();
-                string newData = "";
-                int passedSlashes = 0;
-                foreach (char i in data)
+                string data = line.Replace("f ", "");
+                string newFace = "";
+                string[] faces = data.Split(' ');
+                foreach (string face in faces)
                 {
-                    bool keepChar = true;
-                    if (i == '/') { keepChar = false; passedSlashes++; }
-                    if (i == '/' && passedSlashes == 1) { newData += ' '; }
-                    if (i == '/' && passedSlashes == 4) { newData += ' '; }
-                    if (passedSlashes == 1) { keepChar = false; }
-                    if (passedSlashes == 2) { keepChar = false; }
-                    if (passedSlashes == 2 && i == ' ') { keepChar = false; passedSlashes++; }
-                    if (passedSlashes == 4) { keepChar = false; }
-                    if (passedSlashes == 5) { keepChar = false; }
-                    if (passedSlashes == 5 && i == ' ') { keepChar = false; passedSlashes++; }
-                    if (passedSlashes == 7) { keepChar = false; }
-                    if (passedSlashes == 8) { keepChar = false; }
-                    if (keepChar) { newData += i; }                   
+                    newFace += face.Split('/')[0] + " ";
                 }
-                newFaceData.Add(newData);
+                string reformatted = "";
+                int index = 0;
+                foreach (char c in newFace)
+                {
+                    if (index == newFace.Length - 1)
+                    {
+                        break;
+                    }
+                    reformatted += c;
+                    index++;
+                }
+
+                newFaceData.Add(reformatted);
             }
 
             return newFaceData;
@@ -148,32 +151,29 @@ namespace Steel_Engine
                 if (line.StartsWith("f")) { originalFaceData.Add(line); }
             }
 
-            // we have obtained out original face data
-            // now we must take it and convert it to the simpler face data required by SteelObjParser
-
             List<string> newFaceData = new List<string>();
             foreach (string line in originalFaceData)
             {
-                string data = line.AsSpan(2, line.Length - 2).ToString();
-                string newData = "";
-                int passedSlashes = 0;
-                foreach (char i in data)
+                string data = line.Replace("f ", "");
+                string newFace = "";
+                string[] faces = data.Split(' ');
+                foreach (string face in faces)
                 {
-                    bool keepChar = true;
-                    if (i == '/') { keepChar = false; passedSlashes++; }
-                    if (i == '/' && passedSlashes == 2) { newData += ' '; }
-                    if (i == '/' && passedSlashes == 5) { newData += ' '; }
-                    if (passedSlashes == 0) { keepChar = false; }
-                    if (passedSlashes == 2) { keepChar = false; }
-                    if (passedSlashes == 2 && i == ' ') { keepChar = false; passedSlashes++; }
-                    if (passedSlashes == 3) { keepChar = false; }
-                    if (passedSlashes == 5) { keepChar = false; }
-                    if (passedSlashes == 5 && i == ' ') { keepChar = false; passedSlashes++; }
-                    if (passedSlashes == 6) { keepChar = false; }
-                    if (passedSlashes == 8) { keepChar = false; }
-                    if (keepChar) { newData += i; }                   
+                    newFace += face.Split('/')[1] + " ";
                 }
-                newFaceData.Add(newData);
+                string reformatted = "";
+                int index = 0;
+                foreach (char c in newFace)
+                {
+                    if (index == newFace.Length - 1)
+                    {
+                        break;
+                    }
+                    reformatted += c;
+                    index++;
+                }
+
+                newFaceData.Add(reformatted);
             }
 
             return newFaceData;
