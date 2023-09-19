@@ -9,9 +9,52 @@ namespace Steel_Engine
 {
     public static class OBJImporter
     {
+        public static Mesh LoadSEO(string name, bool optimised)
+        {
+            List<string> newVertexData = new List<string>();
+            List<string> newFaceData = new List<string>();
+            List<string> newTextureData = new List<string>();
+            List<string> newTextureIndices = new List<string>();
+
+            string[] lines = File.ReadAllLines(InfoManager.dataPath + $@"\Models\{name}.SEO");
+            foreach (string line in lines)
+            {
+                if (line.StartsWith("v "))
+                {
+                    newVertexData.Add(line.Replace("v ", ""));
+                }
+                if (line.StartsWith("f "))
+                {
+                    newFaceData.Add(line.Replace("f ", ""));
+                }
+                if (line.StartsWith("tc "))
+                {
+                    newTextureData.Add(line.Replace("tc ", ""));
+                }
+                if (line.StartsWith("ti "))
+                {
+                    newTextureIndices.Add(line.Replace("ti ", ""));
+                }
+            }
+
+            Vector3[] parsedVertexData = OBJParser.ParseVertexData(newVertexData);
+            Vector3[] parsedFaceData = OBJParser.ParseFaceData(newFaceData);
+            Vector2[] parsedTextureData = OBJParser.ParseTextureData(newTextureData);
+            Vector3[] parsedTextureIndices = OBJParser.ParseTextureIndices(newTextureIndices);
+
+            Mesh newMesh = OBJParser.GenerateBasicTriangleMesh(parsedVertexData, parsedFaceData, parsedTextureData, parsedTextureIndices, optimised);
+
+            return newMesh;
+        }
+
         public static Mesh LoadOBJ(string name, bool optimised) // obj must be triangulated fully for this to work
         {
             string path = InfoManager.dataPath + $@"\Models\{name}.obj";
+
+            if (File.Exists(InfoManager.dataPath + $@"\Models\{name}.SEO"))
+            {
+                return LoadSEO(name, optimised);                
+            }
 
             // Data sanitisation
             List<string> newObjData = new List<string>();
@@ -32,19 +75,26 @@ namespace Steel_Engine
             List<string> newTextureData = ExtractTextureData(newObjData);
             List<string> newTextureIndices = ExtractTextureIndices(newObjData);
 
-            // Triangulation
-            //TriangulationManager.TriangulateQuad()
+            List<string> finalText = new List<string>();
+            foreach (string line in newVertexData)
+            {
+                finalText.Add("v " + line);
+            }
+            foreach (string line in newFaceData)
+            {
+                finalText.Add("f " + line);
+            }
+            foreach (string line in newTextureData)
+            {
+                finalText.Add("tc " + line);
+            }
+            foreach (string line in newTextureIndices)
+            {
+                finalText.Add("ti " + line);
+            }
+            File.WriteAllLines(InfoManager.dataPath + @$"\Models\{name}.SEO", finalText.ToArray());
 
-            Vector3[] parsedVertexData = OBJParser.ParseVertexData(newVertexData);
-            Vector3[] parsedFaceData = OBJParser.ParseFaceData(newFaceData);
-            Vector2[] parsedTextureData = OBJParser.ParseTextureData(newTextureData);
-            Vector3[] parsedTextureIndices = OBJParser.ParseTextureIndices(newTextureIndices);
-
-            Mesh newMesh = OBJParser.GenerateBasicTriangleMesh(parsedVertexData, parsedFaceData, parsedTextureData, parsedTextureIndices, optimised);
-
-            File.WriteAllLines(InfoManager.dataPath + @$"\Models\{name}.SEO", newObjData.ToArray());
-
-            return newMesh;
+            return LoadSEO(name, optimised);
         }
 
         public static Mesh LoadOBJFromPath(string path, bool optimised) // obj must be triangulated fully for this to work
