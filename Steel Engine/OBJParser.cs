@@ -33,11 +33,27 @@ namespace Steel_Engine
             foreach (string line in faceData)
             {
                 string[] parts = line.Split(' ');
-                Vector3 face = new Vector3();
-                face.X = float.Parse(parts[0]);
-                face.Y = float.Parse(parts[1]);
-                face.Z = float.Parse(parts[2]);
-                result.Add(face);
+                if (parts.Length == 3) // this is a normal un-triangulated face parse
+                {
+                    Vector3 face = new Vector3();
+                    face.X = float.Parse(parts[0]);
+                    face.Y = float.Parse(parts[1]);
+                    face.Z = float.Parse(parts[2]);
+                    result.Add(face);
+                }
+                else if (parts.Length == 4) // but if the face is a square, a simple cut down into two triangles is made
+                {
+                    Vector3 face = new Vector3();
+                    face.X = float.Parse(parts[0]);
+                    face.Y = float.Parse(parts[1]);
+                    face.Z = float.Parse(parts[2]);
+                    Vector3 face1 = new Vector3();
+                    face1.X = float.Parse(parts[2]);
+                    face1.Y = float.Parse(parts[3]);
+                    face1.Z = float.Parse(parts[0]);
+                    result.Add(face);
+                    result.Add(face1);
+                }
             }
 
             return result.ToArray();
@@ -66,11 +82,27 @@ namespace Steel_Engine
             foreach (string line in textureIndices)
             {
                 string[] parts = line.Split(' ');
-                Vector3 face = new Vector3();
-                face.X = float.Parse(parts[0]);
-                face.Y = float.Parse(parts[1]);
-                face.Z = float.Parse(parts[2]);
-                result.Add(face);
+                if (parts.Length == 3) // this is a normal un-triangulated face parse
+                {
+                    Vector3 face = new Vector3();
+                    face.X = float.Parse(parts[0]);
+                    face.Y = float.Parse(parts[1]);
+                    face.Z = float.Parse(parts[2]);
+                    result.Add(face);
+                }
+                else if (parts.Length == 4) // but if the face is a square, a simple cut down into two triangles is made
+                {
+                    Vector3 face = new Vector3();
+                    face.X = float.Parse(parts[0]);
+                    face.Y = float.Parse(parts[1]);
+                    face.Z = float.Parse(parts[2]);
+                    Vector3 face1 = new Vector3();
+                    face1.X = float.Parse(parts[2]);
+                    face1.Y = float.Parse(parts[3]);
+                    face1.Z = float.Parse(parts[0]);
+                    result.Add(face);
+                    result.Add(face1);
+                }
             }
 
             return result.ToArray();

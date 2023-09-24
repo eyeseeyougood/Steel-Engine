@@ -9,9 +9,52 @@ namespace Steel_Engine
 {
     public static class OBJImporter
     {
+        public static Mesh LoadSEO(string name, bool optimised)
+        {
+            List<string> newVertexData = new List<string>();
+            List<string> newFaceData = new List<string>();
+            List<string> newTextureData = new List<string>();
+            List<string> newTextureIndices = new List<string>();
+
+            string[] lines = File.ReadAllLines(InfoManager.dataPath + $@"\Models\{name}.SEO");
+            foreach (string line in lines)
+            {
+                if (line.StartsWith("v "))
+                {
+                    newVertexData.Add(line.Replace("v ", ""));
+                }
+                if (line.StartsWith("f "))
+                {
+                    newFaceData.Add(line.Replace("f ", ""));
+                }
+                if (line.StartsWith("tc "))
+                {
+                    newTextureData.Add(line.Replace("tc ", ""));
+                }
+                if (line.StartsWith("ti "))
+                {
+                    newTextureIndices.Add(line.Replace("ti ", ""));
+                }
+            }
+
+            Vector3[] parsedVertexData = OBJParser.ParseVertexData(newVertexData);
+            Vector3[] parsedFaceData = OBJParser.ParseFaceData(newFaceData);
+            Vector2[] parsedTextureData = OBJParser.ParseTextureData(newTextureData);
+            Vector3[] parsedTextureIndices = OBJParser.ParseTextureIndices(newTextureIndices);
+
+            Mesh newMesh = OBJParser.GenerateBasicTriangleMesh(parsedVertexData, parsedFaceData, parsedTextureData, parsedTextureIndices, optimised);
+
+            return newMesh;
+        }
+
         public static Mesh LoadOBJ(string name, bool optimised) // obj must be triangulated fully for this to work
         {
             string path = InfoManager.dataPath + $@"\Models\{name}.obj";
+
+            if (File.Exists(InfoManager.dataPath + $@"\Models\{name}.SEO"))
+            {
+                return LoadSEO(name, optimised);                
+            }
 
             // Data sanitisation
             List<string> newObjData = new List<string>();
@@ -32,16 +75,26 @@ namespace Steel_Engine
             List<string> newTextureData = ExtractTextureData(newObjData);
             List<string> newTextureIndices = ExtractTextureIndices(newObjData);
 
-            Vector3[] parsedVertexData = OBJParser.ParseVertexData(newVertexData);
-            Vector3[] parsedFaceData = OBJParser.ParseFaceData(newFaceData);
-            Vector2[] parsedTextureData = OBJParser.ParseTextureData(newTextureData);
-            Vector3[] parsedTextureIndices = OBJParser.ParseTextureIndices(newTextureIndices);
+            List<string> finalText = new List<string>();
+            foreach (string line in newVertexData)
+            {
+                finalText.Add("v " + line);
+            }
+            foreach (string line in newFaceData)
+            {
+                finalText.Add("f " + line);
+            }
+            foreach (string line in newTextureData)
+            {
+                finalText.Add("tc " + line);
+            }
+            foreach (string line in newTextureIndices)
+            {
+                finalText.Add("ti " + line);
+            }
+            File.WriteAllLines(InfoManager.dataPath + @$"\Models\{name}.SEO", finalText.ToArray());
 
-            Mesh newMesh = OBJParser.GenerateBasicTriangleMesh(parsedVertexData, parsedFaceData, parsedTextureData, parsedTextureIndices, optimised);
-
-            File.WriteAllLines(InfoManager.dataPath + @$"\Models\{name}.SEO", newObjData.ToArray());
-
-            return newMesh;
+            return LoadSEO(name, optimised);
         }
 
         public static Mesh LoadOBJFromPath(string path, bool optimised) // obj must be triangulated fully for this to work
@@ -91,26 +144,26 @@ namespace Steel_Engine
             List<string> newFaceData = new List<string>();
             foreach (string line in originalFaceData)
             {
-                string data = line.AsSpan(2, line.Length - 2).ToString();
-                string newData = "";
-                int passedSlashes = 0;
-                foreach (char i in data)
+                string data = line.Replace("f ", "");
+                string newFace = "";
+                string[] faces = data.Split(' ');
+                foreach (string face in faces)
                 {
-                    bool keepChar = true;
-                    if (i == '/') { keepChar = false; passedSlashes++; }
-                    if (i == '/' && passedSlashes == 1) { newData += ' '; }
-                    if (i == '/' && passedSlashes == 4) { newData += ' '; }
-                    if (passedSlashes == 1) { keepChar = false; }
-                    if (passedSlashes == 2) { keepChar = false; }
-                    if (passedSlashes == 2 && i == ' ') { keepChar = false; passedSlashes++; }
-                    if (passedSlashes == 4) { keepChar = false; }
-                    if (passedSlashes == 5) { keepChar = false; }
-                    if (passedSlashes == 5 && i == ' ') { keepChar = false; passedSlashes++; }
-                    if (passedSlashes == 7) { keepChar = false; }
-                    if (passedSlashes == 8) { keepChar = false; }
-                    if (keepChar) { newData += i; }                   
+                    newFace += face.Split('/')[0] + " ";
                 }
-                newFaceData.Add(newData);
+                string reformatted = "";
+                int index = 0;
+                foreach (char c in newFace)
+                {
+                    if (index == newFace.Length - 1)
+                    {
+                        break;
+                    }
+                    reformatted += c;
+                    index++;
+                }
+
+                newFaceData.Add(reformatted);
             }
 
             return newFaceData;
@@ -148,32 +201,29 @@ namespace Steel_Engine
                 if (line.StartsWith("f")) { originalFaceData.Add(line); }
             }
 
-            // we have obtained out original face data
-            // now we must take it and convert it to the simpler face data required by SteelObjParser
-
             List<string> newFaceData = new List<string>();
             foreach (string line in originalFaceData)
             {
-                string data = line.AsSpan(2, line.Length - 2).ToString();
-                string newData = "";
-                int passedSlashes = 0;
-                foreach (char i in data)
+                string data = line.Replace("f ", "");
+                string newFace = "";
+                string[] faces = data.Split(' ');
+                foreach (string face in faces)
                 {
-                    bool keepChar = true;
-                    if (i == '/') { keepChar = false; passedSlashes++; }
-                    if (i == '/' && passedSlashes == 2) { newData += ' '; }
-                    if (i == '/' && passedSlashes == 5) { newData += ' '; }
-                    if (passedSlashes == 0) { keepChar = false; }
-                    if (passedSlashes == 2) { keepChar = false; }
-                    if (passedSlashes == 2 && i == ' ') { keepChar = false; passedSlashes++; }
-                    if (passedSlashes == 3) { keepChar = false; }
-                    if (passedSlashes == 5) { keepChar = false; }
-                    if (passedSlashes == 5 && i == ' ') { keepChar = false; passedSlashes++; }
-                    if (passedSlashes == 6) { keepChar = false; }
-                    if (passedSlashes == 8) { keepChar = false; }
-                    if (keepChar) { newData += i; }                   
+                    newFace += face.Split('/')[1] + " ";
                 }
-                newFaceData.Add(newData);
+                string reformatted = "";
+                int index = 0;
+                foreach (char c in newFace)
+                {
+                    if (index == newFace.Length - 1)
+                    {
+                        break;
+                    }
+                    reformatted += c;
+                    index++;
+                }
+
+                newFaceData.Add(reformatted);
             }
 
             return newFaceData;
