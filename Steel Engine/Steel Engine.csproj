@@ -16,8 +16,8 @@
 
   <ItemGroup>
     <Folder Include="EngineResources\EngineModels\" />
-    <Folder Include="Temp\" />
     <Folder Include="Resources\Textures\" />
+    <Folder Include="Temp\" />
   </ItemGroup>
 
 </Project>
