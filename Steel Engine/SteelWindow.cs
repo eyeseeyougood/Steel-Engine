@@ -14,8 +14,6 @@ namespace Steel_Engine
 {
     internal class SteelWindow : GameWindow
     {
-        private Camera camera;
-
         private bool firstMove = true;
 
         private Vector2 lastPos;
@@ -25,6 +23,8 @@ namespace Steel_Engine
         private Stopwatch timer;
 
         private List<GUIElement> guiElements = new List<GUIElement>();
+
+        private Vector2 originalSize;
 
         public SteelWindow(GameWindowSettings settings, NativeWindowSettings nativeSettings) : base(settings, nativeSettings)
         {
@@ -48,9 +48,9 @@ namespace Steel_Engine
 
             GL.Enable(EnableCap.DepthTest);
 
-            camera = new Camera(Vector3.UnitZ * 3, Size.X / Size.Y);
-
-            InfoManager.engineCamera = camera;
+            originalSize = Size;
+            InfoManager.windowSize = Size;
+            InfoManager.engineCamera = new Camera(Vector3.UnitZ * 3, Size.X / Size.Y);
 
             CursorState = CursorState.Grabbed;
 
@@ -59,7 +59,7 @@ namespace Steel_Engine
             SceneManager.LoadScene(0);
 
             // load text
-            guiElements.Add(new GUIText(new Vector2(0, 0), 2f, "Not Simulating", @"C:\Windows\Fonts\Arial.ttf", 21f));
+            guiElements.Add(new GUIText(new Vector3(0, -3.5f, 0), new Vector2(0f, -1f), 1f, "Not Simulating", @"C:\Windows\Fonts\Arial.ttf", 21f));
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -108,7 +108,7 @@ namespace Steel_Engine
 
             SceneManager.Tick(args.Time);
 
-            camera.Tick(input, args.Time, CursorState, MouseState);
+            InfoManager.engineCamera.Tick(input, args.Time, CursorState, MouseState);
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -139,16 +139,16 @@ namespace Steel_Engine
         {
             base.OnMouseWheel(e);
 
-            camera.Fov -= e.OffsetY;
+            InfoManager.engineCamera.Fov -= e.OffsetY;
         }
 
         protected override void OnResize(ResizeEventArgs e)
         {
             base.OnResize(e);
-
-            GL.Viewport(0, 0, Size.X, Size.Y);
-            camera.AspectRatio = Size.X / Size.Y;
-            InfoManager.windowSize = Size;
+            
+            GL.Viewport(0, 0, e.Size.X, e.Size.Y);
+            InfoManager.engineCamera.Fov = MathHelper.RadiansToDegrees(2.0f * MathF.Atan(((float)e.Size.Y * 0.5f) * ((float)e.Size.X/(float)e.Size.Y)));
+            InfoManager.windowSize = e.Size;
         }
     }
 }
