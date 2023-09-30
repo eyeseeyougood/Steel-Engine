@@ -118,6 +118,26 @@ namespace Steel_Engine
             renderShader = vertShaderType;
         }
 
+        public static GameObject Instantiate(GameObject original)
+        {
+            GameObject result = new GameObject(original.renderShader, original.renderShader);
+            result.position = original.position;
+            result.qRotation = original.qRotation;
+            result.mesh = original.mesh;
+            result.scale = original.scale;
+            result.Load();
+            return result;
+        }
+
+        public Matrix4 GetModelMatrix()
+        {
+            Matrix4 transformation = Matrix4.Identity;
+            transformation = transformation * Matrix4.CreateScale(scale);
+            transformation = transformation * Matrix4.CreateFromQuaternion(qRotation);
+            transformation = transformation * Matrix4.CreateTranslation(position);
+            return transformation;
+        }
+
         public void Rotate(Vector3 rotation)
         {
             eRotation += rotation;
@@ -202,12 +222,9 @@ namespace Steel_Engine
             GL.BindVertexArray(vao); // bind VAO
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, elementBufferObject);
 
-            Matrix4 tranformation = Matrix4.Identity;
-            tranformation = tranformation * Matrix4.CreateScale(scale);
-            tranformation = tranformation * Matrix4.CreateFromQuaternion(qRotation);
-            tranformation = tranformation * Matrix4.CreateTranslation(position);
+            Matrix4 transformation = GetModelMatrix();
 
-            shader.SetMatrix4("model", tranformation);
+            shader.SetMatrix4("model", transformation);
             shader.SetMatrix4("view", InfoManager.engineCamera.GetViewMatrix());
             shader.SetMatrix4("projection", InfoManager.engineCamera.GetProjectionMatrix());
 

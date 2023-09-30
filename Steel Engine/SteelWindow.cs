@@ -22,8 +22,6 @@ namespace Steel_Engine
 
         private Stopwatch timer;
 
-        private List<GUIElement> guiElements = new List<GUIElement>();
-
         private Vector2 originalSize;
 
         public SteelWindow(GameWindowSettings settings, NativeWindowSettings nativeSettings) : base(settings, nativeSettings)
@@ -32,10 +30,7 @@ namespace Steel_Engine
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            foreach (GUIElement element in guiElements)
-            {
-                element.CleanUp();
-            }
+            GUIManager.Cleanup();
 
             base.OnClosing(e);
         }
@@ -59,7 +54,8 @@ namespace Steel_Engine
             SceneManager.LoadScene(0);
 
             // load text
-            guiElements.Add(new GUIText(new Vector3(0, -3.5f, 0), new Vector2(0f, -1f), 1f, "Not Simulating", @"C:\Windows\Fonts\Arial.ttf", 21f));
+            GUIManager.AddGUIElement(new GUIText(new Vector3(0, -3.5f, 0), new Vector2(0f, -1f), 0.07f, "Not Simulating", @"C:\Windows\Fonts\Arial.ttf", 300f));
+            GUIManager.AddGUIElement(new GUIButton(new Vector3(0, -5f, 0), new Vector2(-0.5f, -1f), new Vector2(0.3f, 0.05f)));
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -80,7 +76,7 @@ namespace Steel_Engine
             if (input.IsKeyPressed(Keys.R))
             {
                 SceneManager.gameRunning = !SceneManager.gameRunning;
-                GUIText text = (GUIText)guiElements[0];
+                GUIText text = (GUIText)GUIManager.GetElementByID(0);
                 text.SetText(SceneManager.gameRunning ? "Simulating" : "Not Simulating");
             }
 
@@ -106,6 +102,7 @@ namespace Steel_Engine
             }
             // ------
 
+            GUIManager.Tick((float)args.Time, MousePosition, MouseState);
             SceneManager.Tick(args.Time);
 
             InfoManager.engineCamera.Tick(input, args.Time, CursorState, MouseState);
@@ -127,10 +124,7 @@ namespace Steel_Engine
             }
 
             GL.Disable(EnableCap.DepthTest);
-            foreach (GUIElement guiElement in guiElements)
-            {
-                guiElement.Render();
-            }
+            GUIManager.Render();
 
             SwapBuffers();
         }

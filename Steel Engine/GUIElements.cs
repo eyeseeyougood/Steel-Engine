@@ -11,9 +11,26 @@ using System.Drawing;
 using static System.Formats.Asn1.AsnWriter;
 using System.Text.Json;
 using static System.Net.Mime.MediaTypeNames;
+using OpenTK.Windowing.GraphicsLibraryFramework;
+using System.Threading;
 
 namespace Steel_Engine.GUI
 {
+    public class SteelRay
+    {
+        public Vector3 worldPosition;
+        public Vector3 worldDirection;
+        public float stepSize = 0.1f;
+        public float distance = -1;
+        public float threshhold = 0.01f;
+
+        public SteelRay(Vector3 worldPosition, Vector3 worldDirection)
+        {
+            this.worldPosition = worldPosition;
+            this.worldDirection = worldDirection;
+        }
+    }
+
     public class GUIElement
     {
         public Vector2 position; // arbitrary units
@@ -24,11 +41,22 @@ namespace Steel_Engine.GUI
         public GameObject renderObject { get; private set; }
         public List<string> textures { get; private set; }
 
-        public GUIElement()
+        public GUIElement(Vector3 position, Vector2 anchor)
         {
+            addedPosition = position;
+            this.anchor = anchor;
+            
             textures = new List<string>();
 
             renderObject = new GameObject(RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit);
+            renderObject.LoadTexture(InfoManager.currentDir + @$"\EngineResources\EngineTextures\blank.png");
+            renderObject.mesh = OBJImporter.LoadOBJFromPath(InfoManager.currentDir + @$"\EngineResources\EngineModels\Quad.obj", true);
+            renderObject.Load();
+        }
+
+        public virtual void Tick(float deltaTime, params object[] args)
+        {
+
         }
 
         public void ApplyTexture(Bitmap bmp)
@@ -61,6 +89,51 @@ namespace Steel_Engine.GUI
         }
     }
 
+    public class GUIButton : GUIElement
+    {
+        public delegate void GUIButtonClick();
+        public event GUIButtonClick buttonClicked;
+        Vector2 scale;
+
+        public override void Tick(float deltaTime, params object[] args)
+        {
+            Vector2 mousePosition = (Vector2)args[0];
+            // args [0] is always a vector 2 of the mouse position for the Button Object
+            bool mouseDown = ((MouseState)args[1]).IsButtonPressed(MouseButton.Left);
+            // args [1] is always a boolean of the mouse state (up or down) for the Button Object
+            if (mouseDown)
+            {
+                if (CheckBounds(mousePosition))
+                {
+                    Console.WriteLine("clicked " + mousePosition);
+                }
+            }
+        }
+
+        private bool CheckBounds(Vector3 pointOnPlane)
+        {
+            bool result = true;
+
+            // step 1: find point on plane has already been calculated
+            Vector3 screenPos1 = WorldToScreenspace(renderObject.position, renderObject.GetModelMatrix());
+
+            Console.WriteLine(screenPos1);
+
+            return result;
+        }
+
+        public GUIButton(Vector3 position, Vector2 anchor, Vector2 scale) : base(position, anchor)
+        {
+            this.scale = scale;
+        }
+
+        public override void Render()
+        {
+            renderObject.scale = new Vector3(scale.X, scale.Y, 1f);
+            base.Render();
+        }
+    }
+
     public class GUIText : GUIElement
     {
         public string text;
@@ -68,15 +141,13 @@ namespace Steel_Engine.GUI
         public float size;
         public float scale;
         private Rectangle rect;
-        public GUIText(Vector3 position, Vector2 anchor, float scale, string text, string font, float size) : base()
+        public GUIText(Vector3 position, Vector2 anchor, float scale, string text, string font, float size) : base(position, anchor)
         {
             ApplyTexture(GUIManager.Write_Text(text, font, size));
 
             this.text = text;
             this.font = font;
             this.size = size;
-            this.anchor = anchor;
-            addedPosition = position;
 
             if (!textures.Contains(text))
                 textures.Add(text);
@@ -91,8 +162,6 @@ namespace Steel_Engine.GUI
             rect.Width = texture.Width;
             rect.Height = texture.Height;
             renderObject.LoadTexture(InfoManager.currentDir + @$"\Temp\{text}.png");
-            renderObject.mesh = OBJImporter.LoadOBJFromPath(InfoManager.currentDir + @$"\EngineResources\EngineModels\Quad.obj", true);
-            renderObject.Load();
         }
 
         public void SetText(string text)

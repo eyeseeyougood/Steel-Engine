@@ -1,4 +1,6 @@
 ﻿using OpenTK.Mathematics;
+using OpenTK.Windowing.GraphicsLibraryFramework;
+using Steel_Engine.GUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -132,6 +134,47 @@ namespace Steel_Engine
                     gameObject.Tick((float)deltaTime);
                 }
             }
+        }
+
+        public static SteelRay CalculateRay(MouseState mouseState)
+        {
+            float mouseX = mouseState.X;
+            float mouseY = mouseState.Y;
+
+            int viewportWidth = 1920;
+            int viewportHeight = 1080;
+
+            // Calculate the NDC (Normalized Device Coordinates)
+            float normalizedX = (2.0f * mouseX) / viewportWidth - 1.0f;
+            float normalizedY = 1.0f - (2.0f * mouseY) / viewportHeight;
+            float normalizedZ = -1.0f; // Depth in NDC space (typically 0 to 1)
+
+            // Get the view and projection matrices from your camera
+            Matrix4 viewMatrix = InfoManager.engineCamera.GetViewMatrix();
+            Matrix4 projectionMatrix = InfoManager.engineCamera.GetProjectionMatrix();
+
+            // Calculate the inverse view-projection matrix
+            Matrix4 inverseViewProjection = Matrix4.Invert(viewMatrix * projectionMatrix);
+
+            // Create a point in homogeneous clip coordinates (HCC)
+            Vector4 nearPointHCC = new Vector4(normalizedX, normalizedY, normalizedZ, 1.0f);
+            Vector4 farPointHCC = new Vector4(normalizedX, normalizedY, 1.0f, 1.0f);
+
+            // Transform the HCC points to world space
+            Vector4 nearPointWorld = nearPointHCC * inverseViewProjection;
+            Vector4 farPointWorld = farPointHCC * inverseViewProjection;
+
+            // Divide by W to get the actual 3D points
+            Vector3 rayStartWorld = nearPointWorld.Xyz / nearPointWorld.W;
+            Vector3 rayEndWorld = farPointWorld.Xyz / farPointWorld.W;
+
+            // Calculate the ray direction
+            Vector3 rayDirection = Vector3.Normalize(rayEndWorld - rayStartWorld);
+
+            SteelRay ray = new SteelRay(rayStartWorld, rayDirection);
+            ray.stepSize = 0.5f;
+            ray.distance = 10f;
+            return ray;
         }
     }
 }

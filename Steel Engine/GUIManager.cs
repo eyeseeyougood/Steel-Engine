@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenTK.Windowing.GraphicsLibraryFramework;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -7,8 +8,52 @@ using System.Threading.Tasks;
 
 namespace Steel_Engine.GUI
 {
-    public class GUIManager
+    public static class GUIManager
     {
+        public static List<GUIElement> guiElements = new List<GUIElement>();
+
+        public static void Tick(float deltaTime, params object[] args)
+        {
+            MouseState mouseState = (MouseState)args[1];
+            bool mouseDown = mouseState.IsButtonPressed(MouseButton.Left);
+            if (mouseDown)
+            {
+                SceneManager.FindFirstRayHit(mouseState);
+            }
+
+            foreach (GUIElement guiElement in guiElements)
+            {
+                guiElement.Tick(deltaTime, args);
+            }
+        }
+
+        public static void Render()
+        {
+            foreach (GUIElement guiElement in guiElements)
+            {
+                guiElement.Render();
+            }
+        }
+
+        public static GUIElement GetElementByID(int id)
+        {
+            GUIElement element = guiElements[id];
+            return element;
+        }
+
+        public static void AddGUIElement(GUIElement element)
+        {
+            guiElements.Add(element);
+        }
+
+        public static void Cleanup()
+        {
+            foreach (GUIElement element in guiElements)
+            {
+                element.CleanUp();
+            }
+        }
+
         public static Bitmap Write_Text(string text, string fontName, float size)
         {
             Font f = new Font(fontName, size, GraphicsUnit.Pixel);
