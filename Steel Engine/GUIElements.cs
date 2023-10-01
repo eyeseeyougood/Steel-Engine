@@ -16,6 +16,18 @@ using System.Threading;
 
 namespace Steel_Engine.GUI
 {
+    public class ImageReference
+    {
+        public string name;
+        public string extention;
+
+        public ImageReference(string name, string extention)
+        {
+            this.name = name;
+            this.extention = extention;
+        }
+    }
+
     public class SteelRay
     {
         public Vector3 worldPosition;
@@ -41,15 +53,14 @@ namespace Steel_Engine.GUI
         public GameObject renderObject { get; private set; }
         public List<string> textures { get; private set; }
 
-        public GUIElement(Vector3 position, Vector2 anchor)
+        public GUIElement(Vector3 position, Vector2 anchor, RenderShader vShader, RenderShader fShader)
         {
             addedPosition = position;
             this.anchor = anchor;
             
             textures = new List<string>();
 
-            renderObject = new GameObject(RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit);
-            renderObject.LoadTexture(InfoManager.currentDir + @$"\EngineResources\EngineTextures\blank.png");
+            renderObject = new GameObject(vShader, fShader);
             renderObject.mesh = OBJImporter.LoadOBJFromPath(InfoManager.currentDir + @$"\EngineResources\EngineModels\Quad.obj", true);
             renderObject.Load();
         }
@@ -91,39 +102,127 @@ namespace Steel_Engine.GUI
 
     public class GUIButton : GUIElement
     {
-        public delegate void GUIButtonClick();
-        public event GUIButtonClick buttonClicked;
+        public delegate void GUIButtonDown();
+        public event GUIButtonDown buttonDown = new GUIButtonDown(_ButtonDown);
+        public delegate void GUIButtonHold(float deltaTime);
+        public event GUIButtonHold buttonHold = new GUIButtonHold(_ButtonHold);
+        public delegate void GUIButtonUp();
+        public event GUIButtonUp buttonUp = new GUIButtonUp(_ButtonUp);
         Vector2 scale;
+        private Texture normalImage = null;
+        private Texture pressedImage = null;
+        private Texture currentImage = null;
+
+        private static void _ButtonDown() { }
+        private static void _ButtonHold(float deltaTime) { }
+        private static void _ButtonUp() { }
+
+        public void SetPressedImage(string name, string extention)
+        {
+            pressedImage = Texture.LoadFromFile(InfoManager.dataPath + @$"/Textures/{name}{extention}");
+        }
 
         public override void Tick(float deltaTime, params object[] args)
         {
             Vector2 mousePosition = (Vector2)args[0];
-            // args [0] is always a vector 2 of the mouse position for the Button Object
-            bool mouseDown = ((MouseState)args[1]).IsButtonPressed(MouseButton.Left);
-            // args [1] is always a boolean of the mouse state (up or down) for the Button Object
+            // args [0] is always a vector 2 of the mouse position
+            MouseState mouseState = (MouseState)args[1];
+            bool mouseDown = mouseState.IsButtonDown(MouseButton.Left);
+            bool mousePressed = mouseState.IsButtonPressed(MouseButton.Left);
+            bool mouseUp = mouseState.IsButtonReleased(MouseButton.Left);
+            // args [1] is always the mouse state
+            if (mousePressed)
+            {
+                if (CheckBounds(mouseState))
+                {
+                    buttonDown.Invoke();
+                }
+            }
+            if (mouseUp)
+            {
+                if (CheckBounds(mouseState))
+                {
+                    buttonUp.Invoke();
+                }
+            }
             if (mouseDown)
             {
-                if (CheckBounds(mousePosition))
+                if (CheckBounds(mouseState))
                 {
-                    Console.WriteLine("clicked " + mousePosition);
+                    buttonHold.Invoke(deltaTime);
+                    if (pressedImage != null)
+                    {
+                        renderObject.LoadTexture(pressedImage);
+                        currentImage = pressedImage;
+                    }
+                }
+            }
+            else
+            {
+                if (normalImage != null && currentImage != normalImage)
+                {
+                    renderObject.LoadTexture(normalImage);
+                    currentImage = normalImage;
                 }
             }
         }
 
-        private bool CheckBounds(Vector3 pointOnPlane)
+        private bool CheckBounds(MouseState mouseState)
         {
-            bool result = true;
+            bool result = false;
 
-            // step 1: find point on plane has already been calculated
-            Vector3 screenPos1 = WorldToScreenspace(renderObject.position, renderObject.GetModelMatrix());
+            // Step 1: find line plane intersection point
+            SteelRay ray = SceneManager.CalculateRay(mouseState);
+            SteelTriangle triangle = renderObject.mesh.triangles[0];
+            SteelTriangle triangle1 = renderObject.mesh.triangles[1];
+            Vector3 p1 = triangle.GetVertex(0).position;
+            p1 = renderObject.position + InfoManager.engineCamera.Right * p1.X * renderObject.scale.X + InfoManager.engineCamera.Up * p1.Y * renderObject.scale.Y;
+            Vector3 p2 = triangle.GetVertex(1).position;            
+            p2 = renderObject.position + InfoManager.engineCamera.Right * p2.X * renderObject.scale.X + InfoManager.engineCamera.Up * p2.Y * renderObject.scale.Y;
+            Vector3 p3 = triangle.GetVertex(2).position;
+            p3 = renderObject.position + InfoManager.engineCamera.Right * p3.X * renderObject.scale.X + InfoManager.engineCamera.Up * p3.Y * renderObject.scale.Y;
+            Vector3 p4 = triangle1.GetVertex(1).position;
+            p4 = renderObject.position + InfoManager.engineCamera.Right * p4.X * renderObject.scale.X + InfoManager.engineCamera.Up * p4.Y * renderObject.scale.Y;
+            Vector3 intersectionPoint = MathFExtentions.LinePlaneIntersection(p1, p2, p3, ray.worldPosition, ray.worldDirection);
 
-            Console.WriteLine(screenPos1);
+            // Step 2: find two perpendicular vectors of quad and do dot product comparisons
+            Vector3 bottomLeftUp = p2 - p3;
+            Vector3 bottomLeftRight = p1 - p3;
+            Vector3 intersectionPointDifference = intersectionPoint - p3;
+
+            float verticalProduct = Vector3.Dot(intersectionPointDifference, bottomLeftUp.Normalized());
+            float horizontalProduct = Vector3.Dot(intersectionPointDifference, bottomLeftRight.Normalized());
+
+            // Step 3: check for dot product size and sign
+            if (verticalProduct >= 0) // is positive
+            {
+                if (verticalProduct <= bottomLeftUp.Length) // might change to LengthFast if too slow
+                {
+                    // is within the height of quad
+                    if (horizontalProduct >= 0)
+                    {
+                        if (horizontalProduct <= bottomLeftRight.Length)
+                        {
+                            // is within the width of the quad
+                            // and so is within the quad it self
+                            result = true;
+                        }
+                    }
+                }
+            }
 
             return result;
         }
 
-        public GUIButton(Vector3 position, Vector2 anchor, Vector2 scale) : base(position, anchor)
+        public GUIButton(Vector3 position, Vector2 anchor, Vector2 scale) : base(position, anchor, RenderShader.ShadeFlat, RenderShader.ShadeFlat)
         {
+            this.scale = scale;
+        }
+
+        public GUIButton(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string textureExtention) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
+        {
+            renderObject.LoadTexture(InfoManager.dataPath + @$"/Textures/{texture}{textureExtention}");
+            normalImage = Texture.LoadFromFile(InfoManager.dataPath + @$"/Textures/{texture}{textureExtention}");
             this.scale = scale;
         }
 
@@ -141,7 +240,7 @@ namespace Steel_Engine.GUI
         public float size;
         public float scale;
         private Rectangle rect;
-        public GUIText(Vector3 position, Vector2 anchor, float scale, string text, string font, float size) : base(position, anchor)
+        public GUIText(Vector3 position, Vector2 anchor, float scale, string text, string font, float size) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
             ApplyTexture(GUIManager.Write_Text(text, font, size));
 
@@ -162,6 +261,13 @@ namespace Steel_Engine.GUI
             rect.Width = texture.Width;
             rect.Height = texture.Height;
             renderObject.LoadTexture(InfoManager.currentDir + @$"\Temp\{text}.png");
+        }
+
+        public void PreloadText(string text)
+        {
+            string normalText = this.text;
+            SetText(text);
+            SetText(normalText);
         }
 
         public void SetText(string text)

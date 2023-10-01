@@ -14,13 +14,6 @@ namespace Steel_Engine.GUI
 
         public static void Tick(float deltaTime, params object[] args)
         {
-            MouseState mouseState = (MouseState)args[1];
-            bool mouseDown = mouseState.IsButtonPressed(MouseButton.Left);
-            if (mouseDown)
-            {
-                SceneManager.FindFirstRayHit(mouseState);
-            }
-
             foreach (GUIElement guiElement in guiElements)
             {
                 guiElement.Tick(deltaTime, args);

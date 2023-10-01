@@ -1,5 +1,7 @@
-﻿using OpenTK.Mathematics;
+﻿using OpenTK.Compute.OpenCL;
+using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using Steel_Engine.Common;
 using Steel_Engine.GUI;
 using System;
 using System.Collections.Generic;

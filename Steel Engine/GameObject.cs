@@ -176,6 +176,12 @@ namespace Steel_Engine
             texture0.Use(TextureUnit.Texture0);
         }
 
+        public void LoadTexture(Texture texture)
+        {
+            texture0 = texture;
+            texture0.Use(TextureUnit.Texture0);
+        }
+
         public void Load()
         {
             // setup vertex buffer
