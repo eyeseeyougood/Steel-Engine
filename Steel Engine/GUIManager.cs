@@ -1,4 +1,5 @@
 ﻿using OpenTK.Windowing.GraphicsLibraryFramework;
+using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -11,6 +12,89 @@ namespace Steel_Engine.GUI
     public static class GUIManager
     {
         public static List<GUIElement> guiElements = new List<GUIElement>();
+        public static List<GUIElement> heirarchyObjects = new List<GUIElement>();
+
+        public static void LoadEngineGUI()
+        {
+            // TopBar
+            GUIImage topBarPanel = new GUIImage(new Vector3(0, -12.5f, 0), new Vector2(0f, -1f), new Vector2(1.88f, 0.12f), new Vector3(50, 50, 50)/255.0f);
+            topBarPanel.name = "topbarBG";
+            topBarPanel.renderOrder = -2;
+
+            GUIText simulatingText = new GUIText(new Vector3(0, -3.5f, 0), new Vector2(0f, -1f), 0.07f, "Not Simulating", @"C:\Windows\Fonts\Arial.ttf", 300f, new Vector4(0, 0, 0, 50));
+            simulatingText.PreloadText("Simulating");
+            simulatingText.name = "topbarSimText";
+            simulatingText.renderOrder = -1;
+            
+            GUIButton xpButton = new GUIButton(new Vector3(0, -12.5f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), "Arrow1", ".png");
+            xpButton.SetPressedImage("Arrow2", ".png");
+            xpButton.buttonHold += EngineGUIEventManager.XPButtonHold;
+            xpButton.SetZRotation(0);
+            xpButton.renderOrder = -1;
+            
+            GUIButton xmButton = new GUIButton(new Vector3(-30f, -12.5f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), "Arrow1", ".png");
+            xmButton.SetPressedImage("Arrow2", ".png");
+            xmButton.buttonHold += EngineGUIEventManager.XMButtonHold;
+            xmButton.SetZRotation(180);
+            xmButton.renderOrder = -1;
+
+            GUIButton ypButton = new GUIButton(new Vector3(-15f, -5f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), "Arrow1", ".png");
+            ypButton.SetPressedImage("Arrow2", ".png");
+            ypButton.buttonHold += EngineGUIEventManager.YPButtonHold;
+            ypButton.SetZRotation(-90);
+            ypButton.renderOrder = -1;
+
+            GUIButton ymButton = new GUIButton(new Vector3(-15f, -20f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), "Arrow1", ".png");
+            ymButton.SetPressedImage("Arrow2", ".png");
+            ymButton.buttonHold += EngineGUIEventManager.YMButtonHold;
+            ymButton.SetZRotation(90);
+            ymButton.renderOrder = -1;
+
+            GUIButton zpButton = new GUIButton(new Vector3(15f, -5f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), "Arrow1", ".png");
+            zpButton.SetPressedImage("Arrow2", ".png");
+            zpButton.buttonHold += EngineGUIEventManager.ZPButtonHold;
+            zpButton.SetZRotation(-90);
+            zpButton.renderOrder = -1;
+
+            GUIButton zmButton = new GUIButton(new Vector3(15f, -20f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), "Arrow1", ".png");
+            zmButton.SetPressedImage("Arrow2", ".png");
+            zmButton.buttonHold += EngineGUIEventManager.ZMButtonHold;
+            zmButton.SetZRotation(90);
+            zmButton.renderOrder = -1;
+
+            // heirarchy
+            GUIImage heirarchyBG = new GUIImage(new Vector3(39, -158f, 0), new Vector2(-1f, -1f), new Vector2(0.4f, 0.9f), new Vector3(45, 45, 45) / 255.0f);
+            heirarchyBG.name = "heirarchyBG";
+            heirarchyBG.renderOrder = -2;
+
+            heirarchyObjects.Clear();
+            foreach (GameObject gameObject in SceneManager.gameObjects)
+            {
+                //new Vector3(-12f, -10f*heirarchyObjects.Count -35f, 0)
+                GUIButton heirarchyButtonObject = new GUIButton(new Vector3(39, -5f * heirarchyObjects.Count - 35f, 0), new Vector2(-1f, -1f), new Vector2(0.38f, 0.03f));
+                //heirarchyButtonObject.visible = false;
+                heirarchyButtonObject.renderOrder = -1;
+                GUIImage heirarchyImageObject = new GUIImage(Vector3.Zero, Vector2.Zero, new Vector2(0.38f, 0.03f), new Vector4(0, 0, 0, 50));
+                GUIText heirarchyTextObject = new GUIText(Vector3.Zero, Vector2.Zero, 0.07f, gameObject.id.ToString(), @"C:\Windows\Fonts\Arial.ttf", 200f, new Vector4(0, 0, 0, 0));
+                heirarchyTextObject.name = gameObject.id.ToString() + " text object";
+                heirarchyTextObject.parentGUI = heirarchyButtonObject;
+                heirarchyObjects.Add(heirarchyTextObject);
+                heirarchyObjects.Add(heirarchyButtonObject);
+                AddGUIElement(heirarchyTextObject);
+                AddGUIElement(heirarchyButtonObject);
+                AddGUIElement(heirarchyImageObject);
+            }
+
+            AddGUIElement(simulatingText);
+            AddGUIElement(xpButton);
+            AddGUIElement(xmButton);
+            AddGUIElement(ypButton);
+            AddGUIElement(ymButton);
+            AddGUIElement(zpButton);
+            AddGUIElement(zmButton);
+            AddGUIElement(topBarPanel);
+            AddGUIElement(heirarchyBG);
+        }
 
         public static void Tick(float deltaTime, params object[] args)
         {
@@ -22,6 +106,8 @@ namespace Steel_Engine.GUI
 
         public static void Render()
         {
+            // sort list before render according to the render order of each item
+            guiElements.Sort(new GUIElementComparer());
             foreach (GUIElement guiElement in guiElements)
             {
                 guiElement.Render();
@@ -32,6 +118,18 @@ namespace Steel_Engine.GUI
         {
             GUIElement element = guiElements[id];
             return element;
+        }
+
+        public static GUIElement GetElementByName(string name)
+        {
+            foreach (GUIElement element in guiElements)
+            {
+                if (element.name == name)
+                {
+                    return element;
+                }
+            }
+            return null;
         }
 
         public static void AddGUIElement(GUIElement element)
@@ -68,7 +166,7 @@ namespace Steel_Engine.GUI
             return Write_Text(bmp, text, rect, true, fontName, false, false, bgColour);
         }
 
-        public static Bitmap Write_Text(string text, string fontName, float size, Color bg)
+        public static Bitmap Write_Text(string text, string fontName, float size, Vector4 bg255)
         {
             Font f = new Font(fontName, size, GraphicsUnit.Pixel);
             SizeF result;
@@ -85,7 +183,8 @@ namespace Steel_Engine.GUI
             rect.Height = (int)MathF.Round(result.Height);
             rect.X = 0;
             rect.Y = 0;
-            return Write_Text(bmp, text, rect, true, fontName, false, false, bg);
+            Color bgColour = Color.FromArgb((int)bg255.W, (int)bg255.Y, (int)bg255.Z, (int)bg255.X);
+            return Write_Text(bmp, text, rect, true, fontName, false, false, bgColour);
         }
 
         public static Bitmap Write_Text(string text, string fontName, float size, Rectangle destRect, Rectangle fullRect)
@@ -101,6 +200,22 @@ namespace Steel_Engine.GUI
             }
             Bitmap bmp = new Bitmap((int)MathF.Round(fullRect.Width) + 1, (int)MathF.Round(fullRect.Height) + 1);
             Color bgColour = Color.FromArgb(255, Color.White);
+            return Write_Text(bmp, text, destRect, true, fontName, false, false, bgColour);
+        }
+
+        public static Bitmap Write_Text(string text, string fontName, float size, Vector4 bg255, Rectangle destRect, Rectangle fullRect)
+        {
+            Font f = new Font(fontName, size, GraphicsUnit.Pixel);
+            SizeF result;
+            using (Bitmap b = new Bitmap(100, 100))
+            {
+                using (Graphics g = Graphics.FromImage(b))
+                {
+                    result = g.MeasureString(text, f);
+                }
+            }
+            Bitmap bmp = new Bitmap((int)MathF.Round(fullRect.Width) + 1, (int)MathF.Round(fullRect.Height) + 1);
+            Color bgColour = Color.FromArgb((int)bg255.W, (int)bg255.Y, (int)bg255.Z, (int)bg255.X);
             return Write_Text(bmp, text, destRect, true, fontName, false, false, bgColour);
         }
 

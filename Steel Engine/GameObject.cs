@@ -19,6 +19,7 @@ namespace Steel_Engine
     public class GameObject
     {
         public int id;
+        public string name;
         public GameObject parent;
         public Vector3 position;
         public Vector3 scale;
@@ -220,6 +221,44 @@ namespace Steel_Engine
             }
         }
 
+        public void Load(Quaternion preRotation) // JANKYYYY but probably ok because only used by GUI
+        {
+            // setup vertex buffer
+            vertexBufferObject = GL.GenBuffer(); // get a name for VBO
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject); // bind VBO
+            GL.BufferData(BufferTarget.ArrayBuffer, mesh.vertices.Count * 8 * sizeof(float), GetVertices(preRotation), BufferUsageHint.StaticDraw); // allocating GPU memory for VBO
+            // the number '8' in the line above represents the number of values per vertex (position(3) + colour(3) + texPos(2) = 8)
+
+            vao = GL.GenVertexArray();
+            GL.BindVertexArray(vao);
+
+            int posLocation = shader.GetAttribLocation("aPosition");
+            int colLocation = shader.GetAttribLocation("aColour");
+            int texCoordLocation = shader.GetAttribLocation("aTexCoord");
+            GL.VertexAttribPointer(posLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
+            GL.VertexAttribPointer(colLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
+            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
+            GL.EnableVertexAttribArray(posLocation);
+            GL.EnableVertexAttribArray(colLocation);
+            GL.EnableVertexAttribArray(texCoordLocation);
+
+            // init elementBufferObject
+            int[] indices = mesh.GetIndices();
+
+            elementBufferObject = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, elementBufferObject);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(float), indices, BufferUsageHint.StaticDraw);
+
+            // init shader
+            shader.Use();
+
+            // init components
+            foreach (Component component in components)
+            {
+                component.ComponentInit(this);
+            }
+        }
+
         public void Render()
         {
             shader.Use();
@@ -296,6 +335,18 @@ namespace Steel_Engine
             foreach (SteelVertex vertex in mesh.vertices)
             {
                 vertices.AddRange(vertex.GetVertexData());
+            }
+
+            return vertices.ToArray();
+        }
+
+        private float[] GetVertices(Quaternion preRotation) // janky af but only used in GUI so probably ok
+        {
+            List<float> vertices = new List<float>();
+
+            foreach (SteelVertex vertex in mesh.vertices)
+            {
+                vertices.AddRange(vertex.GetVertexData(preRotation));
             }
 
             return vertices.ToArray();

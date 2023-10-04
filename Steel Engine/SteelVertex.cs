@@ -59,5 +59,23 @@ namespace Steel_Engine
 
             return data;
         }
+
+        public float[] GetVertexData(Quaternion preRotation) // again janky af but only used in GUI so probably ok
+        {
+            float[] data = new float[8];
+
+            Vector3 newPos = position * Matrix3.CreateFromQuaternion(preRotation);
+
+            data[0] = newPos.X;
+            data[1] = newPos.Y;
+            data[2] = newPos.Z;
+            data[3] = colour.X;
+            data[4] = colour.Y;
+            data[5] = colour.Z;
+            data[6] = texCoord.X;
+            data[7] = texCoord.Y;
+
+            return data;
+        }
     }
 }

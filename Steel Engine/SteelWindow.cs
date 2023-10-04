@@ -43,6 +43,9 @@ namespace Steel_Engine
 
             GL.Enable(EnableCap.DepthTest);
 
+            GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+
             originalSize = Size;
             InfoManager.windowSize = Size;
             InfoManager.engineCamera = new Camera(Vector3.UnitZ * 3, Size.X / Size.Y);
@@ -54,32 +57,7 @@ namespace Steel_Engine
             SceneManager.LoadScene(0);
 
             // load ui
-            GUIText simulatingText = new GUIText(new Vector3(0, -3.5f, 0), new Vector2(0f, -1f), 0.07f, "Not Simulating", @"C:\Windows\Fonts\Arial.ttf", 300f);
-            simulatingText.PreloadText("Simulating");
-
-            GUIButton testButton = new GUIButton(new Vector3(0, -5f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), "Arrow1", ".png");
-            testButton.SetPressedImage("Arrow2", ".png");
-            testButton.buttonDown += OnTestButtonDown;
-            testButton.buttonHold += OnTestButtonHold;
-            testButton.buttonUp += OnTestButtonUp;
-
-            GUIManager.AddGUIElement(simulatingText);
-            GUIManager.AddGUIElement(testButton);
-        }
-
-        private void OnTestButtonDown()
-        {
-            Console.WriteLine("the test button has been pressed!");
-        }
-
-        private void OnTestButtonHold(float deltaTime)
-        {
-            SceneManager.gameObjects[0].position += new Vector3(1f, 0, 0) * deltaTime;
-        }
-
-        private void OnTestButtonUp()
-        {
-            Console.WriteLine("the test button has been unpressed!");
+            GUIManager.LoadEngineGUI();
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -100,7 +78,7 @@ namespace Steel_Engine
             if (input.IsKeyPressed(Keys.R))
             {
                 SceneManager.gameRunning = !SceneManager.gameRunning;
-                GUIText text = (GUIText)GUIManager.GetElementByID(0);
+                GUIText text = (GUIText)GUIManager.GetElementByName("topbarSimText");
                 text.SetText(SceneManager.gameRunning ? "Simulating" : "Not Simulating");
             }
 
