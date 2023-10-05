@@ -62,9 +62,9 @@ namespace Steel_Engine.GUI
     public class GUIElement
     {
         public int renderOrder = 0;
+        public int localRenderOrder = 0;
         public string name;
         public float zRotation;
-        public Vector2 position; // arbitrary units
         public Vector3 addedPosition;
         public Vector2 anchor;
         public GUIElement parentGUI = null;
@@ -100,7 +100,7 @@ namespace Steel_Engine.GUI
             {
                 addedPosition = parentGUI.addedPosition;
                 anchor = parentGUI.anchor;
-                renderOrder = parentGUI.renderOrder+1;
+                renderOrder = parentGUI.renderOrder+1+localRenderOrder;
             }
         }
 
@@ -326,6 +326,31 @@ namespace Steel_Engine.GUI
             renderObject.LoadTexture(InfoManager.currentDir + @$"\Temp\{text}.png");
         }
 
+        public GUIText(Vector3 position, Vector2 anchor, float scale, string text, string font, float size, Vector4 bgColour, Vector4 textColour) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
+        {
+            ApplyTexture(GUIManager.Write_Text(text, font, size, bgColour, textColour));
+
+            this.bgColour = bgColour;
+
+            this.text = text;
+            this.font = font;
+            this.size = size;
+
+            if (!textures.Contains(text))
+                textures.Add(text);
+
+            texture.Save(InfoManager.currentDir + @$"\Temp\{text}.png");
+
+            this.scale = scale;
+
+            rect = new Rectangle();
+            rect.X = 0;
+            rect.Y = 0;
+            rect.Width = texture.Width;
+            rect.Height = texture.Height;
+            renderObject.LoadTexture(InfoManager.currentDir + @$"\Temp\{text}.png");
+        }
+
         public void PreloadText(string text)
         {
             string normalText = this.text;
@@ -376,18 +401,19 @@ namespace Steel_Engine.GUI
 
         public GUIImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector4 colour) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            Bitmap image = new Bitmap(1, 1);
-            image.SetPixel(0, 0, Color.FromArgb((int)colour.W, (int)colour.X, (int)colour.Y, (int)colour.Z));
-            image.Save(InfoManager.currentDir + @$"/Temp/{(colour)}");
-            renderObject.LoadTexture(InfoManager.currentDir + @$"/Temp/{(colour)}");
+            Bitmap genImage = new Bitmap(1, 1);
+            genImage.SetPixel(0, 0, Color.FromArgb((int)colour.W, (int)colour.X, (int)colour.Y, (int)colour.Z));
+            genImage.Save(InfoManager.currentDir + @$"/Temp/{(colour)}.png");
+            image = Texture.LoadFromFile(InfoManager.currentDir + @$"/Temp/{(colour)}.png");
+            renderObject.LoadTexture(image);
             renderObject.Load();
             this.scale = scale;
         }
 
         public GUIImage(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string textureExtention) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            renderObject.LoadTexture(InfoManager.dataPath + @$"/Textures/{texture}{textureExtention}");
             image = Texture.LoadFromFile(InfoManager.dataPath + @$"/Textures/{texture}{textureExtention}");
+            renderObject.LoadTexture(image);
             this.scale = scale;
         }
 
@@ -395,6 +421,52 @@ namespace Steel_Engine.GUI
         {
             renderObject.scale = new Vector3(scale.X, scale.Y, 1f);
             base.Render();
+        }
+    }
+
+    public class GUIWorldImage : GUIElement
+    {
+        public Vector2 scale;
+        public Texture image = null;
+
+        public GUIWorldImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector3 colour) : base(position, anchor, RenderShader.ShadeFlat, RenderShader.ShadeFlat)
+        {
+            renderObject.mesh.SetColour(colour);
+            renderObject.Load();
+            this.scale = scale;
+        }
+
+        public GUIWorldImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector4 colour) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
+        {
+            Bitmap genImage = new Bitmap(1, 1);
+            genImage.SetPixel(0, 0, Color.FromArgb((int)colour.W, (int)colour.X, (int)colour.Y, (int)colour.Z));
+            genImage.Save(InfoManager.currentDir + @$"/Temp/{(colour)}.png");
+            image = Texture.LoadFromFile(InfoManager.currentDir + @$"/Temp/{(colour)}.png");
+            renderObject.LoadTexture(image);
+            renderObject.Load();
+            this.scale = scale;
+        }
+
+        public GUIWorldImage(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string textureExtention) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
+        {
+            image = Texture.LoadFromFile(InfoManager.dataPath + @$"/Textures/{texture}{textureExtention}");
+            renderObject.LoadTexture(image);
+            this.scale = scale;
+        }
+
+        public GUIWorldImage(Vector3 position, Vector2 anchor, Vector2 scale, string texturePath) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
+        {
+            image = Texture.LoadFromFile(texturePath);
+            renderObject.LoadTexture(image);
+            this.scale = scale;
+        }
+
+        public override void Render()
+        {
+            renderObject.scale = new Vector3(scale.X, scale.Y, 1f);
+            renderObject.SetRotation(InfoManager.engineCamera.GetViewMatrix().ExtractRotation().Inverted());
+            renderObject.position = addedPosition;
+            renderObject.Render();
         }
     }
 

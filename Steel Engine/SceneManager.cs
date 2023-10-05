@@ -59,7 +59,7 @@ namespace Steel_Engine
                     string[] parts = newLine.Split(" ");
                     RenderShader vertShader = RenderShader.ShadeFlat;
                     RenderShader fragShader = RenderShader.ShadeFlat;
-                    switch (parts[1])
+                    switch (parts[2])
                     {
                         case "SL":
                             vertShader = RenderShader.ShadeLighting;
@@ -68,7 +68,7 @@ namespace Steel_Engine
                             vertShader = RenderShader.ShadeTextureUnit;
                             break;
                     }
-                    switch (parts[2])
+                    switch (parts[3])
                     {
                         case "SL":
                             fragShader = RenderShader.ShadeLighting;
@@ -79,17 +79,18 @@ namespace Steel_Engine
                     }
                     GameObject go = new GameObject(vertShader, fragShader);
                     go.id = int.Parse(parts[0]);
-                    go.position = new Vector3(float.Parse(parts[3]), float.Parse(parts[4]), float.Parse(parts[5]));
-                    go.SetRotation(new Vector3(float.Parse(parts[6]), float.Parse(parts[7]), float.Parse(parts[8])));
-                    go.scale = new Vector3(float.Parse(parts[9]), float.Parse(parts[10]), float.Parse(parts[11]));
-                    go.mesh = OBJImporter.LoadOBJ(parts[12], bool.Parse(parts[13]));
-                    if (parts.Length > 14)
+                    go.name = parts[1];
+                    go.position = new Vector3(float.Parse(parts[4]), float.Parse(parts[5]), float.Parse(parts[6]));
+                    go.SetRotation(new Vector3(float.Parse(parts[7]), float.Parse(parts[8]), float.Parse(parts[9])));
+                    go.scale = new Vector3(float.Parse(parts[10]), float.Parse(parts[11]), float.Parse(parts[12]));
+                    go.mesh = OBJImporter.LoadOBJ(parts[13], bool.Parse(parts[14]));
+                    if (parts.Length > 15)
                     {
-                        go.mesh.SetColour(new Vector3(float.Parse(parts[14]), float.Parse(parts[15]), float.Parse(parts[16])));
+                        go.mesh.SetColour(new Vector3(float.Parse(parts[15]), float.Parse(parts[16]), float.Parse(parts[17])));
                     }
-                    if (parts.Length > 17)
+                    if (parts.Length > 18)
                     {
-                        string[] imageParts = parts[17].Split(".");
+                        string[] imageParts = parts[18].Split(".");
                         go.LoadTexture(imageParts[0], "."+imageParts[1]);
                     }
                     scene.gameObjects.Add(go);

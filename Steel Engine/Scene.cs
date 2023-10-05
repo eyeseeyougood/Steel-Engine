@@ -21,11 +21,8 @@ namespace Steel_Engine
 
         public void AddLight(Vector3 pos, Vector3 colour, float intensity)
         {
-            LightObject lo = new LightObject();
-            lo.position = pos;
-            lo.colour = colour;
-            lo.intensity = intensity;
-            lightObjects.Add(lo);
+            LightObject light = LightManager.AddLight(pos, colour, intensity);
+            lightObjects.Add(light);
         }
     }
 }

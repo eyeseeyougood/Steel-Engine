@@ -70,19 +70,21 @@ namespace Steel_Engine.GUI
             heirarchyObjects.Clear();
             foreach (GameObject gameObject in SceneManager.gameObjects)
             {
-                //new Vector3(-12f, -10f*heirarchyObjects.Count -35f, 0)
-                GUIButton heirarchyButtonObject = new GUIButton(new Vector3(39, -5f * heirarchyObjects.Count - 35f, 0), new Vector2(-1f, -1f), new Vector2(0.38f, 0.03f));
-                //heirarchyButtonObject.visible = false;
+                GUIButton heirarchyButtonObject = new GUIButton(new Vector3(39, -3.5f * heirarchyObjects.Count - 35f, 0), new Vector2(-1f, -1f), new Vector2(0.38f, 0.03f));
+                heirarchyButtonObject.visible = false;
                 heirarchyButtonObject.renderOrder = -1;
-                GUIImage heirarchyImageObject = new GUIImage(Vector3.Zero, Vector2.Zero, new Vector2(0.38f, 0.03f), new Vector4(0, 0, 0, 50));
-                GUIText heirarchyTextObject = new GUIText(Vector3.Zero, Vector2.Zero, 0.07f, gameObject.id.ToString(), @"C:\Windows\Fonts\Arial.ttf", 200f, new Vector4(0, 0, 0, 0));
+                GUIImage heirarchyImageObject = new GUIImage(Vector3.Zero, Vector2.Zero, new Vector2(0.38f, 0.03f), new Vector4(0, 0, 0, 100));
+                heirarchyImageObject.parentGUI = heirarchyButtonObject;
+                GUIText heirarchyTextObject = new GUIText(Vector3.Zero, Vector2.Zero, 0.07f, gameObject.name, @"C:\Windows\Fonts\Arial.ttf", 200f, new Vector4(0, 0, 0, 0), new Vector4(200, 200, 200, 255));
                 heirarchyTextObject.name = gameObject.id.ToString() + " text object";
                 heirarchyTextObject.parentGUI = heirarchyButtonObject;
+                heirarchyTextObject.localRenderOrder = 1;
                 heirarchyObjects.Add(heirarchyTextObject);
                 heirarchyObjects.Add(heirarchyButtonObject);
+                heirarchyObjects.Add(heirarchyImageObject);
                 AddGUIElement(heirarchyTextObject);
-                AddGUIElement(heirarchyButtonObject);
                 AddGUIElement(heirarchyImageObject);
+                AddGUIElement(heirarchyButtonObject);
             }
 
             AddGUIElement(simulatingText);
@@ -183,8 +185,30 @@ namespace Steel_Engine.GUI
             rect.Height = (int)MathF.Round(result.Height);
             rect.X = 0;
             rect.Y = 0;
-            Color bgColour = Color.FromArgb((int)bg255.W, (int)bg255.Y, (int)bg255.Z, (int)bg255.X);
+            Color bgColour = Color.FromArgb((int)bg255.W, (int)bg255.X, (int)bg255.Y, (int)bg255.Z);
             return Write_Text(bmp, text, rect, true, fontName, false, false, bgColour);
+        }
+
+        public static Bitmap Write_Text(string text, string fontName, float size, Vector4 bg255, Vector4 font255)
+        {
+            Font f = new Font(fontName, size, GraphicsUnit.Pixel);
+            SizeF result;
+            using (Bitmap b = new Bitmap(100, 100))
+            {
+                using (Graphics g = Graphics.FromImage(b))
+                {
+                    result = g.MeasureString(text, f);
+                }
+            }
+            Bitmap bmp = new Bitmap((int)MathF.Round(result.Width) + 1, (int)MathF.Round(result.Height) + 1);
+            Rectangle rect = new Rectangle();
+            rect.Width = (int)MathF.Round(result.Width);
+            rect.Height = (int)MathF.Round(result.Height);
+            rect.X = 0;
+            rect.Y = 0;
+            Color bgColour = Color.FromArgb((int)bg255.W, (int)bg255.X, (int)bg255.Y, (int)bg255.Z);
+            Color fontColour = Color.FromArgb((int)font255.W, (int)font255.X, (int)font255.Y, (int)font255.Z);
+            return Write_Text(bmp, text, rect, true, fontName, false, false, bgColour, fontColour);
         }
 
         public static Bitmap Write_Text(string text, string fontName, float size, Rectangle destRect, Rectangle fullRect)
@@ -268,6 +292,67 @@ namespace Steel_Engine.GUI
                     if (i.GetPixel(x, y) == Color.FromArgb(0, 0, 0, 0))
                     {
                         i.SetPixel(x, y, bgColour);
+                    }
+                    x++;
+                }
+                y++;
+            }
+            return i;
+        }
+
+        public static Bitmap Write_Text(Bitmap i, string s, Rectangle r, bool centered, string font, bool bold, bool italic, Color bgColour, Color fontColour)
+        {
+            //Since we want to avoid out of bounds errors make sure the rectangle remains within the bounds of the bitmap
+            //and only execute if it does
+            if (r.X >= 0 && r.Y >= 0 && (r.X + r.Width < i.Width) && (r.Y + r.Height < i.Height))
+            {
+                //Step one is to make a graphics object that will draw the text in place
+                using (Graphics g = Graphics.FromImage(i))
+                {
+                    //Set some of the graphics properties so that the text renders nicely
+                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    //Compositing Mode can't be set since string needs source over to be valid
+                    g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+                    g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                    g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+                    //And an additional step to make sure text is proper anti-aliased and takes advantage
+                    //of clear type as necessary
+                    g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+
+                    //this also requires a font object we need to make sure we dispose of properly
+                    using (Font f = Generate_Font(s, font, r, bold, italic))
+                    {
+                        //the using function actually makes sure the font is as large as it can be for the 
+                        //purpose of fitting the rectangle we just need to check if its centered
+                        using (StringFormat format = new StringFormat())
+                        {
+                            //the format won't always be doing anything but
+                            //just in case we need it
+                            //and if the text is centered we need to tell the formatting
+                            if (centered)
+                            {
+                                format.Alignment = StringAlignment.Center;
+                                format.Alignment = StringAlignment.Center;
+                            }
+                            //and draw the text into place
+                            g.DrawString(s, f, Brushes.Black, r, format);
+                        }
+                    }
+                }
+            }
+            int y = 0;
+            while (y < i.Height)
+            {
+                int x = 0;
+                while (x < i.Width)
+                {
+                    if (i.GetPixel(x, y) == Color.FromArgb(0, 0, 0, 0))
+                    {
+                        i.SetPixel(x, y, bgColour);
+                    }
+                    else if (i.GetPixel(x, y) == Color.FromArgb(255, 0, 0, 0))
+                    {
+                        i.SetPixel(x, y, fontColour);
                     }
                     x++;
                 }

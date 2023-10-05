@@ -68,8 +68,6 @@ namespace Steel_Engine
 
             var input = KeyboardState;
 
-            SceneManager.gameObjects[1].position = LightManager.lights[0].position;
-
             if (input.IsKeyPressed(Keys.Escape))
             {
                 CursorState = CursorState == CursorState.Normal ? CursorState.Grabbed : CursorState.Normal;
@@ -82,30 +80,9 @@ namespace Steel_Engine
                 text.SetText(SceneManager.gameRunning ? "Simulating" : "Not Simulating");
             }
 
-            // Test Code --
-            if (input.IsKeyDown(Keys.Left))
-            {
-                LightManager.lights[0].position += new Vector3(-1, 0, 0) * (float)args.Time;
-            }
-
-            if (input.IsKeyDown(Keys.Right))
-            {
-                LightManager.lights[0].position += new Vector3(1, 0, 0) * (float)args.Time;
-            }
-
-            if (input.IsKeyDown(Keys.Up))
-            {
-                LightManager.lights[0].position += new Vector3(0, 1, 0) * (float)args.Time;
-            }
-
-            if (input.IsKeyDown(Keys.Down))
-            {
-                LightManager.lights[0].position += new Vector3(0, -1, 0) * (float)args.Time;
-            }
-            // ------
-
             GUIManager.Tick((float)args.Time, MousePosition, MouseState);
             SceneManager.Tick(args.Time);
+            LightManager.Tick();
 
             InfoManager.engineCamera.Tick(input, args.Time, CursorState, MouseState);
         }
@@ -126,6 +103,7 @@ namespace Steel_Engine
             }
 
             GL.Disable(EnableCap.DepthTest);
+            GizmoManager.RenderGizmos();
             GUIManager.Render();
 
             SwapBuffers();
