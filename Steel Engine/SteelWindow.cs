@@ -14,16 +14,6 @@ namespace Steel_Engine
 {
     internal class SteelWindow : GameWindow
     {
-        private bool firstMove = true;
-
-        private Vector2 lastPos;
-
-        private double upTime;
-
-        private Stopwatch timer;
-
-        private Vector2 originalSize;
-
         public SteelWindow(GameWindowSettings settings, NativeWindowSettings nativeSettings) : base(settings, nativeSettings)
         {
         }
@@ -46,7 +36,6 @@ namespace Steel_Engine
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
-            originalSize = Size;
             InfoManager.windowSize = Size;
             InfoManager.engineCamera = new Camera(Vector3.UnitZ * 3, Size.X / Size.Y);
 
@@ -91,8 +80,8 @@ namespace Steel_Engine
         {
             base.OnRenderFrame(args);
 
-            upTime += args.Time; // deltaTime time is args.Time
             double deltaTime = args.Time;
+            InfoManager.upTime += deltaTime;
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 

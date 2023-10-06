@@ -18,5 +18,7 @@ namespace Steel_Engine
         public static Camera engineCamera;
 
         public static Vector2 windowSize;
+
+        public static double upTime;
     }
 }
