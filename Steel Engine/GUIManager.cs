@@ -14,6 +14,8 @@ namespace Steel_Engine.GUI
         public static List<GUIElement> guiElements = new List<GUIElement>();
         public static List<GUIElement> heirarchyObjects = new List<GUIElement>();
 
+        public static GUIElement selectedHeirarchyObject = null;
+
         public static void LoadEngineGUI()
         {
             // TopBar
@@ -73,8 +75,11 @@ namespace Steel_Engine.GUI
                 GUIButton heirarchyButtonObject = new GUIButton(new Vector3(39, -3.5f * heirarchyObjects.Count - 35f, 0), new Vector2(-1f, -1f), new Vector2(0.38f, 0.03f));
                 heirarchyButtonObject.visible = false;
                 heirarchyButtonObject.renderOrder = -1;
+                heirarchyButtonObject.name = gameObject.id.ToString() + " button object";
+                heirarchyButtonObject.buttonDown += EngineGUIEventManager.SelectHeirarchyObject;
                 GUIImage heirarchyImageObject = new GUIImage(Vector3.Zero, Vector2.Zero, new Vector2(0.38f, 0.03f), new Vector4(0, 0, 0, 100));
                 heirarchyImageObject.parentGUI = heirarchyButtonObject;
+                heirarchyImageObject.name = gameObject.id.ToString() + " image object";
                 GUIText heirarchyTextObject = new GUIText(Vector3.Zero, Vector2.Zero, 0.07f, gameObject.name, @"C:\Windows\Fonts\Arial.ttf", 200f, new Vector4(0, 0, 0, 0), new Vector4(200, 200, 200, 255));
                 heirarchyTextObject.name = gameObject.id.ToString() + " text object";
                 heirarchyTextObject.parentGUI = heirarchyButtonObject;

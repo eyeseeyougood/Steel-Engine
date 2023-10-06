@@ -69,54 +69,54 @@ namespace Steel_Engine.Common
             }
         }
 
-        public void Tick(KeyboardState input, double deltaTime, CursorState cursorState, MouseState mouseState)
+        public void Tick(double deltaTime)
         {
-            if (cursorState == CursorState.Normal)
+            if (InputManager.GetCursorState() == CursorState.Normal)
                 return;
 
-            var mouse = mouseState;
+            Vector2 mousePosition = InputManager.mousePosition;
 
             if (firstMove)
             {
-                lastPos = new Vector2(mouse.X, mouse.Y);
+                lastPos = new Vector2(mousePosition.X, mousePosition.Y);
                 firstMove = false;
             }
             else
             {
-                var deltaX = mouse.X - lastPos.X;
-                var deltaY = mouse.Y - lastPos.Y;
-                lastPos = new Vector2(mouse.X, mouse.Y);
+                var deltaX = mousePosition.X - lastPos.X;
+                var deltaY = mousePosition.Y - lastPos.Y;
+                lastPos = new Vector2(mousePosition.X, mousePosition.Y);
 
                 Yaw += deltaX * sensitivity;
                 Pitch -= deltaY * sensitivity;
             }
 
-            if (input.IsKeyDown(Keys.W))
+            if (InputManager.GetKey(Keys.W))
             {
                 Position += Front * cameraSpeed * (float)deltaTime;
             }
 
-            if (input.IsKeyDown(Keys.S))
+            if (InputManager.GetKey(Keys.S))
             {
                 Position -= Front * cameraSpeed * (float)deltaTime;
             }
 
-            if (input.IsKeyDown(Keys.A))
+            if (InputManager.GetKey(Keys.A))
             {
                 Position -= Right * cameraSpeed * (float)deltaTime;
             }
 
-            if (input.IsKeyDown(Keys.D))
+            if (InputManager.GetKey(Keys.D))
             {
                 Position += Right * cameraSpeed * (float)deltaTime;
             }
 
-            if (input.IsKeyDown(Keys.E))
+            if (InputManager.GetKey(Keys.E))
             {
                 Position += Up * cameraSpeed * (float)deltaTime;
             }
 
-            if (input.IsKeyDown(Keys.Q))
+            if (InputManager.GetKey(Keys.Q))
             {
                 Position -= Up * cameraSpeed * (float)deltaTime;
             }

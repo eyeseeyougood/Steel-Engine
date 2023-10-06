@@ -40,6 +40,18 @@ namespace Steel_Engine
             }
         }
 
+        public static GameObject GetGameObjectByID(int id)
+        {
+            foreach (GameObject gameObject in gameObjects)
+            {
+                if (gameObject.id == id)
+                {
+                    return gameObject;
+                }
+            }
+            return null;
+        }
+
         private static Scene ConstructScene(string[] lines)
         {
             Scene scene = new Scene();
@@ -139,10 +151,10 @@ namespace Steel_Engine
             }
         }
 
-        public static SteelRay CalculateRay(MouseState mouseState)
+        public static SteelRay CalculateRay(Vector2 mousePosition)
         {
-            float mouseX = mouseState.X;
-            float mouseY = mouseState.Y;
+            float mouseX = mousePosition.X;
+            float mouseY = mousePosition.Y;
 
             int viewportWidth = 1920;
             int viewportHeight = 1080;

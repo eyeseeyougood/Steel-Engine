@@ -66,25 +66,25 @@ namespace Steel_Engine
 
             if (!IsFocused) { return; }
 
-            var input = KeyboardState;
+            InputManager.Tick(KeyboardState, MouseState, CursorState);
 
-            if (input.IsKeyPressed(Keys.Escape))
+            if (InputManager.GetKeyDown(Keys.Escape))
             {
                 CursorState = CursorState == CursorState.Normal ? CursorState.Grabbed : CursorState.Normal;
             }
 
-            if (input.IsKeyPressed(Keys.R))
+            if (InputManager.GetKeyDown(Keys.R))
             {
                 SceneManager.gameRunning = !SceneManager.gameRunning;
                 GUIText text = (GUIText)GUIManager.GetElementByName("topbarSimText");
                 text.SetText(SceneManager.gameRunning ? "Simulating" : "Not Simulating");
             }
 
-            GUIManager.Tick((float)args.Time, MousePosition, MouseState);
+            GUIManager.Tick((float)args.Time);
             SceneManager.Tick(args.Time);
             LightManager.Tick();
 
-            InfoManager.engineCamera.Tick(input, args.Time, CursorState, MouseState);
+            InfoManager.engineCamera.Tick(args.Time);
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)

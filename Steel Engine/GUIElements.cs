@@ -139,20 +139,20 @@ namespace Steel_Engine.GUI
 
     public class GUIButton : GUIElement
     {
-        public delegate void GUIButtonDown();
+        public delegate void GUIButtonDown(string buttonName, params object[] args);
         public event GUIButtonDown buttonDown = new GUIButtonDown(_ButtonDown);
-        public delegate void GUIButtonHold(float deltaTime);
+        public delegate void GUIButtonHold(float deltaTime, string buttonName, params object[] args);
         public event GUIButtonHold buttonHold = new GUIButtonHold(_ButtonHold);
-        public delegate void GUIButtonUp();
+        public delegate void GUIButtonUp(string buttonName, params object[] args);
         public event GUIButtonUp buttonUp = new GUIButtonUp(_ButtonUp);
         Vector2 scale;
         private Texture normalImage = null;
         private Texture pressedImage = null;
         private Texture currentImage = null;
 
-        private static void _ButtonDown() { }
-        private static void _ButtonHold(float deltaTime) { }
-        private static void _ButtonUp() { }
+        private static void _ButtonDown(string buttonName, params object[] args) { }
+        private static void _ButtonHold(float deltaTime, string buttonName, params object[] args) { }
+        private static void _ButtonUp(string buttonName, params object[] args) { }
 
         public void SetPressedImage(string name, string extention)
         {
@@ -161,32 +161,29 @@ namespace Steel_Engine.GUI
 
         public override void Tick(float deltaTime, params object[] args)
         {
-            Vector2 mousePosition = (Vector2)args[0];
-            // args [0] is always a vector 2 of the mouse position
-            MouseState mouseState = (MouseState)args[1];
-            bool mouseDown = mouseState.IsButtonDown(MouseButton.Left);
-            bool mousePressed = mouseState.IsButtonPressed(MouseButton.Left);
-            bool mouseUp = mouseState.IsButtonReleased(MouseButton.Left);
-            // args [1] is always the mouse state
+            Vector2 mousePosition = InputManager.mousePosition;
+            bool mousePressed = InputManager.GetMouseButtonDown(MouseButton.Left);
+            bool mouseDown = InputManager.GetMouseButton(MouseButton.Left);
+            bool mouseUp = InputManager.GetMouseButtonUp(MouseButton.Left);
             if (mousePressed)
             {
-                if (CheckBounds(mouseState))
+                if (CheckBounds(mousePosition))
                 {
-                    buttonDown.Invoke();
+                    buttonDown.Invoke(name);
                 }
             }
             if (mouseUp)
             {
-                if (CheckBounds(mouseState))
+                if (CheckBounds(mousePosition))
                 {
-                    buttonUp.Invoke();
+                    buttonUp.Invoke(name);
                 }
             }
             if (mouseDown)
             {
-                if (CheckBounds(mouseState))
+                if (CheckBounds(mousePosition))
                 {
-                    buttonHold.Invoke(deltaTime);
+                    buttonHold.Invoke(deltaTime, name);
                     if (pressedImage != null)
                     {
                         renderObject.LoadTexture(pressedImage);
@@ -206,12 +203,12 @@ namespace Steel_Engine.GUI
             base.Tick(deltaTime, args);
         }
 
-        private bool CheckBounds(MouseState mouseState)
+        private bool CheckBounds(Vector2 mousePosition)
         {
             bool result = false;
 
             // Step 1: find line plane intersection point
-            SteelRay ray = SceneManager.CalculateRay(mouseState);
+            SteelRay ray = SceneManager.CalculateRay(mousePosition);
             SteelTriangle triangle = renderObject.mesh.triangles[0];
             Vector3 p1 = triangle.GetVertex(0).position;
             p1 = renderObject.position + InfoManager.engineCamera.Right * p1.X * renderObject.scale.X + InfoManager.engineCamera.Up * p1.Y * renderObject.scale.Y;
@@ -399,11 +396,23 @@ namespace Steel_Engine.GUI
             this.scale = scale;
         }
 
+        public void SetColour(Vector4 colour)
+        {
+            Bitmap genImage = new Bitmap(1, 1);
+            genImage.SetPixel(0, 0, Color.FromArgb((int)colour.W, (int)colour.X, (int)colour.Y, (int)colour.Z));
+            genImage.Save(InfoManager.currentDir + @$"/Temp/{(colour)}.png");
+            textures.Add(colour.ToString());
+            image = Texture.LoadFromFile(InfoManager.currentDir + @$"/Temp/{(colour)}.png");
+            renderObject.LoadTexture(image);
+            renderObject.Load();
+        }
+
         public GUIImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector4 colour) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
             Bitmap genImage = new Bitmap(1, 1);
             genImage.SetPixel(0, 0, Color.FromArgb((int)colour.W, (int)colour.X, (int)colour.Y, (int)colour.Z));
             genImage.Save(InfoManager.currentDir + @$"/Temp/{(colour)}.png");
+            textures.Add(colour.ToString());
             image = Texture.LoadFromFile(InfoManager.currentDir + @$"/Temp/{(colour)}.png");
             renderObject.LoadTexture(image);
             renderObject.Load();
@@ -495,30 +504,27 @@ namespace Steel_Engine.GUI
 
         public override void Tick(float deltaTime, params object[] args)
         {
-            Vector2 mousePosition = (Vector2)args[0];
-            // args [0] is always a vector 2 of the mouse position
-            MouseState mouseState = (MouseState)args[1];
-            bool mouseDown = mouseState.IsButtonDown(MouseButton.Left);
-            bool mousePressed = mouseState.IsButtonPressed(MouseButton.Left);
-            bool mouseUp = mouseState.IsButtonReleased(MouseButton.Left);
-            // args [1] is always the mouse state
+            Vector2 mousePosition = InputManager.mousePosition;
+            bool mousePressed = InputManager.GetMouseButtonDown(MouseButton.Left);
+            bool mouseDown = InputManager.GetMouseButton(MouseButton.Left);
+            bool mouseUp = InputManager.GetMouseButtonUp(MouseButton.Left);
             if (mousePressed)
             {
-                if (CheckBounds(mouseState))
+                if (CheckBounds(mousePosition))
                 {
                     buttonDown.Invoke();
                 }
             }
             if (mouseUp)
             {
-                if (CheckBounds(mouseState))
+                if (CheckBounds(mousePosition))
                 {
                     buttonUp.Invoke();
                 }
             }
             if (mouseDown)
             {
-                if (CheckBounds(mouseState))
+                if (CheckBounds(mousePosition))
                 {
                     buttonHold.Invoke(deltaTime);
                     if (pressedImage != null)
@@ -540,12 +546,12 @@ namespace Steel_Engine.GUI
             base.Tick(deltaTime, args);
         }
 
-        private bool CheckBounds(MouseState mouseState)
+        private bool CheckBounds(Vector2 mousePosition)
         {
             bool result = false;
 
             // Step 1: find line plane intersection point
-            SteelRay ray = SceneManager.CalculateRay(mouseState);
+            SteelRay ray = SceneManager.CalculateRay(mousePosition);
             SteelTriangle triangle = renderObject.mesh.triangles[0];
             Vector3 p1 = triangle.GetVertex(0).position;
             p1 = renderObject.position + InfoManager.engineCamera.Right * p1.X * renderObject.scale.X + InfoManager.engineCamera.Up * p1.Y * renderObject.scale.Y + InfoManager.engineCamera.Front * p1.Z * renderObject.scale.Z;
