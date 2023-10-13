@@ -10,6 +10,41 @@ namespace Steel_Engine
 {
     public class EngineGUIEventManager
     {
+        public static void AddComponentEvent(string buttonName, params object[] args)
+        {
+            if (GUIManager.selectedHeirarchyObject != null)
+            {
+                // make pop-up
+            }
+        }
+
+        public static void CreateEmpty(string buttonName, params object[] args)
+        {
+            GameObject go = new GameObject(RenderShader.ShadeFlat, RenderShader.ShadeFlat);
+            go.id = SceneManager.gameObjects.Count+1;
+            go.name = "GameObject #" + go.id.ToString();
+            SceneManager.gameObjects.Add(go);
+            // make heirarchy object
+            GUIButton heirarchyButtonObject = new GUIButton(new Vector3(39, -3.5f * GUIManager.heirarchyObjects.Count - 35f, 0), new Vector2(-1f, -1f), new Vector2(0.38f, 0.03f));
+            heirarchyButtonObject.visible = false;
+            heirarchyButtonObject.renderOrder = -1;
+            heirarchyButtonObject.name = go.id.ToString() + " button object";
+            heirarchyButtonObject.buttonDown += EngineGUIEventManager.SelectHeirarchyObject;
+            GUIImage heirarchyImageObject = new GUIImage(Vector3.Zero, Vector2.Zero, new Vector2(0.38f, 0.03f), new Vector4(0, 0, 0, 100));
+            heirarchyImageObject.parentGUI = heirarchyButtonObject;
+            heirarchyImageObject.name = go.id.ToString() + " image object";
+            GUIText heirarchyTextObject = new GUIText(Vector3.Zero, Vector2.Zero, 0.07f, go.name, @"C:\Windows\Fonts\Arial.ttf", 200f, new Vector4(0, 0, 0, 0), new Vector4(200, 200, 200, 255));
+            heirarchyTextObject.name = go.id.ToString() + " text object";
+            heirarchyTextObject.parentGUI = heirarchyButtonObject;
+            heirarchyTextObject.localRenderOrder = 1;
+            GUIManager.heirarchyObjects.Add(heirarchyTextObject);
+            GUIManager.heirarchyObjects.Add(heirarchyButtonObject);
+            GUIManager.heirarchyObjects.Add(heirarchyImageObject);
+            GUIManager.heirarchyQueue.Add(heirarchyTextObject);
+            GUIManager.heirarchyQueue.Add(heirarchyButtonObject);
+            GUIManager.heirarchyQueue.Add(heirarchyImageObject);
+        }
+
         public static void XPButtonHold(float deltaTime, string buttonName, params object[] args)
         {
             float speed = 1;

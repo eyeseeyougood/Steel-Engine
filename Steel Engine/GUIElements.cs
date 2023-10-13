@@ -47,7 +47,7 @@ namespace Steel_Engine.GUI
     {
         public int Compare(GUIElement a, GUIElement b)
         {
-            if (a.renderOrder <= b.renderOrder)
+            if (a.renderOrder < b.renderOrder)
             {
                 return -1;
             }
@@ -55,7 +55,10 @@ namespace Steel_Engine.GUI
             {
                 return 1;
             }
-            return -1;
+            else
+            {
+                return 0;
+            }
         }
     }
 
@@ -159,6 +162,11 @@ namespace Steel_Engine.GUI
             pressedImage = Texture.LoadFromFile(InfoManager.dataPath + @$"/Textures/{name}{extention}");
         }
 
+        public void SetPressedImage(string path)
+        {
+            pressedImage = Texture.LoadFromFile(path);
+        }
+
         public override void Tick(float deltaTime, params object[] args)
         {
             Vector2 mousePosition = InputManager.mousePosition;
@@ -255,6 +263,13 @@ namespace Steel_Engine.GUI
         public GUIButton(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string textureExtention) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
             normalImage = Texture.LoadFromFile(InfoManager.dataPath + @$"/Textures/{texture}{textureExtention}");
+            renderObject.LoadTexture(normalImage);
+            this.scale = scale;
+        }
+
+        public GUIButton(Vector3 position, Vector2 anchor, Vector2 scale, string texturePath) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
+        {
+            normalImage = Texture.LoadFromFile(texturePath);
             renderObject.LoadTexture(normalImage);
             this.scale = scale;
         }

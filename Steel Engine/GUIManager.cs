@@ -13,6 +13,8 @@ namespace Steel_Engine.GUI
     {
         public static List<GUIElement> guiElements = new List<GUIElement>();
         public static List<GUIElement> heirarchyObjects = new List<GUIElement>();
+        public static List<GUIElement> heirarchyQueue = new List<GUIElement>();
+        public static List<GUIElement> inspectorObjects = new List<GUIElement>();
 
         public static GUIElement selectedHeirarchyObject = null;
 
@@ -27,48 +29,90 @@ namespace Steel_Engine.GUI
             simulatingText.PreloadText("Simulating");
             simulatingText.name = "topbarSimText";
             simulatingText.renderOrder = -1;
-            
-            GUIButton xpButton = new GUIButton(new Vector3(0, -12.5f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), "Arrow1", ".png");
-            xpButton.SetPressedImage("Arrow2", ".png");
+
+            string arrowPath = InfoManager.currentDir + @$"/EngineResources/EngineTextures/Arrow1.png";
+            string arrow2Path = InfoManager.currentDir + @$"/EngineResources/EngineTextures/Arrow2.png";
+            string plusB1Path = InfoManager.currentDir + @$"/EngineResources/EngineTextures/PlusButton1.png";
+            string plusB2Path = InfoManager.currentDir + @$"/EngineResources/EngineTextures/PlusButton2.png";
+            GUIButton xpButton = new GUIButton(new Vector3(0, -12.5f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), arrowPath);
+            xpButton.SetPressedImage(arrow2Path);
             xpButton.buttonHold += EngineGUIEventManager.XPButtonHold;
             xpButton.SetZRotation(0);
             xpButton.renderOrder = -1;
             
-            GUIButton xmButton = new GUIButton(new Vector3(-30f, -12.5f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), "Arrow1", ".png");
-            xmButton.SetPressedImage("Arrow2", ".png");
+            GUIButton xmButton = new GUIButton(new Vector3(-30f, -12.5f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), arrowPath);
+            xmButton.SetPressedImage(arrow2Path);
             xmButton.buttonHold += EngineGUIEventManager.XMButtonHold;
             xmButton.SetZRotation(180);
             xmButton.renderOrder = -1;
 
-            GUIButton ypButton = new GUIButton(new Vector3(-15f, -5f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), "Arrow1", ".png");
-            ypButton.SetPressedImage("Arrow2", ".png");
+            GUIButton ypButton = new GUIButton(new Vector3(-15f, -5f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), arrowPath);
+            ypButton.SetPressedImage(arrow2Path);
             ypButton.buttonHold += EngineGUIEventManager.YPButtonHold;
             ypButton.SetZRotation(-90);
             ypButton.renderOrder = -1;
 
-            GUIButton ymButton = new GUIButton(new Vector3(-15f, -20f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), "Arrow1", ".png");
-            ymButton.SetPressedImage("Arrow2", ".png");
+            GUIButton ymButton = new GUIButton(new Vector3(-15f, -20f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), arrowPath);
+            ymButton.SetPressedImage(arrow2Path);
             ymButton.buttonHold += EngineGUIEventManager.YMButtonHold;
             ymButton.SetZRotation(90);
             ymButton.renderOrder = -1;
 
-            GUIButton zpButton = new GUIButton(new Vector3(15f, -5f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), "Arrow1", ".png");
-            zpButton.SetPressedImage("Arrow2", ".png");
+            GUIButton zpButton = new GUIButton(new Vector3(15f, -5f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), arrowPath);
+            zpButton.SetPressedImage(arrow2Path);
             zpButton.buttonHold += EngineGUIEventManager.ZPButtonHold;
             zpButton.SetZRotation(-90);
             zpButton.renderOrder = -1;
 
-            GUIButton zmButton = new GUIButton(new Vector3(15f, -20f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), "Arrow1", ".png");
-            zmButton.SetPressedImage("Arrow2", ".png");
+            GUIButton zmButton = new GUIButton(new Vector3(15f, -20f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), arrowPath);
+            zmButton.SetPressedImage(arrow2Path);
             zmButton.buttonHold += EngineGUIEventManager.ZMButtonHold;
             zmButton.SetZRotation(90);
             zmButton.renderOrder = -1;
+
+            GUIButton createEmpty = new GUIButton(new Vector3(-7.5f, -20f, 0), new Vector2(-1f, -1f), new Vector2(0.05f, 0.05f), plusB1Path);
+            createEmpty.SetPressedImage(plusB2Path);
+            createEmpty.buttonDown += EngineGUIEventManager.CreateEmpty;
+            createEmpty.renderOrder = -1;
 
             // heirarchy
             GUIImage heirarchyBG = new GUIImage(new Vector3(39, -158f, 0), new Vector2(-1f, -1f), new Vector2(0.4f, 0.9f), new Vector3(45, 45, 45) / 255.0f);
             heirarchyBG.name = "heirarchyBG";
             heirarchyBG.renderOrder = -2;
 
+            RefreshHeirarchy();
+
+            // inspector
+            GUIImage inspectorBG = new GUIImage(new Vector3(-39, -158f, 0), new Vector2(1f, -1f), new Vector2(0.4f, 0.9f), new Vector3(45, 45, 45) / 255.0f);
+            inspectorBG.name = "inspectorBG";
+            inspectorBG.renderOrder = -2;
+
+            GUIButton addComponentButton = new GUIButton(new Vector3(-38f, -20f, 0), new Vector2(1f, -1f), new Vector2(0.285f, 0.05f));
+            addComponentButton.visible = false;
+            addComponentButton.buttonDown += EngineGUIEventManager.AddComponentEvent;
+            addComponentButton.renderOrder = -1;
+
+            GUIText addComponentText = new GUIText(Vector3.Zero, Vector2.Zero, 0.07f, "Add Component", @"C:\Windows\Fonts\Arial.ttf", 300f, new Vector4(0, 0, 0, 50));
+            addComponentText.name = "addComponentText";
+            addComponentText.parentGUI = addComponentButton;
+
+            AddGUIElement(simulatingText);
+            AddGUIElement(xpButton);
+            AddGUIElement(xmButton);
+            AddGUIElement(ypButton);
+            AddGUIElement(ymButton);
+            AddGUIElement(zpButton);
+            AddGUIElement(zmButton);
+            AddGUIElement(topBarPanel);
+            AddGUIElement(heirarchyBG);
+            AddGUIElement(createEmpty);
+            AddGUIElement(inspectorBG);
+            AddGUIElement(addComponentButton);
+            AddGUIElement(addComponentText);
+        }
+
+        public static void RefreshHeirarchy()
+        {
             heirarchyObjects.Clear();
             foreach (GameObject gameObject in SceneManager.gameObjects)
             {
@@ -91,16 +135,6 @@ namespace Steel_Engine.GUI
                 AddGUIElement(heirarchyImageObject);
                 AddGUIElement(heirarchyButtonObject);
             }
-
-            AddGUIElement(simulatingText);
-            AddGUIElement(xpButton);
-            AddGUIElement(xmButton);
-            AddGUIElement(ypButton);
-            AddGUIElement(ymButton);
-            AddGUIElement(zpButton);
-            AddGUIElement(zmButton);
-            AddGUIElement(topBarPanel);
-            AddGUIElement(heirarchyBG);
         }
 
         public static void Tick(float deltaTime, params object[] args)
@@ -109,6 +143,8 @@ namespace Steel_Engine.GUI
             {
                 guiElement.Tick(deltaTime, args);
             }
+            guiElements.AddRange(heirarchyQueue);
+            heirarchyQueue.Clear();
         }
 
         public static void Render()
