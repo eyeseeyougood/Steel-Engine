@@ -59,7 +59,6 @@ namespace Steel_Engine
             ApplyGravity();
             ApplyVelocity();
             ResolveCollisions();
-            Console.WriteLine(InfoManager.testSphere.mesh.vertices[0].colour);
         }
     }
 }

@@ -38,6 +38,7 @@ namespace Steel_Engine
 
             InfoManager.windowSize = Size;
             InfoManager.engineCamera = new Camera(Vector3.UnitZ * 3, Size.X / Size.Y);
+            InfoManager.engineCamera.Fov = 90;
 
             CursorState = CursorState.Grabbed;
 
@@ -48,14 +49,20 @@ namespace Steel_Engine
             InfoManager.testSphere.mesh.SetColour(new Vector3(1, 1, 1));
             InfoManager.testSphere.Load();
 
-            InfoManager.isBuild = true;
+            // set build mode
+            InfoManager.isBuild = bool.Parse(File.ReadAllLines(InfoManager.currentDir + @"/BuildSettings/BuildSettings.txt")[0].Replace("isBuild ", ""));
 
             // load scene 0
             SceneManager.Init();
             SceneManager.LoadScene(0);
 
             // load ui
-            GUIManager.LoadEngineGUI();
+            if (!InfoManager.isBuild)
+                GUIManager.LoadEngineGUI();
+
+            // once loaded, if is a build make it always running
+            if (InfoManager.isBuild)
+                SceneManager.gameRunning = true;
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -101,7 +108,8 @@ namespace Steel_Engine
             }
 
             GL.Disable(EnableCap.DepthTest);
-            GizmoManager.RenderGizmos();
+            if (!InfoManager.isBuild)
+                GizmoManager.RenderGizmos();
             GUIManager.Render();
 
             SwapBuffers();
@@ -119,8 +127,6 @@ namespace Steel_Engine
             base.OnResize(e);
             
             GL.Viewport(0, 0, e.Size.X, e.Size.Y);
-            if (!InfoManager.isBuild)
-                InfoManager.engineCamera.Fov = MathHelper.RadiansToDegrees(2.0f * MathF.Atan(((float)e.Size.Y * 0.5f) * ((float)e.Size.X/(float)e.Size.Y)));
             InfoManager.windowSize = e.Size;
         }
     }

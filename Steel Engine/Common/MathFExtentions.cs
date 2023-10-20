@@ -98,10 +98,6 @@ namespace Steel_Engine.Common
             float dot2 = Vector3.Dot(flattenedZ, hVector);
             float dot3 = Vector3.Dot(flattenedX, dVector);
 
-            Console.WriteLine("dot1 : " + dot1);
-            Console.WriteLine("dot2 : " + dot2);
-            Console.WriteLine("dot3 : " + dot3);
-
             // make dot comparisons
 
             if (0 <= dot1 && dot1 <= wVector.Length) // REPLACE LATER IF TOO LAGGY
