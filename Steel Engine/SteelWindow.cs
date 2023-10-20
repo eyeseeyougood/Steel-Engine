@@ -78,7 +78,7 @@ namespace Steel_Engine
                 CursorState = CursorState == CursorState.Normal ? CursorState.Grabbed : CursorState.Normal;
             }
 
-            if (InputManager.GetKeyDown(Keys.R))
+            if (InputManager.GetKeyDown(Keys.R) && !InfoManager.isBuild)
             {
                 SceneManager.gameRunning = !SceneManager.gameRunning;
                 GUIText text = (GUIText)GUIManager.GetElementByName("topbarSimText");
