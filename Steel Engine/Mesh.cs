@@ -42,6 +42,21 @@ namespace Steel_Engine
             edges.Add(triangle.edges[2]);
         }
 
+        public void AddTriangleRapid(Vector3 p1, Vector3 p2, Vector3 p3, Mesh meshParent)
+        {
+            SteelTriangle triangle = new SteelTriangle(p1, p2, p3, meshParent);
+
+            triangles.Add(triangle);
+
+            vertices.Add(triangle.GetVertex(0));
+            vertices.Add(triangle.GetVertex(1));
+            vertices.Add(triangle.GetVertex(2));
+
+            edges.Add(triangle.edges[0]);
+            edges.Add(triangle.edges[1]);
+            edges.Add(triangle.edges[2]);
+        }
+
         public void RefreshTriangles()
         {
             List<SteelVertex> newVertices = new List<SteelVertex>();

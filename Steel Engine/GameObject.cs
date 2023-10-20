@@ -24,8 +24,8 @@ namespace Steel_Engine
         public Vector3 position;
         public Vector3 scale;
         public Vector3 eRotation;
-        private Quaternion qRotation;
-
+        public Quaternion qRotation { get; private set; }
+        
         public RenderShader renderShader;
         private Shader shader;
 
@@ -40,6 +40,28 @@ namespace Steel_Engine
         public Mesh mesh;
 
         public List<Component> components = new List<Component>();
+
+        public void AddComponent(Component component) // for runtime adding of components
+        {
+            components.Add(component);
+            component.ComponentInit(this);
+        }
+
+        public T GetComponent<T>() where T : class
+        {
+            T result = null;
+
+            foreach (Component i in components)
+            {
+                if (i.GetType().IsSubclassOf(typeof(T)) || i.GetType() == typeof(T))
+                {
+                    result = (T)Convert.ChangeType(i, i.GetType());
+                    break;
+                }
+            }
+
+            return result;
+        }
 
         private void CreateDefaultMesh()
         {
@@ -120,6 +142,24 @@ namespace Steel_Engine
         }
 
         public static GameObject Instantiate(GameObject original)
+        {
+            GameObject result = new GameObject(original.renderShader, original.renderShader);
+            // must do this to create new space in memory
+            result.position = new Vector3(original.position.X, original.position.Y, original.position.Z);
+            result.qRotation = new Quaternion(original.qRotation.X, original.qRotation.Y, original.qRotation.Z, original.qRotation.W);
+            foreach (SteelTriangle tri in original.mesh.triangles)
+            {
+                result.mesh.AddTriangleRapid(tri.GetVertex(0).position, tri.GetVertex(1).position, tri.GetVertex(2).position, result.mesh);
+            }
+            result.mesh.RefreshTriangles();
+            result.mesh.MergeDuplicates();
+            result.mesh.SetColour(original.mesh.vertices[0].colour);
+            result.scale = new Vector3(original.scale.X, original.scale.Y, original.scale.Z);
+            result.Load();
+            return result;
+        }
+
+        public static GameObject QuickCopy(GameObject original)
         {
             GameObject result = new GameObject(original.renderShader, original.renderShader);
             result.position = original.position;

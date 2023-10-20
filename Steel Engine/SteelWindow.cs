@@ -41,6 +41,13 @@ namespace Steel_Engine
 
             CursorState = CursorState.Grabbed;
 
+            // TEST CODE
+            InfoManager.testSphere = new GameObject(RenderShader.ShadeFlat, RenderShader.ShadeFlat);
+            InfoManager.testSphere.scale = Vector3.One * 0.01f;
+            InfoManager.testSphere.mesh = OBJImporter.LoadOBJ("Sphere", true);
+            InfoManager.testSphere.mesh.SetColour(new Vector3(1, 1, 1));
+            InfoManager.testSphere.Load();
+
             // load scene 0
             SceneManager.Init();
             SceneManager.LoadScene(0);

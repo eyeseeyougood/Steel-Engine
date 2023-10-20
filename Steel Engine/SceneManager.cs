@@ -18,6 +18,11 @@ namespace Steel_Engine
         public static List<GameObject> gameObjects = new List<GameObject>();
         public static bool gameRunning;
 
+        public delegate void GameTick(float deltaTime);
+        public static event GameTick gameTick = new GameTick(_GameTick);
+
+        private static void _GameTick(float deltaTime) { }
+
         public static Scene GetActiveScene()
         {
             return scenes[currentSceneID];
@@ -37,6 +42,7 @@ namespace Steel_Engine
             foreach (GameObject gameObject in gameObjects)
             {
                 gameObject.Load();
+                gameTick += gameObject.Tick;
             }
         }
 
@@ -109,21 +115,45 @@ namespace Steel_Engine
                 }
                 if (line.StartsWith("/C "))
                 {
-                    string newLine = line.Replace("/C ", "");
-                    string[] parts = newLine.Split(":");
-                    Type type = Type.GetType(parts[0].Replace(".cs",""));
-                    string[] newParts = new string[parts.Length];
-                    parts.ToList().CopyTo(newParts);
-                    List<string> newPartsList = newParts.ToList();
-                    newPartsList.RemoveAt(0);
-                    foreach (string part in newPartsList)
-                    {
-                        foreach (GameObject obj in scene.gameObjects)
+                    if (line.Replace("/C ", "").StartsWith("S/"))
+                    {// base steel engine component
+                        string newLine = line.Replace("/C ", "").Replace("S/", "");
+                        string[] parts = newLine.Split(":");
+                        Type type = Type.GetType("Steel_Engine."+parts[0]);
+                        string[] newParts = new string[parts.Length];
+                        parts.ToList().CopyTo(newParts);
+                        List<string> newPartsList = newParts.ToList();
+                        newPartsList.RemoveAt(0);
+                        foreach (string part in newPartsList)
                         {
-                            if (obj.id == int.Parse(part))
+                            foreach (GameObject obj in scene.gameObjects)
                             {
-                                Component comp = (Component)Activator.CreateInstance(type);
-                                obj.components.Add(comp);
+                                if (obj.id == int.Parse(part))
+                                {
+                                    Component comp = (Component)Activator.CreateInstance(type);
+                                    obj.components.Add(comp);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {// custom component
+                        string newLine = line.Replace("/C ", "");
+                        string[] parts = newLine.Split(":");
+                        Type type = Type.GetType(parts[0].Replace(".cs",""));
+                        string[] newParts = new string[parts.Length];
+                        parts.ToList().CopyTo(newParts);
+                        List<string> newPartsList = newParts.ToList();
+                        newPartsList.RemoveAt(0);
+                        foreach (string part in newPartsList)
+                        {
+                            foreach (GameObject obj in scene.gameObjects)
+                            {
+                                if (obj.id == int.Parse(part))
+                                {
+                                    Component comp = (Component)Activator.CreateInstance(type);
+                                    obj.components.Add(comp);
+                                }
                             }
                         }
                     }
@@ -144,10 +174,7 @@ namespace Steel_Engine
         {
             if (gameRunning)
             {
-                foreach (GameObject gameObject in gameObjects)
-                {
-                    gameObject.Tick((float)deltaTime);
-                }
+                gameTick.Invoke((float)deltaTime);
             }
         }
 

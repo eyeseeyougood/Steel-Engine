@@ -39,6 +39,12 @@ namespace Steel_Engine
 
         public SteelVertex GetVertexData(int index)
         {
+            if (startVertexCopy == null)
+            {
+                startVertexCopy = meshParent.vertices[startVertexIndex];
+                endVertexCopy = meshParent.vertices[endVertexIndex];
+            }
+
             if (index == 0)
             {
                 return startVertexCopy;

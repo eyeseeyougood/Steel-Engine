@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Steel_Engine
 {
-    public abstract class Collider : Component
+    public static class Time
     {
-        public abstract bool CheckCollision(Collider other);
+        public static float timeScale = 1f;
     }
 }

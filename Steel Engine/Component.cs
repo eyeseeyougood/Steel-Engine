@@ -10,10 +10,12 @@ namespace Steel_Engine
     {
         public GameObject gameObject;
         public abstract void Tick(float deltaTime);
+        protected virtual void Init() { }
 
         public void ComponentInit(GameObject boundObject)
         {
-            this.gameObject = boundObject;
+            gameObject = boundObject;
+            Init();
         }
     }
 }
