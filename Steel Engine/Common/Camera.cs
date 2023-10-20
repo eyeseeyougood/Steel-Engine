@@ -36,6 +36,15 @@ namespace Steel_Engine.Common
         public float cameraSpeed = 1.5f;
         public float sensitivity = 0.2f;
 
+        public string name;
+        public int id;
+
+        public void SetMain()
+        {
+            if (InfoManager.isBuild)
+                InfoManager.engineCamera = this;
+        }
+
         public Camera(Vector3 position, float aspectRatio)
         {
             Position = position;
@@ -72,6 +81,12 @@ namespace Steel_Engine.Common
         public void Tick(double deltaTime)
         {
             if (InputManager.GetCursorState() == CursorState.Normal)
+                return;
+
+            if (InfoManager.isBuild)
+                return;
+
+            if (InfoManager.engineCamera != this)
                 return;
 
             Vector2 mousePosition = InputManager.mousePosition;
@@ -142,7 +157,7 @@ namespace Steel_Engine.Common
             get => MathHelper.RadiansToDegrees(_fov);
             set
             {
-                var angle = MathHelper.Clamp(value, 1f, 90f);
+                var angle = MathHelper.Clamp(value, 1f, 179f);
                 _fov = MathHelper.DegreesToRadians(angle);
             }
         }

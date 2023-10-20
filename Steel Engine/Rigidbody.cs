@@ -48,7 +48,7 @@ namespace Steel_Engine
                     Vector3 collisionNormal = (collider.gameObject.position - col.gameObject.position).Normalized();
                     while (collider.CheckCollision(col))
                     {
-                        gameObject.position += collisionNormal * 1f; // change based of how accurate / laggy it is
+                        gameObject.position += collisionNormal * 0.1f; // change based of how accurate / laggy it is
                     }
                 }
             }

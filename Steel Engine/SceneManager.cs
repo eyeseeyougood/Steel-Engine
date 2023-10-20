@@ -16,6 +16,7 @@ namespace Steel_Engine
         private static int currentSceneID;
         public static List<Scene> scenes = new List<Scene>();
         public static List<GameObject> gameObjects = new List<GameObject>();
+        public static List<Camera> cameras = new List<Camera>();
         public static bool gameRunning;
 
         public delegate void GameTick(float deltaTime);
@@ -157,6 +158,27 @@ namespace Steel_Engine
                             }
                         }
                     }
+                }
+                if (line.StartsWith("/V "))
+                {
+                    string newLine = line.Replace("/V ", "");
+                    string[] parts = newLine.Split(" ");
+                    float camX = float.Parse(parts[2]);
+                    float camY = float.Parse(parts[3]);
+                    float camZ = float.Parse(parts[4]);
+                    Vector3 camPos = new Vector3(camX, camY, camZ);
+                    Camera newCam = new Camera(camPos, InfoManager.windowSize.X / InfoManager.windowSize.Y);
+                    newCam.id = int.Parse(parts[0]);
+                    newCam.name = parts[1];
+                    newCam.Pitch = (float.Parse(parts[5]));
+                    newCam.Yaw = (float.Parse(parts[6]));
+                    newCam.Fov = (float.Parse(parts[7]));
+                    scene.cameras.Add(newCam);
+                }
+                if (line.StartsWith("/S[startingCamera] "))
+                {
+                    string newLine = line.Replace("/S[startingCamera] ", "");
+                    scene.startingcameraID = int.Parse(newLine);
                 }
             }
             return scene;

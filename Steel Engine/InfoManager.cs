@@ -22,5 +22,7 @@ namespace Steel_Engine
         public static double upTime;
 
         public static GameObject testSphere;
+
+        public static bool isBuild;
     }
 }

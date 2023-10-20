@@ -70,10 +70,13 @@ namespace Steel_Engine.GUI
             zmButton.SetZRotation(90);
             zmButton.renderOrder = -1;
 
+            // add later
+            /*
             GUIButton createEmpty = new GUIButton(new Vector3(-7.5f, -20f, 0), new Vector2(-1f, -1f), new Vector2(0.05f, 0.05f), plusB1Path);
             createEmpty.SetPressedImage(plusB2Path);
             createEmpty.buttonDown += EngineGUIEventManager.CreateEmpty;
             createEmpty.renderOrder = -1;
+            */
 
             // heirarchy
             GUIImage heirarchyBG = new GUIImage(new Vector3(39, -158f, 0), new Vector2(-1f, -1f), new Vector2(0.4f, 0.9f), new Vector3(45, 45, 45) / 255.0f);
@@ -87,6 +90,8 @@ namespace Steel_Engine.GUI
             inspectorBG.name = "inspectorBG";
             inspectorBG.renderOrder = -2;
 
+            // add back later
+            /*
             GUIButton addComponentButton = new GUIButton(new Vector3(-38f, -20f, 0), new Vector2(1f, -1f), new Vector2(0.285f, 0.05f));
             addComponentButton.visible = false;
             addComponentButton.buttonDown += EngineGUIEventManager.AddComponentEvent;
@@ -95,6 +100,7 @@ namespace Steel_Engine.GUI
             GUIText addComponentText = new GUIText(Vector3.Zero, Vector2.Zero, 0.07f, "Add Component", @"C:\Windows\Fonts\Arial.ttf", 300f, new Vector4(0, 0, 0, 50));
             addComponentText.name = "addComponentText";
             addComponentText.parentGUI = addComponentButton;
+            */
 
             AddGUIElement(simulatingText);
             AddGUIElement(xpButton);
@@ -105,10 +111,10 @@ namespace Steel_Engine.GUI
             AddGUIElement(zmButton);
             AddGUIElement(topBarPanel);
             AddGUIElement(heirarchyBG);
-            AddGUIElement(createEmpty);
+            //AddGUIElement(createEmpty); // add later
             AddGUIElement(inspectorBG);
-            AddGUIElement(addComponentButton);
-            AddGUIElement(addComponentText);
+            //AddGUIElement(addComponentButton); // add later
+            //AddGUIElement(addComponentText);
         }
 
         public static void RefreshHeirarchy()

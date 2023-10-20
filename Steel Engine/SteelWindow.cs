@@ -48,6 +48,8 @@ namespace Steel_Engine
             InfoManager.testSphere.mesh.SetColour(new Vector3(1, 1, 1));
             InfoManager.testSphere.Load();
 
+            InfoManager.isBuild = true;
+
             // load scene 0
             SceneManager.Init();
             SceneManager.LoadScene(0);
@@ -117,7 +119,8 @@ namespace Steel_Engine
             base.OnResize(e);
             
             GL.Viewport(0, 0, e.Size.X, e.Size.Y);
-            InfoManager.engineCamera.Fov = MathHelper.RadiansToDegrees(2.0f * MathF.Atan(((float)e.Size.Y * 0.5f) * ((float)e.Size.X/(float)e.Size.Y)));
+            if (!InfoManager.isBuild)
+                InfoManager.engineCamera.Fov = MathHelper.RadiansToDegrees(2.0f * MathF.Atan(((float)e.Size.Y * 0.5f) * ((float)e.Size.X/(float)e.Size.Y)));
             InfoManager.windowSize = e.Size;
         }
     }
