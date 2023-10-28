@@ -198,12 +198,16 @@ namespace Steel_Engine
             string path = InfoManager.dataPath + @$"\Textures\{name}{extension}";
 
             texture0 = Texture.LoadFromFile(path);
+            texture0.textureName = name;
+            texture0.textureExtension = extension;
             texture0.Use(TextureUnit.Texture0);
         }
 
         public void LoadTexture(string path)
         {
             texture0 = Texture.LoadFromFile(path);
+            texture0.textureName = path.Split('\\').Last().Split('.').First();
+            texture0.textureExtension = "." + path.Split('\\').Last().Split('.').Last();
             texture0.Use(TextureUnit.Texture0);
         }
 
@@ -352,6 +356,11 @@ namespace Steel_Engine
 
                     break;
             }            
+        }
+
+        public Texture GetLoadedTexture()
+        {
+            return texture0;
         }
 
         private float[] GetVertices()

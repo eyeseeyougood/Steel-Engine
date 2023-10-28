@@ -8,6 +8,8 @@ namespace Steel_Engine.Common
     public class Texture
     {
         public readonly int Handle;
+        public string textureName;
+        public string textureExtension;
 
         public static Texture LoadFromFile(string path)
         {

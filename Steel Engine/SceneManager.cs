@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Steel_Engine
 {
@@ -59,7 +60,7 @@ namespace Steel_Engine
             return null;
         }
 
-        private static Scene ConstructScene(string[] lines)
+        private static Scene ConstructScene(string[] lines, string path)
         {
             Scene scene = new Scene();
             foreach (string line in lines)
@@ -185,6 +186,7 @@ namespace Steel_Engine
                     scene.startingcameraID = int.Parse(newLine);
                 }
             }
+            scene.sceneName = path.Split('\\').Last().Split('.').First();
             return scene;
         }
 
@@ -192,7 +194,7 @@ namespace Steel_Engine
         {
             foreach (string file in Directory.GetFiles(InfoManager.dataPath + @"\Scenes\"))
             {
-                scenes.Add(ConstructScene(File.ReadAllLines(file)));
+                scenes.Add(ConstructScene(File.ReadAllLines(file), file));
             }
         }
 
@@ -207,6 +209,89 @@ namespace Steel_Engine
             {
                 gameTick.Invoke((float)deltaTime);
             }
+
+            if (InputManager.GetKey(Keys.LeftControl) && InputManager.GetKeyDown(Keys.S))
+            {
+                SaveChanges();
+            }
+        }
+
+        private static void SaveChanges()
+        {
+            string sceneName = GetActiveScene().sceneName;
+            string path = InfoManager.dataPath + @$"\Scenes\{sceneName}.SES";
+            if (File.Exists(path))
+                File.Delete(path);
+
+            List<string> lines = new List<string>();
+            int id = 0;
+            foreach (GameObject gameObject in gameObjects)
+            {
+                string line = "/G ";
+                line += id + " ";
+                line += gameObject.name + " ";
+                line += ShortenRenderShaderName(gameObject.renderShader) + " ";
+                line += ShortenRenderShaderName(gameObject.renderShader) + " ";
+                line += gameObject.position.X + " ";
+                line += gameObject.position.Y + " ";
+                line += gameObject.position.Z + " ";
+                line += gameObject.eRotation.X + " ";
+                line += gameObject.eRotation.Y + " ";
+                line += gameObject.eRotation.Z + " ";
+                line += gameObject.scale.X + " ";
+                line += gameObject.scale.Y + " ";
+                line += gameObject.scale.Z + " ";
+                if (gameObject.mesh.loadedModel != "")
+                {
+                    line += gameObject.mesh.loadedModel + " ";
+                    line += gameObject.mesh.optimised + " ";
+                    if (gameObject.renderShader == RenderShader.ShadeTextureUnit)
+                    {
+                        Texture texture = gameObject.GetLoadedTexture();
+                        line += gameObject.mesh.vertices[0].colour.X + " ";
+                        line += gameObject.mesh.vertices[0].colour.Y + " ";
+                        line += gameObject.mesh.vertices[0].colour.Z + " ";
+                        line += texture.textureName + texture.textureExtension;
+                    }
+                }
+                lines.Add(line);
+                id++;
+            }
+            id = 0;
+            foreach (Camera camera in cameras)
+            {
+                string line = "/V ";
+                line += id + " ";
+                line += camera.name + " ";
+                line += camera.Position.X + " ";
+                line += camera.Position.Y + " ";
+                line += camera.Position.Z + " ";
+                line += camera.Pitch + " ";
+                line += camera.Yaw + " ";
+                line += camera.Fov + " ";
+                line += camera.projectionType.ToString();
+                lines.Add(line);
+                id++;
+            }
+            File.WriteAllLines(path, lines);
+        }
+
+        private static string ShortenRenderShaderName(RenderShader shader)
+        {
+            string result = "";
+            switch (shader)
+            {
+                case RenderShader.ShadeFlat:
+                    result = "SF";
+                    break;
+                case RenderShader.ShadeTextureUnit:
+                    result = "STU";
+                    break;
+                case RenderShader.ShadeLighting:
+                    result = "SL";
+                    break;
+            }
+            return result;
         }
 
         public static SteelRay CalculateRay(Vector2 mousePosition)

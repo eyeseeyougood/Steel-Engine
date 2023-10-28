@@ -9,6 +9,8 @@ namespace Steel_Engine
 {
     public class Mesh
     {
+        public string loadedModel;
+        public bool optimised;
         public List<SteelVertex> vertices = new List<SteelVertex>(); // in NDC (normalised device coordinates)
         public List<SteelEdge> edges = new List<SteelEdge>(); // in NDC (normalised device coordinates)
         public List<SteelTriangle> triangles = new List<SteelTriangle>();

@@ -44,6 +44,9 @@ namespace Steel_Engine
 
             Mesh newMesh = OBJParser.GenerateBasicTriangleMesh(parsedVertexData, parsedFaceData, parsedTextureData, parsedTextureIndices, optimised);
 
+            newMesh.loadedModel = name;
+            newMesh.optimised = optimised;
+
             return newMesh;
         }
 
