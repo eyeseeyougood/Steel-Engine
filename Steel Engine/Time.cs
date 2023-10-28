@@ -8,6 +8,7 @@ namespace Steel_Engine
 {
     public static class Time
     {
+        public static double upTime;
         public static float timeScale = 1f;
     }
 }

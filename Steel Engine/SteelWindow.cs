@@ -97,7 +97,7 @@ namespace Steel_Engine
             base.OnRenderFrame(args);
 
             double deltaTime = args.Time;
-            InfoManager.upTime += deltaTime;
+            Time.upTime += deltaTime;
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 

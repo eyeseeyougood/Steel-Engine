@@ -1,6 +1,6 @@
 ﻿using OpenTK.Compute.OpenCL;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 using Steel_Engine.Common;
 using Steel_Engine.GUI;
 using System;
@@ -173,6 +173,10 @@ namespace Steel_Engine
                     newCam.Pitch = (float.Parse(parts[5]));
                     newCam.Yaw = (float.Parse(parts[6]));
                     newCam.Fov = (float.Parse(parts[7]));
+                    if (parts[8] == "Orthographic")
+                    {
+                        newCam.projectionType = ProjectionType.Orthographic;
+                    }
                     scene.cameras.Add(newCam);
                 }
                 if (line.StartsWith("/S[startingCamera] "))
@@ -190,6 +194,11 @@ namespace Steel_Engine
             {
                 scenes.Add(ConstructScene(File.ReadAllLines(file)));
             }
+        }
+
+        public static void ChangeClearColour(Vector3 colour)
+        {
+            GL.ClearColor(colour.X, colour.Y, colour.Z, 1.0f);
         }
 
         public static void Tick(double deltaTime)

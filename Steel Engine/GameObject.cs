@@ -68,16 +68,6 @@ namespace Steel_Engine
             mesh = new Mesh();
         }
 
-        public Matrix4 GetTransform()
-        {
-            Matrix4 tranformation = Matrix4.Identity;
-            tranformation = tranformation * Matrix4.CreateScale(scale);
-            tranformation = tranformation * Matrix4.CreateFromQuaternion(qRotation);
-            tranformation = tranformation * Matrix4.CreateTranslation(position);
-
-            return tranformation;
-        }
-
         public void Tick(float deltaTime)
         {
             foreach (Component component in components)
@@ -203,9 +193,9 @@ namespace Steel_Engine
             qRotation = rotation;
         }
 
-        public void LoadTexture(string name, string extention)
+        public void LoadTexture(string name, string extension)
         {
-            string path = InfoManager.dataPath + @$"\Textures\{name}{extention}";
+            string path = InfoManager.dataPath + @$"\Textures\{name}{extension}";
 
             texture0 = Texture.LoadFromFile(path);
             texture0.Use(TextureUnit.Texture0);

@@ -5,13 +5,12 @@ using System;
 
 namespace Steel_Engine.Common
 {
-    // This is the camera class as it could be set up after the tutorials on the website.
-    // It is important to note there are a few ways you could have set up this camera.
-    // For example, you could have also managed the player input inside the camera class,
-    // and a lot of the properties could have been made into functions.
+    public enum ProjectionType
+    {
+        Orthographic = 0,
+        Perspective = 1
+    }
 
-    // TL;DR: This is just one of many ways in which we could have set up the camera.
-    // Check out the web version if you don't know why we are doing a specific thing or want to know more about the code.
     public class Camera
     {
         // Those vectors are directions pointing outwards from the camera to define how it rotated.
@@ -62,6 +61,8 @@ namespace Steel_Engine.Common
         public Vector3 Up => _up;
 
         public Vector3 Right => _right;
+
+        public ProjectionType projectionType = ProjectionType.Perspective;
 
         // We convert from degrees to radians as soon as the property is set to improve performance.
         public float Pitch
@@ -171,6 +172,10 @@ namespace Steel_Engine.Common
         // Get the projection matrix using the same method we have used up until this point
         public Matrix4 GetProjectionMatrix()
         {
+            if (projectionType == ProjectionType.Orthographic)
+            {
+                return Matrix4.CreateOrthographic(Fov, Fov*(InfoManager.windowSize.Y / InfoManager.windowSize.X), 0.01f, 100f);
+            }
             return Matrix4.CreatePerspectiveFieldOfView(_fov, InfoManager.windowSize.X / InfoManager.windowSize.Y, 0.01f, 100f);
         }
 
