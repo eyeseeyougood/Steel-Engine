@@ -101,14 +101,14 @@ namespace Steel_Engine
                     go.id = int.Parse(parts[0]);
                     go.name = parts[1];
                     go.position = new Vector3(float.Parse(parts[4]), float.Parse(parts[5]), float.Parse(parts[6]));
-                    go.SetRotation(new Vector3(float.Parse(parts[7]), float.Parse(parts[8]), float.Parse(parts[9])));
+                    go.SetRotation(new Vector3(MathHelper.DegreesToRadians(float.Parse(parts[7])), MathHelper.DegreesToRadians(float.Parse(parts[8])), MathHelper.DegreesToRadians(float.Parse(parts[9]))));
                     go.scale = new Vector3(float.Parse(parts[10]), float.Parse(parts[11]), float.Parse(parts[12]));
                     go.mesh = OBJImporter.LoadOBJ(parts[13], bool.Parse(parts[14]));
                     if (parts.Length > 15)
                     {
                         go.mesh.SetColour(new Vector3(float.Parse(parts[15]), float.Parse(parts[16]), float.Parse(parts[17])));
                     }
-                    if (parts.Length > 18)
+                    if (parts.Length > 18 && vertShader == RenderShader.ShadeTextureUnit)
                     {
                         string[] imageParts = parts[18].Split(".");
                         go.LoadTexture(imageParts[0], "."+imageParts[1]);
@@ -220,7 +220,7 @@ namespace Steel_Engine
                 gameTick.Invoke((float)deltaTime);
             }
 
-            if (InputManager.GetKey(Keys.LeftControl) && InputManager.GetKeyDown(Keys.S))
+            if (InputManager.GetKey(Keys.LeftControl) && InputManager.GetKeyDown(Keys.S) && !InfoManager.isBuild)
             {
                 SaveChanges();
             }
@@ -255,13 +255,13 @@ namespace Steel_Engine
                 {
                     line += gameObject.mesh.loadedModel + " ";
                     line += gameObject.mesh.optimised + " ";
+                    line += gameObject.mesh.vertices[0].colour.X + " ";
+                    line += gameObject.mesh.vertices[0].colour.Y + " ";
+                    line += gameObject.mesh.vertices[0].colour.Z;
                     if (gameObject.renderShader == RenderShader.ShadeTextureUnit)
                     {
                         Texture texture = gameObject.GetLoadedTexture();
-                        line += gameObject.mesh.vertices[0].colour.X + " ";
-                        line += gameObject.mesh.vertices[0].colour.Y + " ";
-                        line += gameObject.mesh.vertices[0].colour.Z + " ";
-                        line += texture.textureName + texture.textureExtension;
+                        line += " " + texture.textureName + texture.textureExtension;
                     }
                 }
                 lines.Add(line);
@@ -282,6 +282,42 @@ namespace Steel_Engine
                 line += camera.projectionType.ToString();
                 lines.Add(line);
                 id++;
+            }
+            Dictionary<Type, List<int>> sceneComponents = new Dictionary<Type, List<int>>();
+            foreach (GameObject gameObject in gameObjects)
+            {
+                foreach (Component component in gameObject.components)
+                {
+                    if (sceneComponents.ContainsKey(component.GetType()))
+                    {
+                        sceneComponents[component.GetType()].Add(gameObject.id);
+                    }
+                    else
+                    {
+                        List<int> list = new List<int>();
+                        list.Add(gameObject.id);
+                        sceneComponents.Add(component.GetType(), list);
+                    }
+                }
+            }
+            foreach (KeyValuePair<Type, List<int>> sceneComponent in sceneComponents)
+            {
+                string line = "/C ";
+                string componentName = sceneComponent.Key.Name;
+                if (sceneComponent.Key.IsDefined(typeof(SteelComponentAttribute), true))
+                {
+                    line += "S/";
+                }
+                else
+                {
+                    componentName += ".cs";
+                }
+                line += componentName;
+                foreach (int objRef in sceneComponent.Value)
+                {
+                    line += ":" + objRef.ToString();
+                }
+                lines.Add(line);
             }
             File.WriteAllLines(path, lines);
         }

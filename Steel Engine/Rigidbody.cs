@@ -8,6 +8,7 @@ using Steel_Engine.Common;
 
 namespace Steel_Engine
 {
+    [SteelComponent]
     public class Rigidbody : Component
     {
         public Vector3 velocity { get; private set; }
@@ -45,11 +46,9 @@ namespace Steel_Engine
                 if (collider.CheckCollision(col))
                 {
                     // calculate collision normal
-                    Vector3 collisionNormal = (collider.gameObject.position - col.gameObject.position).Normalized();
-                    while (collider.CheckCollision(col))
-                    {
-                        gameObject.position += collisionNormal * 0.1f; // change based of how accurate / laggy it is
-                    }
+                    Vector3 collisionNormal = collider.CalculateCollisionNormal(col);
+                    gameObject.position += collisionNormal; // change based of how accurate / laggy it is
+                    velocity = new Vector3(velocity.X, Time.timeScale * 0.01f, velocity.Z);
                 }
             }
         }

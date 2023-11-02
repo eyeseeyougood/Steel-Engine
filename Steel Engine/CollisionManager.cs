@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace Steel_Engine
 {
+    [SteelComponent]
     public class Collider : Component
     {
         protected override void Init()
@@ -20,6 +21,11 @@ namespace Steel_Engine
         public override void Tick(float deltaTime)
         {
 
+        }
+
+        public virtual Vector3 CalculateCollisionNormal(Collider other)
+        {
+            return Vector3.Zero;
         }
 
         public virtual bool CheckCollision(Collider other)
@@ -44,15 +50,16 @@ namespace Steel_Engine
         protected override void Init()
         {
             base.Init();
-            min = -Vector3.One * gameObject.scale;
-            max = Vector3.One * gameObject.scale;
+            min = -Vector3.One * gameObject.scale + gameObject.position;
+            max = Vector3.One * gameObject.scale + gameObject.position;
         }
 
         public override void Tick(float deltaTime)
         {
-            min = -Vector3.One * gameObject.scale;
-            max = Vector3.One * gameObject.scale;
+            min = -Vector3.One * gameObject.scale + gameObject.position;
+            max = Vector3.One * gameObject.scale + gameObject.position;
         }
+
 
         public override bool CheckCollision(Collider other)
         {
@@ -63,6 +70,64 @@ namespace Steel_Engine
                 case "BoxCollider":
                     result = CheckBox((BoxCollider)other);
                     break;
+            }
+
+            return result;
+        }
+
+        public override Vector3 CalculateCollisionNormal(Collider other)
+        {
+            Vector3 result = Vector3.Zero;
+
+            switch (other.GetType().Name)
+            {
+                case "BoxCollider":
+                    result = CalculateBoxCollisionNormal((BoxCollider)other);
+                    break;
+            }
+
+            return result;
+        }
+
+        private Vector3 CalculateBoxCollisionNormal(BoxCollider other)
+        {
+            Vector3 result = Vector3.Zero;
+
+            float xDist = MathF.Abs(gameObject.position.X - other.gameObject.position.X);
+            float xHeight = (max.X - min.X) / 2 + (other.max.X - other.min.X) / 2;
+            float xMoveDist = 0;
+            if (xDist < xHeight)
+            {
+                xMoveDist = xHeight - xDist;
+            }
+
+            float yDist = MathF.Abs(gameObject.position.Y - other.gameObject.position.Y);
+            float yHeight = (max.Y - min.Y)/2 + (other.max.Y - other.min.Y)/2;
+            float yMoveDist = 0;
+            if (yDist < yHeight)
+            {
+                yMoveDist = yHeight - yDist;
+            }
+
+            float zDist = MathF.Abs(gameObject.position.Z - other.gameObject.position.Z);
+            float zHeight = (max.Y - min.Y) / 2 + (other.max.Y - other.min.Y) / 2;
+            float zMoveDist = 0;
+            if (zDist < zHeight)
+            {
+                zMoveDist = zHeight - zDist;
+            }
+
+            if (xMoveDist < yMoveDist && xMoveDist < zMoveDist)
+            {
+                result = new Vector3(xMoveDist, 0, 0);
+            }
+            else if (yMoveDist < xMoveDist && yMoveDist < zMoveDist)
+            {
+                result = new Vector3(0, yMoveDist, 0);
+            }
+            else if (zMoveDist < xMoveDist && zMoveDist < yMoveDist)
+            {
+                result = new Vector3(0, 0, zMoveDist);
             }
 
             return result;
@@ -86,79 +151,40 @@ namespace Steel_Engine
         {
             bool result = false;
 
-            // find all own vertices
-
-            Vector3[] vertices = new Vector3[8];
-            vertices[0] = min;
-            vertices[1] = new Vector3(min.X, min.Y, max.Z);
-            vertices[2] = new Vector3(max.X, min.Y, min.Z);
-            vertices[3] = new Vector3(max.X, min.Y, max.Z);
-
-            vertices[4] = new Vector3(max.X, max.Y, min.Z);
-            vertices[5] = new Vector3(min.X, max.Y, min.Z);
-            vertices[6] = new Vector3(min.X, max.Y, max.Z);
-
-            vertices[7] = max;
-
-            // iterate
-
-            Matrix3 rot = Matrix3.CreateFromQuaternion(gameObject.qRotation);
-            int index = 0; // TEST CODE
-            foreach (Vector3 vertex in vertices)
+            // as this is axis-aligned bounding boxes (AABB) it won't work with rotations (because it's axis aligned)
+            if (min.X >= other.min.X && min.X <= other.max.X || max.X >= other.min.X && max.X <= other.max.X)
             {
-                // convert to real position
-                Vector3 newVertexPos = vertex * rot;
-                newVertexPos += gameObject.position;
-
-                // make check
-                if (MathFExtentions.PointCubeIntersection(newVertexPos, other))
+                if (min.Y >= other.min.Y && min.Y <= other.max.Y || max.Y >= other.min.Y && max.Y <= other.max.Y)
                 {
-                    result = true;
-                    break;
+                    if (min.Z >= other.min.Z && min.Z <= other.max.Z || max.Z >= other.min.Z && max.Z <= other.max.Z)
+                    {
+                        // overlapping
+                        result = true;
+                    }
                 }
-
-                index++; // TEST CODE
             }
 
             return result;
         }
 
-        private bool CheckBox(BoxCollider other, Vector3 targetPos)
+        private bool CheckBox(BoxCollider other, Vector3 targetPos) // AABB
         {
             bool result = false;
 
-            // find all own vertices
+            Vector3 _min = -Vector3.One * gameObject.scale + targetPos;
+            Vector3 _max = Vector3.One * gameObject.scale + targetPos;
 
-            Vector3[] vertices = new Vector3[8];
-            vertices[0] = min;
-            vertices[1] = new Vector3(min.X, min.Y, max.Z);
-            vertices[2] = new Vector3(max.X, min.Y, min.Z);
-            vertices[3] = new Vector3(max.X, min.Y, max.Z);
-
-            vertices[4] = new Vector3(max.X, max.Y, min.Z);
-            vertices[5] = new Vector3(min.X, max.Y, min.Z);
-            vertices[6] = new Vector3(min.X, max.Y, max.Z);
-
-            vertices[7] = max;
-
-            // iterate
-
-            Matrix3 rot = Matrix3.CreateFromQuaternion(gameObject.qRotation);
-            int index = 0; // TEST CODE
-            foreach (Vector3 vertex in vertices)
+            // as this is axis-aligned bounding boxes (AABB) it won't work with rotations (because it's axis aligned)
+            if (_min.X >= other.min.X && _min.X <= other.max.X || _max.X >= other.min.X && _max.X <= other.max.X)
             {
-                // convert to real position
-                Vector3 newVertexPos = vertex * rot;
-                newVertexPos += targetPos;
-
-                // make check
-                if (MathFExtentions.PointCubeIntersection(newVertexPos, other))
+                if (_min.Y >= other.min.Y && _min.Y <= other.max.Y || _max.Y >= other.min.Y && _max.Y <= other.max.Y)
                 {
-                    result = true;
-                    break;
+                    if (_min.Z >= other.min.Z && _min.Z <= other.max.Z || _max.Z >= other.min.Z && _max.Z <= other.max.Z)
+                    {
+                        // overlapping
+                        result = true;
+                    }
                 }
-
-                index++; // TEST CODE
             }
 
             return result;
