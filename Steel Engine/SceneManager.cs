@@ -192,7 +192,17 @@ namespace Steel_Engine
 
         public static void Init()
         {
-            foreach (string file in Directory.GetFiles(InfoManager.dataPath + @"\Scenes\"))
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.dataPath + @"\Scenes\";
+            }
+            else
+            {
+                path = InfoManager.devDataPath + @"\Scenes\";
+            }
+
+            foreach (string file in Directory.GetFiles(path))
             {
                 scenes.Add(ConstructScene(File.ReadAllLines(file), file));
             }
@@ -219,7 +229,7 @@ namespace Steel_Engine
         private static void SaveChanges()
         {
             string sceneName = GetActiveScene().sceneName;
-            string path = InfoManager.dataPath + @$"\Scenes\{sceneName}.SES";
+            string path = InfoManager.devDataPath + @$"\Scenes\{sceneName}.SES";
             if (File.Exists(path))
                 File.Delete(path);
 

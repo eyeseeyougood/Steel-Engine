@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Steel_Engine.Common;
 
 namespace Steel_Engine.GUI
 {
@@ -31,9 +32,25 @@ namespace Steel_Engine.GUI
             simulatingText.renderOrder = -1;
 
             string arrowPath = InfoManager.currentDir + @$"/EngineResources/EngineTextures/Arrow1.png";
+            if (!InfoManager.isBuild)
+            {
+                arrowPath = InfoManager.currentDevPath + @$"/EngineResources/EngineTextures/Arrow1.png";
+            }
             string arrow2Path = InfoManager.currentDir + @$"/EngineResources/EngineTextures/Arrow2.png";
+            if (!InfoManager.isBuild)
+            {
+                arrow2Path = InfoManager.currentDevPath + @$"/EngineResources/EngineTextures/Arrow2.png";
+            }
             string plusB1Path = InfoManager.currentDir + @$"/EngineResources/EngineTextures/PlusButton1.png";
+            if (!InfoManager.isBuild)
+            {
+                plusB1Path = InfoManager.currentDevPath + @$"/EngineResources/EngineTextures/PlusButton1.png";
+            }
             string plusB2Path = InfoManager.currentDir + @$"/EngineResources/EngineTextures/PlusButton2.png";
+            if (!InfoManager.isBuild)
+            {
+                plusB2Path = InfoManager.currentDevPath + @$"/EngineResources/EngineTextures/PlusButton2.png";
+            }
             GUIButton xpButton = new GUIButton(new Vector3(0, -12.5f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), arrowPath);
             xpButton.SetPressedImage(arrow2Path);
             xpButton.buttonHold += EngineGUIEventManager.XPButtonHold;

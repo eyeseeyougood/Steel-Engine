@@ -78,8 +78,16 @@ namespace Steel_Engine
 
         public GameObject(RenderShader vertShaderType, RenderShader fragShaderType)
         {
-            shader = new Shader(InfoManager.currentDir + @$"\Shaders\Coordinates\{vertShaderType}.vert",
-                                InfoManager.currentDir + @$"\Shaders\Coordinates\{fragShaderType}.frag");
+            if (InfoManager.isBuild)
+            {
+                shader = new Shader(InfoManager.currentDir + @$"\Shaders\Coordinates\{vertShaderType}.vert",
+                                    InfoManager.currentDir + @$"\Shaders\Coordinates\{fragShaderType}.frag");
+            }
+            else
+            {
+                shader = new Shader(InfoManager.currentDevPath + @$"\Shaders\Coordinates\{vertShaderType}.vert",
+                                    InfoManager.currentDevPath + @$"\Shaders\Coordinates\{fragShaderType}.frag");
+            }
 
             CreateDefaultMesh();
             position = Vector3.Zero;
@@ -91,8 +99,16 @@ namespace Steel_Engine
 
         public GameObject(RenderShader vertShaderType, RenderShader fragShaderType, Vector3 pos)
         {
-            shader = new Shader(InfoManager.currentDir + @$"\Shaders\Coordinates\{vertShaderType}.vert",
-                                InfoManager.currentDir + @$"\Shaders\Coordinates\{fragShaderType}.frag");
+            if (InfoManager.isBuild)
+            {
+                shader = new Shader(InfoManager.currentDir + @$"\Shaders\Coordinates\{vertShaderType}.vert",
+                                    InfoManager.currentDir + @$"\Shaders\Coordinates\{fragShaderType}.frag");
+            }
+            else
+            {
+                shader = new Shader(InfoManager.currentDevPath + @$"\Shaders\Coordinates\{vertShaderType}.vert",
+                                    InfoManager.currentDevPath + @$"\Shaders\Coordinates\{fragShaderType}.frag");
+            }
 
             CreateDefaultMesh();
             position = pos;
@@ -119,8 +135,16 @@ namespace Steel_Engine
 
         public GameObject(RenderShader vertShaderType, RenderShader fragShaderType, Vector3 pos, Quaternion rot)
         {
-            shader = new Shader(InfoManager.currentDir + @$"\Shaders\Coordinates\{vertShaderType}.vert",
-                                InfoManager.currentDir + @$"\Shaders\Coordinates\{fragShaderType}.frag");
+            if (InfoManager.isBuild)
+            {
+                shader = new Shader(InfoManager.currentDir + @$"\Shaders\Coordinates\{vertShaderType}.vert",
+                                    InfoManager.currentDir + @$"\Shaders\Coordinates\{fragShaderType}.frag");
+            }
+            else
+            {
+                shader = new Shader(InfoManager.currentDevPath + @$"\Shaders\Coordinates\{vertShaderType}.vert",
+                                    InfoManager.currentDevPath + @$"\Shaders\Coordinates\{fragShaderType}.frag");
+            }
 
             CreateDefaultMesh();
             position = pos;
@@ -195,7 +219,15 @@ namespace Steel_Engine
 
         public void LoadTexture(string name, string extension)
         {
-            string path = InfoManager.dataPath + @$"\Textures\{name}{extension}";
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.dataPath + @$"\Textures\{name}{extension}";
+            }
+            else
+            {
+                path = InfoManager.devDataPath + @$"\Textures\{name}{extension}";
+            }
 
             texture0 = Texture.LoadFromFile(path);
             texture0.textureName = name;

@@ -16,7 +16,17 @@ namespace Steel_Engine
             List<string> newTextureData = new List<string>();
             List<string> newTextureIndices = new List<string>();
 
-            string[] lines = File.ReadAllLines(InfoManager.dataPath + $@"\Models\{name}.SEO");
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.dataPath + $@"\Models\{name}.SEO";
+            }
+            else
+            {
+                path = InfoManager.devDataPath + $@"\Models\{name}.SEO";
+            }
+
+            string[] lines = File.ReadAllLines(path);
             foreach (string line in lines)
             {
                 if (line.StartsWith("v "))
@@ -52,9 +62,17 @@ namespace Steel_Engine
 
         public static Mesh LoadOBJ(string name, bool optimised) // obj must be triangulated fully for this to work
         {
-            string path = InfoManager.dataPath + $@"\Models\{name}.obj";
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.dataPath + $@"\Models\{name}.obj";
+            }
+            else
+            {
+                path = InfoManager.devDataPath + $@"\Models\{name}.obj";
+            }
 
-            if (File.Exists(InfoManager.dataPath + $@"\Models\{name}.SEO"))
+            if (File.Exists(path))
             {
                 return LoadSEO(name, optimised);                
             }

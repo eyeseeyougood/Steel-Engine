@@ -42,15 +42,25 @@ namespace Steel_Engine
 
             CursorState = CursorState.Grabbed;
 
+            // set build mode
+            InfoManager.isBuild = bool.Parse(File.ReadAllLines(InfoManager.currentDevPath + @"/BuildSettings/BuildSettings.txt")[0].Replace("isBuild ", ""));
+
+            // if is build then build all required files
+            if (!File.Exists(InfoManager.currentDir + @"\Runtimes\Xq65.txt"))
+            {
+                BuildManager.AssembleFiles();
+                if (!bool.Parse(File.ReadAllLines(InfoManager.currentDevPath + @"/BuildSettings/BuildSettings.txt")[1].Replace("testingBuild ", "")))
+                {
+                    BuildManager.Lock();
+                }
+            }
+
             // TEST CODE
             InfoManager.testSphere = new GameObject(RenderShader.ShadeFlat, RenderShader.ShadeFlat);
             InfoManager.testSphere.scale = Vector3.One * 0.01f;
             InfoManager.testSphere.mesh = OBJImporter.LoadOBJ("Sphere", true);
             InfoManager.testSphere.mesh.SetColour(new Vector3(1, 1, 1));
             InfoManager.testSphere.Load();
-
-            // set build mode
-            InfoManager.isBuild = bool.Parse(File.ReadAllLines(InfoManager.currentDir + @"/BuildSettings/BuildSettings.txt")[0].Replace("isBuild ", ""));
 
             // load scene 0
             SceneManager.Init();

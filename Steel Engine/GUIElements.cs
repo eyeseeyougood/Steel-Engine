@@ -85,8 +85,18 @@ namespace Steel_Engine.GUI
             
             textures = new List<string>();
 
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.currentDir + @$"\EngineResources\EngineModels\Quad.obj";
+            }
+            else
+            {
+                path = InfoManager.currentDevPath + @$"\EngineResources\EngineModels\Quad.obj";
+            }
+
             renderObject = new GameObject(vShader, fShader);
-            renderObject.mesh = OBJImporter.LoadOBJFromPath(InfoManager.currentDir + @$"\EngineResources\EngineModels\Quad.obj", true);
+            renderObject.mesh = OBJImporter.LoadOBJFromPath(path, true);
             renderObject.Load();
         }
 
@@ -135,7 +145,17 @@ namespace Steel_Engine.GUI
         {
             foreach (string _texture in textures)
             {
-                File.Delete(InfoManager.currentDir + @$"\Temp\{_texture}.png");
+                string path = "";
+                if (InfoManager.isBuild)
+                {
+                    path = InfoManager.currentDir + @$"\Temp\{_texture}.png";
+                }
+                else
+                {
+                    path = InfoManager.currentDevPath + @$"\Temp\{_texture}.png";
+                }
+
+                File.Delete(path);
             }
         }
     }
@@ -157,9 +177,19 @@ namespace Steel_Engine.GUI
         private static void _ButtonHold(float deltaTime, string buttonName, params object[] args) { }
         private static void _ButtonUp(string buttonName, params object[] args) { }
 
-        public void SetPressedImage(string name, string extention)
+        public void SetPressedImage(string name, string extension)
         {
-            pressedImage = Texture.LoadFromFile(InfoManager.dataPath + @$"/Textures/{name}{extention}");
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.dataPath + @$"/Textures/{name}{extension}";
+            }
+            else
+            {
+                path = InfoManager.devDataPath + @$"/Textures/{name}{extension}";
+            }
+
+            pressedImage = Texture.LoadFromFile(path);
         }
 
         public void SetPressedImage(string path)
@@ -260,9 +290,19 @@ namespace Steel_Engine.GUI
             this.scale = scale;
         }
 
-        public GUIButton(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string textureExtention) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
+        public GUIButton(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string extension) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            normalImage = Texture.LoadFromFile(InfoManager.dataPath + @$"/Textures/{texture}{textureExtention}");
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.dataPath + @$"/Textures/{texture}{extension}";
+            }
+            else
+            {
+                path = InfoManager.devDataPath + @$"/Textures/{texture}{extension}";
+            }
+
+            normalImage = Texture.LoadFromFile(path);
             renderObject.LoadTexture(normalImage);
             this.scale = scale;
         }
@@ -301,7 +341,17 @@ namespace Steel_Engine.GUI
             if (!textures.Contains(text))
                 textures.Add(text);
 
-            texture.Save(InfoManager.currentDir + @$"\Temp\{text}.png");
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.currentDir + @$"\Temp\{text}.png";
+            }
+            else
+            {
+                path = InfoManager.currentDevPath + @$"\Temp\{text}.png";
+            }
+
+            texture.Save(path);
 
             this.scale = scale;
 
@@ -310,7 +360,7 @@ namespace Steel_Engine.GUI
             rect.Y = 0;
             rect.Width = texture.Width;
             rect.Height = texture.Height;
-            renderObject.LoadTexture(InfoManager.currentDir + @$"\Temp\{text}.png");
+            renderObject.LoadTexture(path);
         }
 
         public GUIText(Vector3 position, Vector2 anchor, float scale, string text, string font, float size, Vector4 bgColour) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
@@ -326,7 +376,17 @@ namespace Steel_Engine.GUI
             if (!textures.Contains(text))
                 textures.Add(text);
 
-            texture.Save(InfoManager.currentDir + @$"\Temp\{text}.png");
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.currentDir + @$"\Temp\{text}.png";
+            }
+            else
+            {
+                path = InfoManager.currentDevPath + @$"\Temp\{text}.png";
+            }
+
+            texture.Save(path);
 
             this.scale = scale;
 
@@ -335,7 +395,7 @@ namespace Steel_Engine.GUI
             rect.Y = 0;
             rect.Width = texture.Width;
             rect.Height = texture.Height;
-            renderObject.LoadTexture(InfoManager.currentDir + @$"\Temp\{text}.png");
+            renderObject.LoadTexture(path);
         }
 
         public GUIText(Vector3 position, Vector2 anchor, float scale, string text, string font, float size, Vector4 bgColour, Vector4 textColour) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
@@ -351,7 +411,17 @@ namespace Steel_Engine.GUI
             if (!textures.Contains(text))
                 textures.Add(text);
 
-            texture.Save(InfoManager.currentDir + @$"\Temp\{text}.png");
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.currentDir + @$"\Temp\{text}.png";
+            }
+            else
+            {
+                path = InfoManager.currentDevPath + @$"\Temp\{text}.png";
+            }
+
+            texture.Save(path);
 
             this.scale = scale;
 
@@ -360,7 +430,7 @@ namespace Steel_Engine.GUI
             rect.Y = 0;
             rect.Width = texture.Width;
             rect.Height = texture.Height;
-            renderObject.LoadTexture(InfoManager.currentDir + @$"\Temp\{text}.png");
+            renderObject.LoadTexture(path);
         }
 
         public void PreloadText(string text)
@@ -376,7 +446,27 @@ namespace Steel_Engine.GUI
             if (!textures.Contains(text))
                 textures.Add(text);
 
-            if (!File.Exists(InfoManager.currentDir + @$"\Temp\{text}.png"))
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.currentDir + @$"\Temp\{text}.png";
+            }
+            else
+            {
+                path = InfoManager.currentDevPath + @$"\Temp\{text}.png";
+            }
+
+            string path1 = "";
+            if (InfoManager.isBuild)
+            {
+                path1 = InfoManager.currentDir + @$"\EngineResources\EngineModels\Quad.obj";
+            }
+            else
+            {
+                path1 = InfoManager.currentDevPath + @$"\EngineResources\EngineModels\Quad.obj";
+            }
+
+            if (!File.Exists(path))
             {
                 ApplyTexture(GUIManager.Write_Text(text, font, size, bgColour));
                 Rectangle dst = new Rectangle();
@@ -385,11 +475,11 @@ namespace Steel_Engine.GUI
                 dst.Width = texture.Width;
                 dst.Height = texture.Height;
                 ApplyTexture(GUIManager.Write_Text(text, font, size, bgColour, dst, rect));
-                texture.Save(InfoManager.currentDir + @$"\Temp\{text}.png");
+                texture.Save(path);
             }
 
-            renderObject.LoadTexture(InfoManager.currentDir + @$"\Temp\{text}.png");
-            renderObject.mesh = OBJImporter.LoadOBJFromPath(InfoManager.currentDir + @$"\EngineResources\EngineModels\Quad.obj", true);
+            renderObject.LoadTexture(path);
+            renderObject.mesh = OBJImporter.LoadOBJFromPath(path1, true);
         }
 
         public override void Render()
@@ -413,30 +503,60 @@ namespace Steel_Engine.GUI
 
         public void SetColour(Vector4 colour)
         {
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.currentDir + @$"\Temp\{colour}.png";
+            }
+            else
+            {
+                path = InfoManager.currentDevPath + @$"\Temp\{colour}.png";
+            }
+
             Bitmap genImage = new Bitmap(1, 1);
             genImage.SetPixel(0, 0, Color.FromArgb((int)colour.W, (int)colour.X, (int)colour.Y, (int)colour.Z));
-            genImage.Save(InfoManager.currentDir + @$"/Temp/{(colour)}.png");
+            genImage.Save(path);
             textures.Add(colour.ToString());
-            image = Texture.LoadFromFile(InfoManager.currentDir + @$"/Temp/{(colour)}.png");
+            image = Texture.LoadFromFile(path);
             renderObject.LoadTexture(image);
             renderObject.Load();
         }
 
         public GUIImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector4 colour) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.currentDir + @$"\Temp\{colour}.png";
+            }
+            else
+            {
+                path = InfoManager.currentDevPath + @$"\Temp\{colour}.png";
+            }
+
             Bitmap genImage = new Bitmap(1, 1);
             genImage.SetPixel(0, 0, Color.FromArgb((int)colour.W, (int)colour.X, (int)colour.Y, (int)colour.Z));
-            genImage.Save(InfoManager.currentDir + @$"/Temp/{(colour)}.png");
+            genImage.Save(path);
             textures.Add(colour.ToString());
-            image = Texture.LoadFromFile(InfoManager.currentDir + @$"/Temp/{(colour)}.png");
+            image = Texture.LoadFromFile(path);
             renderObject.LoadTexture(image);
             renderObject.Load();
             this.scale = scale;
         }
 
-        public GUIImage(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string textureExtention) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
+        public GUIImage(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string extension) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            image = Texture.LoadFromFile(InfoManager.dataPath + @$"/Textures/{texture}{textureExtention}");
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.dataPath + @$"/Textures/{texture}{extension}";
+            }
+            else
+            {
+                path = InfoManager.devDataPath + @$"/Textures/{texture}{extension}";
+            }
+
+            image = Texture.LoadFromFile(path);
             renderObject.LoadTexture(image);
             this.scale = scale;
         }
@@ -462,18 +582,38 @@ namespace Steel_Engine.GUI
 
         public GUIWorldImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector4 colour) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.currentDir + @$"\Temp\{colour}.png";
+            }
+            else
+            {
+                path = InfoManager.currentDevPath + @$"\Temp\{colour}.png";
+            }
+
             Bitmap genImage = new Bitmap(1, 1);
             genImage.SetPixel(0, 0, Color.FromArgb((int)colour.W, (int)colour.X, (int)colour.Y, (int)colour.Z));
-            genImage.Save(InfoManager.currentDir + @$"/Temp/{(colour)}.png");
-            image = Texture.LoadFromFile(InfoManager.currentDir + @$"/Temp/{(colour)}.png");
+            genImage.Save(path);
+            image = Texture.LoadFromFile(path);
             renderObject.LoadTexture(image);
             renderObject.Load();
             this.scale = scale;
         }
 
-        public GUIWorldImage(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string textureExtention) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
+        public GUIWorldImage(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string extension) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            image = Texture.LoadFromFile(InfoManager.dataPath + @$"/Textures/{texture}{textureExtention}");
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.dataPath + @$"/Textures/{texture}{extension}";
+            }
+            else
+            {
+                path = InfoManager.devDataPath + @$"/Textures/{texture}{extension}";
+            }
+
+            image = Texture.LoadFromFile(path);
             renderObject.LoadTexture(image);
             this.scale = scale;
         }
@@ -512,9 +652,19 @@ namespace Steel_Engine.GUI
         private static void _ButtonHold(float deltaTime) { }
         private static void _ButtonUp() { }
 
-        public void SetPressedImage(string name, string extention)
+        public void SetPressedImage(string name, string extension)
         {
-            pressedImage = Texture.LoadFromFile(InfoManager.dataPath + @$"/Textures/{name}{extention}");
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.dataPath + @$"/Textures/{name}{extension}";
+            }
+            else
+            {
+                path = InfoManager.devDataPath + @$"/Textures/{name}{extension}";
+            }
+
+            pressedImage = Texture.LoadFromFile(path);
         }
 
         public override void Tick(float deltaTime, params object[] args)
@@ -611,10 +761,20 @@ namespace Steel_Engine.GUI
             position -= new Vector3(0, renderObject.position.Y/2.0f, 0);
         }
 
-        public GUIWorldButton(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string textureExtention) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
+        public GUIWorldButton(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string extension) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            renderObject.LoadTexture(InfoManager.dataPath + @$"/Textures/{texture}{textureExtention}");
-            normalImage = Texture.LoadFromFile(InfoManager.dataPath + @$"/Textures/{texture}{textureExtention}");
+            string path = "";
+            if (InfoManager.isBuild)
+            {
+                path = InfoManager.dataPath + @$"/Textures/{texture}{extension}";
+            }
+            else
+            {
+                path = InfoManager.devDataPath + @$"/Textures/{texture}{extension}";
+            }
+
+            renderObject.LoadTexture(path);
+            normalImage = Texture.LoadFromFile(path);
             this.scale = scale;
             this.addedPosition += new Vector3(0, -renderObject.position.Y, 0);
         }
