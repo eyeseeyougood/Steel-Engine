@@ -15,7 +15,7 @@ namespace Steel_Engine
 
         private Collider collider = null;
 
-        bool oneTime = true;
+        private bool oneTime = true;
 
         protected override void Init()
         {
@@ -24,7 +24,7 @@ namespace Steel_Engine
 
         private void ApplyGravity()
         {
-            Vector3 gravityForce = Time.timeScale * new Vector3(0, -1, 0) * 0.01f;
+            Vector3 gravityForce = Time.timeScale * new Vector3(0, -1, 0) * InfoManager.gravityStrength / 100f;
             velocity += gravityForce;
         }
 

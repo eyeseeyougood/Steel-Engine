@@ -8,9 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing.Imaging;
 using System.Drawing;
-using static System.Formats.Asn1.AsnWriter;
-using System.Text.Json;
-using static System.Net.Mime.MediaTypeNames;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Threading;
 
@@ -34,7 +31,7 @@ namespace Steel_Engine.GUI
         public Vector3 worldDirection;
         public float stepSize = 0.1f;
         public float distance = -1;
-        public float threshhold = 0.01f;
+        public float threshold = 0.01f;
 
         public SteelRay(Vector3 worldPosition, Vector3 worldDirection)
         {

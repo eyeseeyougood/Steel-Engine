@@ -1,6 +1,1 @@
-/G 0 Cube1 SF SF 0.6337332 2 0.31689736 0 0 0 1 1 1 Cube True 0.6 0.1 0.2
-/G 1 Cube2 SF SF 0 0 0 0 0 0 1 1 1 Cube True 0.2 0.1 0.6
-/V 0 Camera1 0 0 2 0 90 49.999992 Orthographic
-/C S/BoxCollider:0:1
-/C S/Rigidbody:0
-/C ColliderOutline.cs:0
+/V 0 Camera1 0 0 5 0 -90 90 Perspective

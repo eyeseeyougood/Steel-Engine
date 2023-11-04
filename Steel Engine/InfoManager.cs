@@ -10,12 +10,12 @@ namespace Steel_Engine
 {
     public static class InfoManager
     {
-        public static string currentDevPath = @"C:\Users\Mati\source\repos\Steel Engine\Steel Engine\";
-        public static string devDataPath = @"C:\Users\Mati\source\repos\Steel Engine\Steel Engine\Resources\";
+        public static string currentDevPath = @"C:\Users\XUSER\source\repos\Steel Engine\Steel Engine\";
+        public static string devDataPath = @"C:\Users\XUSER\source\repos\Steel Engine\Steel Engine\Resources\";
         public static string currentDir = AppDomain.CurrentDomain.BaseDirectory;
         public static string dataPath = AppDomain.CurrentDomain.BaseDirectory + @"\Resources";
 
-        public static float gravityStrength = 9.81f;
+        public static float gravityStrength = 1f;
 
         public static Camera engineCamera;
 

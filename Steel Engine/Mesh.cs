@@ -85,7 +85,7 @@ namespace Steel_Engine
             edges = tempEdgeArr.ToList();
         }
 
-        public int[] GetIndices() // unstable (wont guarrantee it works)
+        public int[] GetIndices()
         {
             List<int> indices = new List<int>();
 
