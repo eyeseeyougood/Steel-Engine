@@ -194,7 +194,12 @@ namespace Steel_Engine
                 {
                     string newLine = line.Replace("/S[windowSize] ", "");
                     string[] parts = newLine.Split(" ");
-                    scene.startingcameraID = int.Parse(newLine);
+                    scene.windowSize = new Vector2(int.Parse(parts[0]), int.Parse(parts[1]));
+                }
+                if (line.StartsWith("/S[lockWindowSize] "))
+                {
+                    string newLine = line.Replace("/S[lockWindowSize] ", "");
+                    scene.lockWindowSize = bool.Parse(newLine);
                 }
             }
             scene.sceneName = path.Split('\\').Last().Split('.').First();

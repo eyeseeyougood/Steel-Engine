@@ -16,6 +16,7 @@ namespace Steel_Engine
         public List<Camera> cameras = new List<Camera>();
         public int startingcameraID = 0;
         public Vector2 windowSize = new Vector2(-1f, -1f);
+        public bool lockWindowSize = false;
 
         public void Load()
         {
@@ -26,8 +27,9 @@ namespace Steel_Engine
             SceneManager.cameras[startingcameraID].SetMain();
             if (windowSize != new Vector2(-1f, -1f))
             {
-                
+                InfoManager.SetWindowSize(windowSize);
             }
+            InfoManager.lockWindowSize = lockWindowSize;
         }
 
         public void AddLight(Vector3 pos, Vector3 colour, float intensity)

@@ -42,6 +42,10 @@ namespace Steel_Engine
 
             CursorState = CursorState.Grabbed;
 
+            // Set events
+            InfoManager.setWindowSize += SetWindowSize;
+            InfoManager.setWindowState += SetWindowState;
+
             // Test Code
             GameObject testObject = new GameObject(RenderShader.ShadeFlat, RenderShader.ShadeFlat);
             testObject.scale = Vector3.One * 0.05f;
@@ -76,9 +80,14 @@ namespace Steel_Engine
                 SceneManager.gameRunning = true;
         }
 
-        private void SetWindowSize(Vector2 windowSize)
+        public void SetWindowSize(int x, int y)
         {
-            Size = (Vector2i)windowSize;
+            ClientSize = new Vector2i(x, y);
+        }
+
+        public void SetWindowState(WindowState state)
+        {
+            WindowState = state;
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -101,6 +110,7 @@ namespace Steel_Engine
                 text.SetText(SceneManager.gameRunning ? "Simulating" : "Not Simulating");
             }
 
+            InfoManager.Tick((float)args.Time);
             GUIManager.Tick((float)args.Time);
             SceneManager.Tick(args.Time);
             LightManager.Tick();

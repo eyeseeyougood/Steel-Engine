@@ -1,4 +1,5 @@
 ﻿using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
 using Steel_Engine.Common;
 using System;
 using System.Collections.Generic;
@@ -24,5 +25,37 @@ namespace Steel_Engine
         public static GameObject testObject;
 
         public static bool isBuild;
+
+        public static bool lockWindowSize;
+
+        private static Vector2 windowLock;
+        private static WindowState windowStateLock;
+
+        public delegate void OnSetWindowSize(int width, int height);
+        public static event OnSetWindowSize setWindowSize;
+
+        public delegate void OnSetWindowState(WindowState state);
+        public static event OnSetWindowState setWindowState;
+
+        public static void Tick(float deltaTime)
+        {
+            if (lockWindowSize)
+            {
+                SetWindowState(windowStateLock);
+                SetWindowSize(windowLock);
+            }
+        }
+
+        public static void SetWindowSize(Vector2 windowSize)
+        {
+            windowLock = windowSize;
+            setWindowSize.Invoke((int)windowSize.X, (int)windowSize.Y);
+        }
+
+        public static void SetWindowState(WindowState state)
+        {
+            windowStateLock = state;
+            setWindowState.Invoke(state);
+        }
     }
 }
