@@ -72,7 +72,17 @@ namespace Steel_Engine
                 path = InfoManager.devDataPath + $@"\Models\{name}.obj";
             }
 
-            if (File.Exists(path))
+            string pathSEO = "";
+            if (InfoManager.isBuild)
+            {
+                pathSEO = InfoManager.dataPath + $@"\Models\{name}.SEO";
+            }
+            else
+            {
+                pathSEO = InfoManager.devDataPath + $@"\Models\{name}.SEO";
+            }
+
+            if (File.Exists(pathSEO))
             {
                 return LoadSEO(name, optimised);                
             }
@@ -113,7 +123,8 @@ namespace Steel_Engine
             {
                 finalText.Add("ti " + line);
             }
-            File.WriteAllLines(InfoManager.dataPath + @$"\Models\{name}.SEO", finalText.ToArray());
+
+            File.WriteAllLines(pathSEO, finalText.ToArray());
 
             return LoadSEO(name, optimised);
         }

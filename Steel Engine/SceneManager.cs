@@ -23,7 +23,11 @@ namespace Steel_Engine
         public delegate void GameTick(float deltaTime);
         public static event GameTick gameTick = new GameTick(_GameTick);
 
+        public delegate void GameLoad();
+        public static event GameLoad gameLoad = new GameLoad(_GameLoad);
+
         private static void _GameTick(float deltaTime) { }
+        private static void _GameLoad() { }
 
         public static Scene GetActiveScene()
         {
@@ -43,9 +47,10 @@ namespace Steel_Engine
             // load all objects
             foreach (GameObject gameObject in gameObjects)
             {
-                gameObject.Load();
+                gameLoad += gameObject.Load;
                 gameTick += gameObject.Tick;
             }
+            gameLoad.Invoke();
         }
 
         public static GameObject GetGameObjectByID(int id)
@@ -183,6 +188,12 @@ namespace Steel_Engine
                 if (line.StartsWith("/S[startingCamera] "))
                 {
                     string newLine = line.Replace("/S[startingCamera] ", "");
+                    scene.startingcameraID = int.Parse(newLine);
+                }
+                if (line.StartsWith("/S[windowSize] "))
+                {
+                    string newLine = line.Replace("/S[windowSize] ", "");
+                    string[] parts = newLine.Split(" ");
                     scene.startingcameraID = int.Parse(newLine);
                 }
             }

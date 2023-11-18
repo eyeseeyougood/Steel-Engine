@@ -42,6 +42,14 @@ namespace Steel_Engine
 
             CursorState = CursorState.Grabbed;
 
+            // Test Code
+            GameObject testObject = new GameObject(RenderShader.ShadeFlat, RenderShader.ShadeFlat);
+            testObject.scale = Vector3.One * 0.05f;
+            testObject.mesh = OBJImporter.LoadOBJ("Cube", true);
+            testObject.mesh.SetColour(Vector3.UnitX);
+            testObject.Load();
+            InfoManager.testObject = testObject;
+
             // set build mode
             InfoManager.isBuild = bool.Parse(File.ReadAllLines(InfoManager.currentDevPath + @"/BuildSettings/BuildSettings.txt")[0].Replace("isBuild ", ""));
 
@@ -55,13 +63,6 @@ namespace Steel_Engine
                 }
             }
 
-            // TEST CODE
-            InfoManager.testSphere = new GameObject(RenderShader.ShadeFlat, RenderShader.ShadeFlat);
-            InfoManager.testSphere.scale = Vector3.One * 0.01f;
-            InfoManager.testSphere.mesh = OBJImporter.LoadOBJ("Sphere", true);
-            InfoManager.testSphere.mesh.SetColour(new Vector3(1, 1, 1));
-            InfoManager.testSphere.Load();
-
             // load scene 0
             SceneManager.Init();
             SceneManager.LoadScene(0);
@@ -73,6 +74,11 @@ namespace Steel_Engine
             // once loaded, if is a build make it always running
             if (InfoManager.isBuild)
                 SceneManager.gameRunning = true;
+        }
+
+        private void SetWindowSize(Vector2 windowSize)
+        {
+            Size = (Vector2i)windowSize;
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)

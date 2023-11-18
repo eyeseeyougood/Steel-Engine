@@ -15,6 +15,7 @@ namespace Steel_Engine
         public List<GameObject> gameObjects = new List<GameObject>();
         public List<Camera> cameras = new List<Camera>();
         public int startingcameraID = 0;
+        public Vector2 windowSize = new Vector2(-1f, -1f);
 
         public void Load()
         {
@@ -23,6 +24,10 @@ namespace Steel_Engine
             SceneManager.cameras.Clear();
             SceneManager.cameras.AddRange(cameras);
             SceneManager.cameras[startingcameraID].SetMain();
+            if (windowSize != new Vector2(-1f, -1f))
+            {
+                
+            }
         }
 
         public void AddLight(Vector3 pos, Vector3 colour, float intensity)

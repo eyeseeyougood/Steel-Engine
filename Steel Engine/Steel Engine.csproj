@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <Folder Include="EngineResources\EngineModels\" />
-    <Folder Include="Resources\Textures\" />
+    <Folder Include="Resources\Scripts\" />
     <Folder Include="Temp\" />
   </ItemGroup>
 

@@ -1,4 +1,0 @@
-/G 0 Toast STU STU 0 0 0 0 0 0 1 1 1 Quad True 1 1 1 Toast.png
-/G 1 CuttingBoard STU STU 0 -1.2 0 0 0 0 2 0.2 1 Quad True 1 1 1 Cutting_Board.png
-/C BreadFling.cs:0
-/V 0 Camera1 0 0 1 0 -90 20 Orthographic

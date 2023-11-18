@@ -1,2 +1,2 @@
-﻿isBuild false
-testingBuild false
+﻿isBuild true
+testingBuild true

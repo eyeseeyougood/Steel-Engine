@@ -10,8 +10,8 @@ namespace Steel_Engine
 {
     public static class InfoManager
     {
-        public static string currentDevPath = @"C:\Users\XUSER\source\repos\Steel Engine\Steel Engine\";
-        public static string devDataPath = @"C:\Users\XUSER\source\repos\Steel Engine\Steel Engine\Resources\";
+        public static string currentDevPath = @"C:\Users\Mati\source\repos\Steel Engine\Steel Engine\";
+        public static string devDataPath = @"C:\Users\Mati\source\repos\Steel Engine\Steel Engine\Resources\";
         public static string currentDir = AppDomain.CurrentDomain.BaseDirectory;
         public static string dataPath = AppDomain.CurrentDomain.BaseDirectory + @"\Resources";
 
@@ -21,7 +21,7 @@ namespace Steel_Engine
 
         public static Vector2 windowSize;
 
-        public static GameObject testSphere;
+        public static GameObject testObject;
 
         public static bool isBuild;
     }
