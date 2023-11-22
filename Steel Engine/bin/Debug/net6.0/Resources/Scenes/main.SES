@@ -1,4 +1,5 @@
 /G 0 Background STU STU 0 0 0 0 0 0 3 3 3 Quad true 0.4 0.4 0.4 BG.png
 /V 0 Camera1 0 0 2 0 -90 10 Orthographic
+/C MouseLogger.cs:0
 /S[windowSize] 500 500
 /S[lockWindowSize] true

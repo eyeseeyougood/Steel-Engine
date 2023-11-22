@@ -9,6 +9,7 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Steel_Engine.Common;
 using Steel_Engine.GUI;
+using Zamak;
 
 namespace Steel_Engine
 {
@@ -20,6 +21,7 @@ namespace Steel_Engine
 
         protected override void OnClosing(CancelEventArgs e)
         {
+            MultiplayerManager.CleanUp();
             GUIManager.Cleanup();
 
             base.OnClosing(e);
@@ -45,6 +47,7 @@ namespace Steel_Engine
             // Set events
             InfoManager.setWindowSize += SetWindowSize;
             InfoManager.setWindowState += SetWindowState;
+            InfoManager.setWindowTitle += SetWindowTitle;
 
             // Test Code
             GameObject testObject = new GameObject(RenderShader.ShadeFlat, RenderShader.ShadeFlat);
@@ -56,6 +59,7 @@ namespace Steel_Engine
 
             // set build mode
             InfoManager.isBuild = bool.Parse(File.ReadAllLines(InfoManager.currentDevPath + @"/BuildSettings/BuildSettings.txt")[0].Replace("isBuild ", ""));
+            BuildManager.buildClientServerFiles = bool.Parse(File.ReadAllLines(InfoManager.currentDevPath + @"/BuildSettings/BuildSettings.txt")[2].Replace("isMultiplayer ", ""));
 
             // if is build then build all required files
             if (!File.Exists(InfoManager.currentDir + @"\Runtimes\Xq65.txt"))
@@ -78,6 +82,17 @@ namespace Steel_Engine
             // once loaded, if is a build make it always running
             if (InfoManager.isBuild)
                 SceneManager.gameRunning = true;
+
+            // multiplayer
+            if (InfoManager.executingArgs.Length > 0)
+            {
+                MultiplayerManager.isMultiplayer = InfoManager.executingArgs[0] == "/M";
+            }
+            if (MultiplayerManager.isMultiplayer)
+            {
+                string[] multiplayerArgs = InfoManager.executingArgs.Skip(1).ToArray();
+                MultiplayerManager.Init(multiplayerArgs);
+            }
         }
 
         public void SetWindowSize(int x, int y)
@@ -88,6 +103,11 @@ namespace Steel_Engine
         public void SetWindowState(WindowState state)
         {
             WindowState = state;
+        }
+
+        public void SetWindowTitle(string title)
+        {
+            Title = title;
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -114,6 +134,7 @@ namespace Steel_Engine
             GUIManager.Tick((float)args.Time);
             SceneManager.Tick(args.Time);
             LightManager.Tick();
+            MultiplayerManager.Tick((float)args.Time);
 
             InfoManager.engineCamera.Tick(args.Time);
         }

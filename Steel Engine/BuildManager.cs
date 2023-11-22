@@ -8,6 +8,8 @@ namespace Steel_Engine
 {
     public static class BuildManager
     {
+        public static bool buildClientServerFiles;
+
         public static void Lock()
         {
             File.WriteAllText(InfoManager.currentDir + @"\Runtimes\Xq65.txt", "-11O11So11You11Found11It!!");

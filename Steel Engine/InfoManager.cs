@@ -26,6 +26,8 @@ namespace Steel_Engine
 
         public static bool isBuild;
 
+        public static string[] executingArgs;
+
         public static bool lockWindowSize;
 
         private static Vector2 windowLock;
@@ -36,6 +38,9 @@ namespace Steel_Engine
 
         public delegate void OnSetWindowState(WindowState state);
         public static event OnSetWindowState setWindowState;
+
+        public delegate void OnSetWindowTitle(string title);
+        public static event OnSetWindowTitle setWindowTitle;
 
         public static void Tick(float deltaTime)
         {
@@ -56,6 +61,11 @@ namespace Steel_Engine
         {
             windowStateLock = state;
             setWindowState.Invoke(state);
+        }
+
+        public static void SetWindowTitle(string title)
+        {
+            setWindowTitle.Invoke(title);
         }
     }
 }

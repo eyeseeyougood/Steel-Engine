@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Steel Engine": {
+      "commandName": "Project",
+      "commandLineArgs": "/M Server"
+    }
+  }
+}

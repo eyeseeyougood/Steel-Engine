@@ -1,2 +1,3 @@
 ﻿isBuild true
 testingBuild true
+isMultiplayer true
