@@ -1,5 +1,7 @@
-/G 0 Background STU STU 0 0 0 0 0 0 3 3 3 Quad true 0.4 0.4 0.4 BG.png
-/V 0 Camera1 0 0 2 0 -90 10 Orthographic
-/C MouseLogger.cs:0
-/S[windowSize] 500 500
+/G 0 Player STU STU 0 0 0 0 0 0 1.2 0.8 0.3 Quad true 1 0 0 BG.png
+/V 0 Camera1 0 0 2 0 -90 4 Orthographic
+/C S/SpriteAnimator:0
+/C TestCode.cs:0
+/P Nearest ScaleMethod:0
+/S[windowSize] 750 750
 /S[lockWindowSize] true

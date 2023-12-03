@@ -15,6 +15,15 @@ namespace Steel_Engine
             File.WriteAllText(InfoManager.currentDir + @"\Runtimes\Xq65.txt", "-11O11So11You11Found11It!!");
         }
 
+        public static void UnlockRebuild()
+        {
+            string file = InfoManager.currentDir + @"\Runtimes\Xq65.txt";
+            if (File.Exists(file))
+            {
+                File.Delete(InfoManager.currentDir + @"\Runtimes\Xq65.txt");
+            }
+        }
+
         private static void CopyFolder(string src, string dst)
         {
             Directory.CreateDirectory(dst);

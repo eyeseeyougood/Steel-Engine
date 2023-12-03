@@ -10,7 +10,7 @@ namespace Steel_Engine
         {
             var nativeWindowSettings = new NativeWindowSettings()
             {
-                Size = new Vector2i(16*75, 9*75),
+                Size = new Vector2i(16*75, 9*75-25),
                 Title = "Steel",
                 Flags = ContextFlags.ForwardCompatible
             };

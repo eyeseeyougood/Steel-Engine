@@ -11,9 +11,11 @@ namespace Steel_Engine
 {
     public enum RenderShader
     {
+        None = -1,
         ShadeFlat = 0,
         ShadeTextureUnit = 1,
-        ShadeLighting = 2
+        ShadeTextureUnitHue = 2,
+        ShadeLighting = 3
     }
 
     public class GameObject
@@ -30,6 +32,7 @@ namespace Steel_Engine
         private Shader shader;
 
         private Texture texture0;
+        private float mixFactor = 0.5f;
 
         private int vertexBufferObject;
 
@@ -45,6 +48,17 @@ namespace Steel_Engine
         {
             components.Add(component);
             component.ComponentInit(this);
+        }
+
+        public void ReloadTexture()
+        {
+            LoadTexture(texture0);
+        }
+
+        public void ReloadTexture(TextureMinFilter scaleMethod1, TextureMagFilter scaleMethod2)
+        {
+            Texture texture = Texture.LoadFromFile(texture0.texturePath, scaleMethod1, scaleMethod2);
+            LoadTexture(texture);
         }
 
         public T GetComponent<T>() where T : class
@@ -78,16 +92,8 @@ namespace Steel_Engine
 
         public GameObject(RenderShader vertShaderType, RenderShader fragShaderType)
         {
-            if (InfoManager.isBuild)
-            {
-                shader = new Shader(InfoManager.currentDir + @$"\Shaders\Coordinates\{vertShaderType}.vert",
-                                    InfoManager.currentDir + @$"\Shaders\Coordinates\{fragShaderType}.frag");
-            }
-            else
-            {
-                shader = new Shader(InfoManager.currentDevPath + @$"\Shaders\Coordinates\{vertShaderType}.vert",
-                                    InfoManager.currentDevPath + @$"\Shaders\Coordinates\{fragShaderType}.frag");
-            }
+            shader = new Shader(InfoManager.usingDirectory + @$"\Shaders\Coordinates\{vertShaderType}.vert",
+                                InfoManager.usingDirectory + @$"\Shaders\Coordinates\{fragShaderType}.frag");
 
             CreateDefaultMesh();
             position = Vector3.Zero;
@@ -99,16 +105,8 @@ namespace Steel_Engine
 
         public GameObject(RenderShader vertShaderType, RenderShader fragShaderType, Vector3 pos)
         {
-            if (InfoManager.isBuild)
-            {
-                shader = new Shader(InfoManager.currentDir + @$"\Shaders\Coordinates\{vertShaderType}.vert",
-                                    InfoManager.currentDir + @$"\Shaders\Coordinates\{fragShaderType}.frag");
-            }
-            else
-            {
-                shader = new Shader(InfoManager.currentDevPath + @$"\Shaders\Coordinates\{vertShaderType}.vert",
-                                    InfoManager.currentDevPath + @$"\Shaders\Coordinates\{fragShaderType}.frag");
-            }
+            shader = new Shader(InfoManager.usingDirectory + @$"\Shaders\Coordinates\{vertShaderType}.vert",
+                                InfoManager.usingDirectory + @$"\Shaders\Coordinates\{fragShaderType}.frag");
 
             CreateDefaultMesh();
             position = pos;
@@ -121,8 +119,8 @@ namespace Steel_Engine
 
         public GameObject(RenderShader vertShaderType, RenderShader fragShaderType, Vector3 pos, Vector3 rot)
         {
-            shader = new Shader(InfoManager.currentDir + @$"\Shaders\Coordinates\{vertShaderType}.vert",
-                                InfoManager.currentDir + @$"\Shaders\Coordinates\{fragShaderType}.frag");
+            shader = new Shader(InfoManager.usingDirectory + @$"\Shaders\Coordinates\{vertShaderType}.vert",
+                                InfoManager.usingDirectory + @$"\Shaders\Coordinates\{fragShaderType}.frag");
 
             CreateDefaultMesh();
             position = pos;
@@ -135,16 +133,8 @@ namespace Steel_Engine
 
         public GameObject(RenderShader vertShaderType, RenderShader fragShaderType, Vector3 pos, Quaternion rot)
         {
-            if (InfoManager.isBuild)
-            {
-                shader = new Shader(InfoManager.currentDir + @$"\Shaders\Coordinates\{vertShaderType}.vert",
-                                    InfoManager.currentDir + @$"\Shaders\Coordinates\{fragShaderType}.frag");
-            }
-            else
-            {
-                shader = new Shader(InfoManager.currentDevPath + @$"\Shaders\Coordinates\{vertShaderType}.vert",
-                                    InfoManager.currentDevPath + @$"\Shaders\Coordinates\{fragShaderType}.frag");
-            }
+            shader = new Shader(InfoManager.usingDirectory + @$"\Shaders\Coordinates\{vertShaderType}.vert",
+                                InfoManager.usingDirectory + @$"\Shaders\Coordinates\{fragShaderType}.frag");
 
             CreateDefaultMesh();
             position = pos;
@@ -219,19 +209,23 @@ namespace Steel_Engine
 
         public void LoadTexture(string name, string extension)
         {
-            string path = "";
-            if (InfoManager.isBuild)
-            {
-                path = InfoManager.dataPath + @$"\Textures\{name}{extension}";
-            }
-            else
-            {
-                path = InfoManager.devDataPath + @$"\Textures\{name}{extension}";
-            }
+            string path = InfoManager.usingDataPath + @$"\Textures\{name}{extension}";
 
             texture0 = Texture.LoadFromFile(path);
             texture0.textureName = name;
             texture0.textureExtension = extension;
+            texture0.texturePath = path;
+            texture0.Use(TextureUnit.Texture0);
+        }
+
+        public void LoadTexture(string name, string extension, TextureMinFilter scaleMethod1, TextureMagFilter scaleMethod2)
+        {
+            string path = InfoManager.usingDataPath + @$"\Textures\{name}{extension}";
+
+            texture0 = Texture.LoadFromFile(path, scaleMethod1, scaleMethod2);
+            texture0.textureName = name;
+            texture0.textureExtension = extension;
+            texture0.texturePath = path;
             texture0.Use(TextureUnit.Texture0);
         }
 
@@ -240,6 +234,16 @@ namespace Steel_Engine
             texture0 = Texture.LoadFromFile(path);
             texture0.textureName = path.Split('\\').Last().Split('.').First();
             texture0.textureExtension = "." + path.Split('\\').Last().Split('.').Last();
+            texture0.texturePath = path;
+            texture0.Use(TextureUnit.Texture0);
+        }
+
+        public void LoadTexture(string path, TextureMinFilter scaleMethod1, TextureMagFilter scaleMethod2)
+        {
+            texture0 = Texture.LoadFromFile(path, scaleMethod1, scaleMethod2);
+            texture0.textureName = path.Split('\\').Last().Split('.').First();
+            texture0.textureExtension = "." + path.Split('\\').Last().Split('.').Last();
+            texture0.texturePath = path;
             texture0.Use(TextureUnit.Texture0);
         }
 
@@ -381,6 +385,24 @@ namespace Steel_Engine
                     GL.VertexAttribPointer(colLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
                     GL.EnableVertexAttribArray(posLocation);
                     GL.EnableVertexAttribArray(colLocation);
+
+                    indices = mesh.GetIndices();
+
+                    GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
+
+                    break;
+                case RenderShader.ShadeTextureUnitHue:
+                    texture0.Use(TextureUnit.Texture0);
+
+                    shader.SetVector3($"colMod", mesh.vertices[0].colour);
+                    shader.SetFloat($"mixFact", mixFactor);
+
+                    posLocation = GL.GetAttribLocation(shader.Handle, "aPosition");
+                    texPosLocation = GL.GetAttribLocation(shader.Handle, "aTexCoord");
+                    GL.VertexAttribPointer(posLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
+                    GL.VertexAttribPointer(texPosLocation, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
+                    GL.EnableVertexAttribArray(posLocation);
+                    GL.EnableVertexAttribArray(texPosLocation);
 
                     indices = mesh.GetIndices();
 

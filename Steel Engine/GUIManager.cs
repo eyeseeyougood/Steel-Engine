@@ -26,31 +26,17 @@ namespace Steel_Engine.GUI
             topBarPanel.name = "topbarBG";
             topBarPanel.renderOrder = -2;
 
-            GUIText simulatingText = new GUIText(new Vector3(0, -3.5f, 0), new Vector2(0f, -1f), 0.07f, "Not Simulating", @"C:\Windows\Fonts\Arial.ttf", 300f, new Vector4(0, 0, 0, 50));
+            GUIText simulatingText = new GUIText(new Vector3(0, -3.5f, 0), new Vector2(0f, -1f), 0.07f, "Not Simulating", @"C:\Windows\Fonts\Arial.ttf", 300f, new Vector4(0, 0, 0, 50), new Vector4(230, 230, 230, 255));
             simulatingText.PreloadText("Simulating");
             simulatingText.name = "topbarSimText";
             simulatingText.renderOrder = -1;
 
-            string arrowPath = InfoManager.currentDir + @$"EngineResources\EngineTextures\Arrow1.png";
-            if (!InfoManager.isBuild)
-            {
-                arrowPath = InfoManager.currentDevPath + @$"EngineResources\EngineTextures\Arrow1.png";
-            }
-            string arrow2Path = InfoManager.currentDir + @$"EngineResources\EngineTextures\Arrow2.png";
-            if (!InfoManager.isBuild)
-            {
-                arrow2Path = InfoManager.currentDevPath + @$"EngineResources\EngineTextures\Arrow2.png";
-            }
-            string plusB1Path = InfoManager.currentDir + @$"EngineResources\EngineTextures\PlusButton1.png";
-            if (!InfoManager.isBuild)
-            {
-                plusB1Path = InfoManager.currentDevPath + @$"EngineResources\EngineTextures\PlusButton1.png";
-            }
-            string plusB2Path = InfoManager.currentDir + @$"EngineResources\EngineTextures\PlusButton2.png";
-            if (!InfoManager.isBuild)
-            {
-                plusB2Path = InfoManager.currentDevPath + @$"EngineResources\EngineTextures\PlusButton2.png";
-            }
+            string arrowPath = InfoManager.usingDirectory + @$"EngineResources\EngineTextures\Arrow1.png";
+            string arrow2Path = InfoManager.usingDirectory + @$"EngineResources\EngineTextures\Arrow2.png";
+            string plusB1Path = InfoManager.usingDirectory + @$"EngineResources\EngineTextures\PlusButton1.png";
+            string plusB2Path = InfoManager.usingDirectory + @$"EngineResources\EngineTextures\PlusButton2.png";
+            string PanelUnpressed = InfoManager.usingDirectory + @$"EngineResources\EngineTextures\PanelUnpressed.png";
+            string PanelPressed = InfoManager.usingDirectory + @$"EngineResources\EngineTextures\PanelPressed.png";
             GUIButton xpButton = new GUIButton(new Vector3(0, -12.5f, 0), new Vector2(-0.5f, -1f), new Vector2(0.05f, 0.05f), arrowPath);
             xpButton.SetPressedImage(arrow2Path);
             xpButton.buttonHold += EngineGUIEventManager.XPButtonHold;
@@ -95,6 +81,21 @@ namespace Steel_Engine.GUI
             createEmpty.renderOrder = -1;
             */
 
+            // Rebuild
+            GUIButton rebuildButton = new GUIButton(new Vector3(10f, -15f, 0), new Vector2(-1f, -1f), new Vector2(0.09f, 0.09f), PanelUnpressed);
+            rebuildButton.SetPressedImage(PanelPressed);
+            rebuildButton.buttonHold += EngineGUIEventManager.UnlockRebuild;
+            rebuildButton.renderOrder = -1;
+            //rebuildButton.visible = false;
+
+            GUIText rebuildText1 = new GUIText(new Vector3(10f, -11f, 0), new Vector2(-1f, -1f), 0.04f, "Unlock", @"C:\Windows\Fonts\Arial.ttf", 300f, new Vector4(0, 0, 0, 0));
+            rebuildText1.name = "RebuildText1";
+            rebuildText1.renderOrder = -1;
+
+            GUIText rebuildText2 = new GUIText(new Vector3(10f, -19f, 0), new Vector2(-1f, -1f), 0.04f, "Rebuild", @"C:\Windows\Fonts\Arial.ttf", 300f, new Vector4(0, 0, 0, 0));
+            rebuildText2.name = "RebuildText2";
+            rebuildText2.renderOrder = -1;
+
             // heirarchy
             GUIImage heirarchyBG = new GUIImage(new Vector3(39, -158f, 0), new Vector2(-1f, -1f), new Vector2(0.4f, 0.9f), new Vector3(45, 45, 45) / 255.0f);
             heirarchyBG.name = "heirarchyBG";
@@ -127,6 +128,9 @@ namespace Steel_Engine.GUI
             AddGUIElement(zpButton);
             AddGUIElement(zmButton);
             AddGUIElement(topBarPanel);
+            AddGUIElement(rebuildButton);
+            AddGUIElement(rebuildText1);
+            AddGUIElement(rebuildText2);
             AddGUIElement(heirarchyBG);
             //AddGUIElement(createEmpty); // add later
             AddGUIElement(inspectorBG);
@@ -205,10 +209,7 @@ namespace Steel_Engine.GUI
 
         public static void Cleanup()
         {
-            foreach (GUIElement element in guiElements)
-            {
-                element.CleanUp();
-            }
+            // nothing to clean up atm
         }
 
         public static Bitmap Write_Text(string text, string fontName, float size)
@@ -305,6 +306,23 @@ namespace Steel_Engine.GUI
             Bitmap bmp = new Bitmap((int)MathF.Round(fullRect.Width) + 1, (int)MathF.Round(fullRect.Height) + 1);
             Color bgColour = Color.FromArgb((int)bg255.W, (int)bg255.Y, (int)bg255.Z, (int)bg255.X);
             return Write_Text(bmp, text, destRect, true, fontName, false, false, bgColour);
+        }
+
+        public static Bitmap Write_Text(string text, string fontName, float size, Vector4 bg255, Vector4 txt255, Rectangle destRect, Rectangle fullRect)
+        {
+            Font f = new Font(fontName, size, GraphicsUnit.Pixel);
+            SizeF result;
+            using (Bitmap b = new Bitmap(100, 100))
+            {
+                using (Graphics g = Graphics.FromImage(b))
+                {
+                    result = g.MeasureString(text, f);
+                }
+            }
+            Bitmap bmp = new Bitmap((int)MathF.Round(fullRect.Width) + 1, (int)MathF.Round(fullRect.Height) + 1);
+            Color bgColour = Color.FromArgb((int)bg255.W, (int)bg255.Y, (int)bg255.Z, (int)bg255.X);
+            Color textColour = Color.FromArgb((int)txt255.W, (int)txt255.Y, (int)txt255.Z, (int)txt255.X);
+            return Write_Text(bmp, text, destRect, true, fontName, false, false, bgColour, textColour);
         }
 
         public static Bitmap Write_Text(Bitmap i, string s, Rectangle r, bool centered, string font, bool bold, bool italic, Color bgColour)

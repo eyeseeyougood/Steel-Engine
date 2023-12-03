@@ -137,11 +137,11 @@ namespace Steel_Engine
             edges = tempEdgeArr.ToList();
         }
 
-        public void SetColour(Vector3 colour)
+        public void SetColour(Vector3 zeroToOne)
         {
             foreach (SteelTriangle i in triangles)
             {
-                i.SetColour(colour);
+                i.SetColour(zeroToOne);
             }
 
             RefreshTriangles();

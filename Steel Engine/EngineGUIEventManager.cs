@@ -10,7 +10,7 @@ namespace Steel_Engine
 {
     public class EngineGUIEventManager
     {
-        public static void AddComponentEvent(string buttonName, params object[] args)
+        public static void AddComponentEvent(float deltaTime, string buttonName, params object[] args)
         {
             if (GUIManager.selectedHeirarchyObject != null)
             {
@@ -18,7 +18,12 @@ namespace Steel_Engine
             }
         }
 
-        public static void CreateEmpty(string buttonName, params object[] args)
+        public static void UnlockRebuild(float deltaTime, string buttonName, params object[] args)
+        {
+            BuildManager.UnlockRebuild();
+        }
+
+        public static void CreateEmpty(float deltaTime, string buttonName, params object[] args)
         {
             GameObject go = new GameObject(RenderShader.ShadeFlat, RenderShader.ShadeFlat);
             go.id = SceneManager.gameObjects.Count+1;
@@ -29,7 +34,7 @@ namespace Steel_Engine
             heirarchyButtonObject.visible = false;
             heirarchyButtonObject.renderOrder = -1;
             heirarchyButtonObject.name = go.id.ToString() + " button object";
-            heirarchyButtonObject.buttonDown += EngineGUIEventManager.SelectHeirarchyObject;
+            heirarchyButtonObject.buttonDown += SelectHeirarchyObject;
             GUIImage heirarchyImageObject = new GUIImage(Vector3.Zero, Vector2.Zero, new Vector2(0.38f, 0.03f), new Vector4(0, 0, 0, 100));
             heirarchyImageObject.parentGUI = heirarchyButtonObject;
             heirarchyImageObject.name = go.id.ToString() + " image object";

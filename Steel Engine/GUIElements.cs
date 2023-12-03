@@ -1,5 +1,5 @@
 ﻿using OpenTK.Mathematics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using Steel_Engine.Common;
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,7 @@ using System.Drawing.Imaging;
 using System.Drawing;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Threading;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Steel_Engine.GUI
 {
@@ -70,27 +71,19 @@ namespace Steel_Engine.GUI
         public GUIElement parentGUI = null;
         public bool visible = true;
 
-        public int textureId { get; private set; }
-        public Bitmap texture { get; private set; }
         public GameObject renderObject { get; private set; }
-        public List<string> textures { get; private set; }
+        public List<Texture> textures { get; private set; }
+        public Texture currentTexture { get; private set; }
+        public int texID { get; private set; }
 
         public GUIElement(Vector3 position, Vector2 anchor, RenderShader vShader, RenderShader fShader)
         {
             addedPosition = position;
             this.anchor = anchor;
             
-            textures = new List<string>();
+            textures = new List<Texture>();
 
-            string path = "";
-            if (InfoManager.isBuild)
-            {
-                path = InfoManager.currentDir + @$"\EngineResources\EngineModels\Quad.obj";
-            }
-            else
-            {
-                path = InfoManager.currentDevPath + @$"\EngineResources\EngineModels\Quad.obj";
-            }
+            string path = InfoManager.usingDirectory + @$"\EngineResources\EngineModels\Quad.obj";
 
             renderObject = new GameObject(vShader, fShader);
             renderObject.mesh = OBJImporter.LoadOBJFromPath(path, true);
@@ -114,9 +107,11 @@ namespace Steel_Engine.GUI
             }
         }
 
-        public void ApplyTexture(Bitmap bmp)
+        public void ApplyTexture(Texture texture)
         {
-            texture = bmp;
+            renderObject.LoadTexture(texture);
+            currentTexture = texture;
+            texID = textures.IndexOf(texture);
         }
 
         public virtual void Render()
@@ -136,23 +131,6 @@ namespace Steel_Engine.GUI
             if (visible)
             {
                 renderObject.Render();
-            }
-        }
-        public virtual void CleanUp()
-        {
-            foreach (string _texture in textures)
-            {
-                string path = "";
-                if (InfoManager.isBuild)
-                {
-                    path = InfoManager.currentDir + @$"\Temp\{_texture}.png";
-                }
-                else
-                {
-                    path = InfoManager.currentDevPath + @$"\Temp\{_texture}.png";
-                }
-
-                File.Delete(path);
             }
         }
     }
@@ -176,22 +154,14 @@ namespace Steel_Engine.GUI
 
         public void SetPressedImage(string name, string extension)
         {
-            string path = "";
-            if (InfoManager.isBuild)
-            {
-                path = InfoManager.dataPath + @$"/Textures/{name}{extension}";
-            }
-            else
-            {
-                path = InfoManager.devDataPath + @$"/Textures/{name}{extension}";
-            }
+            string path = InfoManager.usingDataPath + @$"/Textures/{name}{extension}";
 
-            pressedImage = Texture.LoadFromFile(path);
+            pressedImage = Texture.LoadFromFile(path, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
         }
 
         public void SetPressedImage(string path)
         {
-            pressedImage = Texture.LoadFromFile(path);
+            pressedImage = Texture.LoadFromFile(path, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
         }
 
         public override void Tick(float deltaTime, params object[] args)
@@ -289,24 +259,16 @@ namespace Steel_Engine.GUI
 
         public GUIButton(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string extension) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            string path = "";
-            if (InfoManager.isBuild)
-            {
-                path = InfoManager.dataPath + @$"/Textures/{texture}{extension}";
-            }
-            else
-            {
-                path = InfoManager.devDataPath + @$"/Textures/{texture}{extension}";
-            }
+            string path = InfoManager.usingDataPath + @$"/Textures/{texture}{extension}";
 
-            normalImage = Texture.LoadFromFile(path);
+            normalImage = Texture.LoadFromFile(path, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
             renderObject.LoadTexture(normalImage);
             this.scale = scale;
         }
 
         public GUIButton(Vector3 position, Vector2 anchor, Vector2 scale, string texturePath) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            normalImage = Texture.LoadFromFile(texturePath);
+            normalImage = Texture.LoadFromFile(texturePath, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
             renderObject.LoadTexture(normalImage);
             this.scale = scale;
         }
@@ -325,163 +287,124 @@ namespace Steel_Engine.GUI
         public float size;
         public float scale;
         private Rectangle rect;
-        private Vector4 bgColour = Vector4.One;
+        private Vector4 bgColour = Vector4.Zero;
+        private Vector4 txtColour = Vector4.UnitW*255;
+        private Vector2i dimentions = Vector2i.Zero;
 
         public GUIText(Vector3 position, Vector2 anchor, float scale, string text, string font, float size) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            ApplyTexture(GUIManager.Write_Text(text, font, size));
+            Bitmap data = GUIManager.Write_Text(text, font, size);
+            byte[] imageData = InfoManager.BitmapToByteArray(data);
+            Texture texture = Texture.FromData(text, data.Width, data.Height, imageData);
 
             this.text = text;
             this.font = font;
             this.size = size;
 
-            if (!textures.Contains(text))
-                textures.Add(text);
-
-            string path = "";
-            if (InfoManager.isBuild)
-            {
-                path = InfoManager.currentDir + @$"\Temp\{text}.png";
-            }
-            else
-            {
-                path = InfoManager.currentDevPath + @$"\Temp\{text}.png";
-            }
-
-            texture.Save(path);
+            if (!textures.Contains(texture))
+                textures.Add(texture);
 
             this.scale = scale;
 
             rect = new Rectangle();
             rect.X = 0;
             rect.Y = 0;
-            rect.Width = texture.Width;
-            rect.Height = texture.Height;
-            renderObject.LoadTexture(path);
+            rect.Width = data.Width;
+            rect.Height = data.Height;
+
+            dimentions = new Vector2i(data.Width, data.Height);
+
+            ApplyTexture(texture);
         }
 
-        public GUIText(Vector3 position, Vector2 anchor, float scale, string text, string font, float size, Vector4 bgColour) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
+        public GUIText(Vector3 position, Vector2 anchor, float scale, string text, string font, float size, Vector4 bg255) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            ApplyTexture(GUIManager.Write_Text(text, font, size, bgColour));
-
-            this.bgColour = bgColour;
-
             this.text = text;
             this.font = font;
             this.size = size;
 
-            if (!textures.Contains(text))
-                textures.Add(text);
+            Bitmap data = GUIManager.Write_Text(text, font, size, bg255);
+            byte[] imageData = InfoManager.BitmapToByteArray(data);
+            Texture texture = Texture.FromData(text, data.Width, data.Height, imageData);
 
-            string path = "";
-            if (InfoManager.isBuild)
-            {
-                path = InfoManager.currentDir + @$"\Temp\{text}.png";
-            }
-            else
-            {
-                path = InfoManager.currentDevPath + @$"\Temp\{text}.png";
-            }
+            this.bgColour = bg255;
 
-            texture.Save(path);
+            if (!textures.Contains(texture))
+                textures.Add(texture);
 
             this.scale = scale;
 
             rect = new Rectangle();
             rect.X = 0;
             rect.Y = 0;
-            rect.Width = texture.Width;
-            rect.Height = texture.Height;
-            renderObject.LoadTexture(path);
+            rect.Width = data.Width;
+            rect.Height = data.Height;
+
+            dimentions = new Vector2i(data.Width, data.Height);
+
+            ApplyTexture(texture);
         }
 
-        public GUIText(Vector3 position, Vector2 anchor, float scale, string text, string font, float size, Vector4 bgColour, Vector4 textColour) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
+        public GUIText(Vector3 position, Vector2 anchor, float scale, string text, string font, float size, Vector4 bg255, Vector4 text255) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            ApplyTexture(GUIManager.Write_Text(text, font, size, bgColour, textColour));
+            Bitmap data = GUIManager.Write_Text(text, font, size, bg255, text255);
+            byte[] imageData = InfoManager.BitmapToByteArray(data);
+            Texture texture = Texture.FromData(text, data.Width, data.Height, imageData);
 
-            this.bgColour = bgColour;
+            this.bgColour = bg255;
+            this.txtColour = text255;
 
             this.text = text;
             this.font = font;
             this.size = size;
 
-            if (!textures.Contains(text))
-                textures.Add(text);
-
-            string path = "";
-            if (InfoManager.isBuild)
-            {
-                path = InfoManager.currentDir + @$"\Temp\{text}.png";
-            }
-            else
-            {
-                path = InfoManager.currentDevPath + @$"\Temp\{text}.png";
-            }
-
-            texture.Save(path);
+            if (!textures.Contains(texture))
+                textures.Add(texture);
 
             this.scale = scale;
 
             rect = new Rectangle();
             rect.X = 0;
             rect.Y = 0;
-            rect.Width = texture.Width;
-            rect.Height = texture.Height;
-            renderObject.LoadTexture(path);
+            rect.Width = data.Width;
+            rect.Height = data.Height;
+
+            dimentions = new Vector2i(data.Width, data.Height);
+
+            ApplyTexture(texture);
         }
 
         public void PreloadText(string text)
         {
-            string normalText = this.text;
+            int normalText = texID;
             SetText(text);
             SetText(normalText);
+        }
+
+        public void SetText(int id)
+        {
+            ApplyTexture(textures[id]);
         }
 
         public void SetText(string text)
         {
             this.text = text;
-            if (!textures.Contains(text))
-                textures.Add(text);
 
-            string path = "";
-            if (InfoManager.isBuild)
-            {
-                path = InfoManager.currentDir + @$"\Temp\{text}.png";
-            }
-            else
-            {
-                path = InfoManager.currentDevPath + @$"\Temp\{text}.png";
-            }
+            Bitmap data = GUIManager.Write_Text(text, font, size, bgColour, txtColour, rect, rect);
+            byte[] imageData = InfoManager.BitmapToByteArray(data);
+            Texture texture = Texture.FromData(text, data.Width, data.Height, imageData);
 
-            string path1 = "";
-            if (InfoManager.isBuild)
-            {
-                path1 = InfoManager.currentDir + @$"\EngineResources\EngineModels\Quad.obj";
-            }
-            else
-            {
-                path1 = InfoManager.currentDevPath + @$"\EngineResources\EngineModels\Quad.obj";
-            }
+            if (!textures.Contains(texture))
+                textures.Add(texture);
 
-            if (!File.Exists(path))
-            {
-                ApplyTexture(GUIManager.Write_Text(text, font, size, bgColour));
-                Rectangle dst = new Rectangle();
-                dst.X = (int)((float)(rect.Width - texture.Width) / 2.0f);
-                dst.Y = (int)((float)(rect.Height - texture.Height) / 2.0f);
-                dst.Width = texture.Width;
-                dst.Height = texture.Height;
-                ApplyTexture(GUIManager.Write_Text(text, font, size, bgColour, dst, rect));
-                texture.Save(path);
-            }
+            dimentions = new Vector2i(data.Width, data.Height);
 
-            renderObject.LoadTexture(path);
-            renderObject.mesh = OBJImporter.LoadOBJFromPath(path1, true);
+            ApplyTexture(texture);
         }
 
         public override void Render()
         {
-            renderObject.scale = new Vector3(0.07f * (float)texture.Width, 0.07f * (float)texture.Height, 1f) * 0.025f * scale;
+            renderObject.scale = new Vector3(0.07f * (float)dimentions.X, 0.07f * (float)dimentions.Y, 1f) * 0.025f * scale;
             base.Render();
         }
     }
@@ -500,61 +423,30 @@ namespace Steel_Engine.GUI
 
         public void SetColour(Vector4 colour)
         {
-            string path = "";
-            if (InfoManager.isBuild)
-            {
-                path = InfoManager.currentDir + @$"\Temp\{colour}.png";
-            }
-            else
-            {
-                path = InfoManager.currentDevPath + @$"\Temp\{colour}.png";
-            }
-
             Bitmap genImage = new Bitmap(1, 1);
             genImage.SetPixel(0, 0, Color.FromArgb((int)colour.W, (int)colour.X, (int)colour.Y, (int)colour.Z));
-            genImage.Save(path);
-            textures.Add(colour.ToString());
-            image = Texture.LoadFromFile(path);
-            renderObject.LoadTexture(image);
-            renderObject.Load();
+            byte[] imageData = InfoManager.BitmapToByteArray(genImage);
+            Texture texture = Texture.FromData(colour.ToString(), genImage.Width, genImage.Height, imageData);
+
+            if (!textures.Contains(texture))
+                textures.Add(texture);
+
+            image = texture;
+            ApplyTexture(texture);
         }
 
         public GUIImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector4 colour) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            string path = "";
-            if (InfoManager.isBuild)
-            {
-                path = InfoManager.currentDir + @$"\Temp\{colour}.png";
-            }
-            else
-            {
-                path = InfoManager.currentDevPath + @$"\Temp\{colour}.png";
-            }
-
-            Bitmap genImage = new Bitmap(1, 1);
-            genImage.SetPixel(0, 0, Color.FromArgb((int)colour.W, (int)colour.X, (int)colour.Y, (int)colour.Z));
-            genImage.Save(path);
-            textures.Add(colour.ToString());
-            image = Texture.LoadFromFile(path);
-            renderObject.LoadTexture(image);
-            renderObject.Load();
+            SetColour(colour);
             this.scale = scale;
         }
 
         public GUIImage(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string extension) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            string path = "";
-            if (InfoManager.isBuild)
-            {
-                path = InfoManager.dataPath + @$"/Textures/{texture}{extension}";
-            }
-            else
-            {
-                path = InfoManager.devDataPath + @$"/Textures/{texture}{extension}";
-            }
+            string path = InfoManager.usingDataPath + @$"/Textures/{texture}{extension}";
 
-            image = Texture.LoadFromFile(path);
-            renderObject.LoadTexture(image);
+            image = Texture.LoadFromFile(path, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
+            ApplyTexture(image);
             this.scale = scale;
         }
 
@@ -579,15 +471,7 @@ namespace Steel_Engine.GUI
 
         public GUIWorldImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector4 colour) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            string path = "";
-            if (InfoManager.isBuild)
-            {
-                path = InfoManager.currentDir + @$"\Temp\{colour}.png";
-            }
-            else
-            {
-                path = InfoManager.currentDevPath + @$"\Temp\{colour}.png";
-            }
+            string path = InfoManager.usingDirectory + @$"\Temp\{colour}.png";
 
             Bitmap genImage = new Bitmap(1, 1);
             genImage.SetPixel(0, 0, Color.FromArgb((int)colour.W, (int)colour.X, (int)colour.Y, (int)colour.Z));
@@ -600,15 +484,7 @@ namespace Steel_Engine.GUI
 
         public GUIWorldImage(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string extension) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            string path = "";
-            if (InfoManager.isBuild)
-            {
-                path = InfoManager.dataPath + @$"/Textures/{texture}{extension}";
-            }
-            else
-            {
-                path = InfoManager.devDataPath + @$"/Textures/{texture}{extension}";
-            }
+            string path = InfoManager.usingDataPath + @$"/Textures/{texture}{extension}";
 
             image = Texture.LoadFromFile(path);
             renderObject.LoadTexture(image);
@@ -627,159 +503,6 @@ namespace Steel_Engine.GUI
             renderObject.scale = new Vector3(scale.X, scale.Y, 1f);
             renderObject.SetRotation(InfoManager.engineCamera.GetViewMatrix().ExtractRotation().Inverted());
             renderObject.position = addedPosition;
-            renderObject.Render();
-        }
-    }
-
-    // EXPERIMENTAL CODE (NOT WORKING CORRECTLY)
-    public class GUIWorldButton : GUIElement
-    {
-        public delegate void GUIButtonDown();
-        public event GUIButtonDown buttonDown = new GUIButtonDown(_ButtonDown);
-        public delegate void GUIButtonHold(float deltaTime);
-        public event GUIButtonHold buttonHold = new GUIButtonHold(_ButtonHold);
-        public delegate void GUIButtonUp();
-        public event GUIButtonUp buttonUp = new GUIButtonUp(_ButtonUp);
-        Vector2 scale;
-        private Texture normalImage = null;
-        private Texture pressedImage = null;
-        private Texture currentImage = null;
-
-        private static void _ButtonDown() { }
-        private static void _ButtonHold(float deltaTime) { }
-        private static void _ButtonUp() { }
-
-        public void SetPressedImage(string name, string extension)
-        {
-            string path = "";
-            if (InfoManager.isBuild)
-            {
-                path = InfoManager.dataPath + @$"/Textures/{name}{extension}";
-            }
-            else
-            {
-                path = InfoManager.devDataPath + @$"/Textures/{name}{extension}";
-            }
-
-            pressedImage = Texture.LoadFromFile(path);
-        }
-
-        public override void Tick(float deltaTime, params object[] args)
-        {
-            Vector2 mousePosition = InputManager.mousePosition;
-            bool mousePressed = InputManager.GetMouseButtonDown(MouseButton.Left);
-            bool mouseDown = InputManager.GetMouseButton(MouseButton.Left);
-            bool mouseUp = InputManager.GetMouseButtonUp(MouseButton.Left);
-            if (mousePressed)
-            {
-                if (CheckBounds(mousePosition))
-                {
-                    buttonDown.Invoke();
-                }
-            }
-            if (mouseUp)
-            {
-                if (CheckBounds(mousePosition))
-                {
-                    buttonUp.Invoke();
-                }
-            }
-            if (mouseDown)
-            {
-                if (CheckBounds(mousePosition))
-                {
-                    buttonHold.Invoke(deltaTime);
-                    if (pressedImage != null)
-                    {
-                        renderObject.LoadTexture(pressedImage);
-                        currentImage = pressedImage;
-                    }
-                }
-            }
-            else
-            {
-                if (normalImage != null && currentImage != normalImage)
-                {
-                    renderObject.LoadTexture(normalImage);
-                    currentImage = normalImage;
-                }
-            }
-
-            base.Tick(deltaTime, args);
-        }
-
-        private bool CheckBounds(Vector2 mousePosition)
-        {
-            bool result = false;
-
-            // Step 1: find line plane intersection point
-            SteelRay ray = SceneManager.CalculateRay(mousePosition);
-            SteelTriangle triangle = renderObject.mesh.triangles[0];
-            Vector3 p1 = triangle.GetVertex(0).position;
-            p1 = renderObject.position + InfoManager.engineCamera.Right * p1.X * renderObject.scale.X + InfoManager.engineCamera.Up * p1.Y * renderObject.scale.Y + InfoManager.engineCamera.Front * p1.Z * renderObject.scale.Z;
-            Vector3 p2 = triangle.GetVertex(1).position;
-            p2 = renderObject.position + InfoManager.engineCamera.Right * p2.X * renderObject.scale.X + InfoManager.engineCamera.Up * p2.Y * renderObject.scale.Y + InfoManager.engineCamera.Front * p2.Z * renderObject.scale.Z;
-            Vector3 p3 = triangle.GetVertex(2).position;
-            p3 = renderObject.position + InfoManager.engineCamera.Right * p3.X * renderObject.scale.X + InfoManager.engineCamera.Up * p3.Y * renderObject.scale.Y + InfoManager.engineCamera.Front * p3.Z * renderObject.scale.Z;
-            Vector3 intersectionPoint = MathFExtentions.LinePlaneIntersection(p1, p2, p3, ray.worldPosition, ray.worldDirection);
-
-            // Step 2: find two perpendicular vectors of quad and do dot product comparisons
-            Vector3 bottomLeftUp = p2 - p3;
-            Vector3 bottomLeftRight = p1 - p3;
-            Vector3 intersectionPointDifference = intersectionPoint - p3;
-
-            float verticalProduct = Vector3.Dot(intersectionPointDifference, bottomLeftUp.Normalized());
-            float horizontalProduct = Vector3.Dot(intersectionPointDifference, bottomLeftRight.Normalized());
-
-            // Step 3: check for dot product size and sign
-            if (verticalProduct >= 0) // is positive
-            {
-                if (verticalProduct <= bottomLeftUp.Length) // might change to LengthFast if too slow
-                {
-                    // is within the height of quad
-                    if (horizontalProduct >= 0)
-                    {
-                        if (horizontalProduct <= bottomLeftRight.Length)
-                        {
-                            // is within the width of the quad
-                            // and so is within the quad it self
-                            result = true;
-                        }
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        public GUIWorldButton(Vector3 position, Vector2 anchor, Vector2 scale) : base(position, anchor, RenderShader.ShadeFlat, RenderShader.ShadeFlat)
-        {
-            this.scale = scale;
-            position -= new Vector3(0, renderObject.position.Y/2.0f, 0);
-        }
-
-        public GUIWorldButton(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string extension) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
-        {
-            string path = "";
-            if (InfoManager.isBuild)
-            {
-                path = InfoManager.dataPath + @$"/Textures/{texture}{extension}";
-            }
-            else
-            {
-                path = InfoManager.devDataPath + @$"/Textures/{texture}{extension}";
-            }
-
-            renderObject.LoadTexture(path);
-            normalImage = Texture.LoadFromFile(path);
-            this.scale = scale;
-            this.addedPosition += new Vector3(0, -renderObject.position.Y, 0);
-        }
-
-        public override void Render()
-        {
-            renderObject.scale = new Vector3(scale.X, scale.Y, 1f);
-            renderObject.SetRotation(InfoManager.engineCamera.GetViewMatrix().ExtractRotation().Inverted());
             renderObject.Render();
         }
     }

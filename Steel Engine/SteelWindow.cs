@@ -42,12 +42,15 @@ namespace Steel_Engine
             InfoManager.engineCamera = new Camera(Vector3.UnitZ * 3, Size.X / Size.Y);
             InfoManager.engineCamera.Fov = 90;
 
+            InfoManager.Tick(0);
+
             CursorState = CursorState.Grabbed;
 
             // Set events
             InfoManager.setWindowSize += SetWindowSize;
             InfoManager.setWindowState += SetWindowState;
             InfoManager.setWindowTitle += SetWindowTitle;
+            InfoManager.setWindowPosition += SetWindowPosition;
 
             // Test Code
             GameObject testObject = new GameObject(RenderShader.ShadeFlat, RenderShader.ShadeFlat);
@@ -110,6 +113,11 @@ namespace Steel_Engine
             Title = title;
         }
 
+        public void SetWindowPosition(Vector2i position)
+        {
+            ClientLocation = position;
+        }
+
         protected override void OnUpdateFrame(FrameEventArgs args)
         {
             base.OnUpdateFrame(args);
@@ -127,7 +135,7 @@ namespace Steel_Engine
             {
                 SceneManager.gameRunning = !SceneManager.gameRunning;
                 GUIText text = (GUIText)GUIManager.GetElementByName("topbarSimText");
-                text.SetText(SceneManager.gameRunning ? "Simulating" : "Not Simulating");
+                text.SetText(SceneManager.gameRunning ? 1 : 0);
             }
 
             InfoManager.Tick((float)args.Time);
@@ -162,11 +170,15 @@ namespace Steel_Engine
             SwapBuffers();
         }
 
+        protected override void OnMove(WindowPositionEventArgs e)
+        {
+            base.OnMove(e);
+            InfoManager.windowPosition = ClientLocation;
+        }
+
         protected override void OnMouseWheel(MouseWheelEventArgs e)
         {
             base.OnMouseWheel(e);
-
-            InfoManager.engineCamera.Fov -= e.OffsetY;
         }
 
         protected override void OnResize(ResizeEventArgs e)

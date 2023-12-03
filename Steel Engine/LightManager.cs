@@ -42,7 +42,7 @@ namespace Steel_Engine
 
         private static void AddLightGizmo(LightObject lo)
         {
-            GUIWorldImage go = new GUIWorldImage(lo.position, Vector2.Zero, new Vector2(0.2f, 0.2f), InfoManager.currentDir + "/EngineResources/EngineTextures/Gizmo_Light.png");
+            GUIWorldImage go = new GUIWorldImage(lo.position, Vector2.Zero, new Vector2(0.2f, 0.2f), InfoManager.usingDirectory + "/EngineResources/EngineTextures/Gizmo_Light.png");
             lightGizmos.Add(go, lights.IndexOf(lo));
         }
 

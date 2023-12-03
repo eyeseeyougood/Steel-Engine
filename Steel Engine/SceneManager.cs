@@ -82,26 +82,8 @@ namespace Steel_Engine
                 {
                     string newLine = line.Replace("/G ", "");
                     string[] parts = newLine.Split(" ");
-                    RenderShader vertShader = RenderShader.ShadeFlat;
-                    RenderShader fragShader = RenderShader.ShadeFlat;
-                    switch (parts[2])
-                    {
-                        case "SL":
-                            vertShader = RenderShader.ShadeLighting;
-                            break;
-                        case "STU":
-                            vertShader = RenderShader.ShadeTextureUnit;
-                            break;
-                    }
-                    switch (parts[3])
-                    {
-                        case "SL":
-                            fragShader = RenderShader.ShadeLighting;
-                            break;
-                        case "STU":
-                            fragShader = RenderShader.ShadeTextureUnit;
-                            break;
-                    }
+                    RenderShader vertShader = CheckRenderShaderShortenedName(parts[2]);
+                    RenderShader fragShader = CheckRenderShaderShortenedName(parts[3]);
                     GameObject go = new GameObject(vertShader, fragShader);
                     go.id = int.Parse(parts[0]);
                     go.name = parts[1];
@@ -113,7 +95,7 @@ namespace Steel_Engine
                     {
                         go.mesh.SetColour(new Vector3(float.Parse(parts[15]), float.Parse(parts[16]), float.Parse(parts[17])));
                     }
-                    if (parts.Length > 18 && vertShader == RenderShader.ShadeTextureUnit)
+                    if (parts.Length > 18 && (vertShader == RenderShader.ShadeTextureUnit || vertShader == RenderShader.ShadeTextureUnitHue))
                     {
                         string[] imageParts = parts[18].Split(".");
                         go.LoadTexture(imageParts[0], "."+imageParts[1]);
@@ -190,16 +172,35 @@ namespace Steel_Engine
                     string newLine = line.Replace("/S[startingCamera] ", "");
                     scene.startingcameraID = int.Parse(newLine);
                 }
-                if (line.StartsWith("/S[windowSize] "))
+                if (InfoManager.isBuild)
                 {
-                    string newLine = line.Replace("/S[windowSize] ", "");
-                    string[] parts = newLine.Split(" ");
-                    scene.windowSize = new Vector2(int.Parse(parts[0]), int.Parse(parts[1]));
+                    if (line.StartsWith("/S[windowSize] "))
+                    {
+                        string newLine = line.Replace("/S[windowSize] ", "");
+                        string[] parts = newLine.Split(" ");
+                        scene.windowSize = new Vector2(int.Parse(parts[0]), int.Parse(parts[1]));
+                    }
+                    if (line.StartsWith("/S[lockWindowSize] "))
+                    {
+                        string newLine = line.Replace("/S[lockWindowSize] ", "");
+                        scene.lockWindowSize = bool.Parse(newLine);
+                    }
                 }
-                if (line.StartsWith("/S[lockWindowSize] "))
+                if (line.StartsWith("/P "))
                 {
-                    string newLine = line.Replace("/S[lockWindowSize] ", "");
-                    scene.lockWindowSize = bool.Parse(newLine);
+                    string newLine = line.Replace("/P ", "");
+                    string[] parts = newLine.Split(' ');
+                    switch (parts[1].Split(':')[0])
+                    {
+                        case "ScaleMethod":
+                            TextureMinFilter minFilt = Enum.Parse<TextureMinFilter>(parts[0]);
+                            TextureMagFilter magFilt = Enum.Parse<TextureMagFilter>(parts[0]);
+                            foreach (string part in parts[1].Split(':').Skip(1))
+                            {
+                                scene.gameObjects[int.Parse(part)].ReloadTexture(minFilt, magFilt);
+                            }
+                            break;
+                    }
                 }
             }
             scene.sceneName = path.Split('\\').Last().Split('.').First();
@@ -208,15 +209,7 @@ namespace Steel_Engine
 
         public static void Init()
         {
-            string path = "";
-            if (InfoManager.isBuild)
-            {
-                path = InfoManager.dataPath + @"\Scenes\";
-            }
-            else
-            {
-                path = InfoManager.devDataPath + @"\Scenes\";
-            }
+            string path = InfoManager.usingDataPath + @"\Scenes\";
 
             foreach (string file in Directory.GetFiles(path))
             {
@@ -338,6 +331,20 @@ namespace Steel_Engine
             File.WriteAllLines(path, lines);
         }
 
+        private static RenderShader CheckRenderShaderShortenedName(string name)
+        {
+            RenderShader result = RenderShader.None;
+            foreach (RenderShader i in Enum.GetValues(typeof(RenderShader)))
+            {
+                if (ShortenRenderShaderName(i) == name)
+                {
+                    result = i;
+                    break;
+                }
+            }
+            return result;
+        }
+
         private static string ShortenRenderShaderName(RenderShader shader)
         {
             string result = "";
@@ -351,6 +358,9 @@ namespace Steel_Engine
                     break;
                 case RenderShader.ShadeLighting:
                     result = "SL";
+                    break;
+                case RenderShader.ShadeTextureUnitHue:
+                    result = "STUH";
                     break;
             }
             return result;
