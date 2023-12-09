@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using Steel_Engine.Tilemaps;
 
 namespace Steel_Engine
 {
@@ -17,6 +18,7 @@ namespace Steel_Engine
         private static int currentSceneID;
         public static List<Scene> scenes = new List<Scene>();
         public static List<GameObject> gameObjects = new List<GameObject>();
+        public static List<Tilemap> tilemaps = new List<Tilemap>();
         public static List<Camera> cameras = new List<Camera>();
         public static bool gameRunning;
 
@@ -38,11 +40,6 @@ namespace Steel_Engine
         {
             currentSceneID = buildIndex;
             scenes[currentSceneID].Load();
-            gameObjects.Clear();
-            Scene currentScene = GetActiveScene();
-            GameObject[] copy = new GameObject[currentScene.gameObjects.Count];
-            currentScene.gameObjects.CopyTo(copy);
-            gameObjects.AddRange(copy);
 
             // load all objects
             foreach (GameObject gameObject in gameObjects)
@@ -75,7 +72,7 @@ namespace Steel_Engine
                     string newLine = line.Replace("/L ", "");
                     string[] parts = newLine.Split(" ");
                     Vector3 pos = new Vector3(float.Parse(parts[0]), float.Parse(parts[1]), float.Parse(parts[2]));
-                    Vector3 col = LightManager.ColourFromRGB255(float.Parse(parts[3]), float.Parse(parts[4]), float.Parse(parts[5]));
+                    Vector3 col = new Vector3(float.Parse(parts[3]), float.Parse(parts[4]), float.Parse(parts[5]));
                     scene.AddLight(pos, col, float.Parse(parts[6]));
                 }
                 if (line.StartsWith("/G "))
@@ -243,6 +240,18 @@ namespace Steel_Engine
                 File.Delete(path);
 
             List<string> lines = new List<string>();
+            foreach (LightObject light in LightManager.lights)
+            {
+                string line = "/L ";
+                line += light.position.X + " ";
+                line += light.position.Y + " ";
+                line += light.position.Z + " ";
+                line += light.colour.X + " ";
+                line += light.colour.Y + " ";
+                line += light.colour.Z + " ";
+                line += light.intensity;
+                lines.Add(line);
+            }
             int id = 0;
             foreach (GameObject gameObject in gameObjects)
             {

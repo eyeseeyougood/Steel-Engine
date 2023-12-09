@@ -9,6 +9,7 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Steel_Engine.Common;
 using Steel_Engine.GUI;
+using Steel_Engine.Tilemaps;
 using Zamak;
 
 namespace Steel_Engine
@@ -160,6 +161,11 @@ namespace Steel_Engine
             foreach (GameObject gameObject in SceneManager.gameObjects)
             {
                 gameObject.Render();
+            }
+
+            foreach (Tilemap tilemap in SceneManager.tilemaps)
+            {
+                tilemap.Render();
             }
 
             GL.Disable(EnableCap.DepthTest);

@@ -13,6 +13,7 @@ namespace Steel_Engine
         public Vector3 position;
         public Vector3 colour;
         public Vector2 texCoord { get; private set; } // -1, -1 for none
+        public Vector3 vertexNormal { get; private set; } // -1, -1 for none
         public override bool Equals(object? obj)
         {
             //Check for null and compare run-time types.
@@ -23,7 +24,7 @@ namespace Steel_Engine
             else
             {
                 SteelVertex p = (SteelVertex)obj;
-                return (position == p.position) && (colour == p.colour) && (texCoord == p.texCoord);
+                return (position == p.position) && (colour == p.colour) && (texCoord == p.texCoord) && (vertexNormal == p.vertexNormal);
             }
         }
 
@@ -31,12 +32,26 @@ namespace Steel_Engine
         {
             position = pos;
             colour = Vector3.One;
+            vertexNormal = Vector3.Zero;
         }
 
         public SteelVertex(Vector3 pos, Vector3 _colour)
         {
             position = pos;
             colour = _colour;
+            vertexNormal = Vector3.Zero;
+        }
+
+        public SteelVertex(Vector3 pos, Vector3 _colour, Vector3 _normal)
+        {
+            position = pos;
+            colour = _colour;
+            vertexNormal = _normal;
+        }
+
+        public void SetNormal(Vector3 normal)
+        {
+            vertexNormal = normal;
         }
 
         public void AssignUV(Vector2 refPoint)
@@ -46,7 +61,7 @@ namespace Steel_Engine
 
         public float[] GetVertexData()
         {
-            float[] data = new float[8];
+            float[] data = new float[11];
 
             data[0] = position.X;
             data[1] = position.Y;
@@ -56,15 +71,18 @@ namespace Steel_Engine
             data[5] = colour.Z;
             data[6] = texCoord.X;
             data[7] = texCoord.Y;
+            data[8] = vertexNormal.X;
+            data[9] = vertexNormal.Y;
+            data[10] = vertexNormal.Z;
 
             return data;
         }
 
         public float[] GetVertexData(Quaternion preRotation) // again janky af but only used in GUI so probably ok
         {
-            float[] data = new float[8];
+            float[] data = new float[11];
 
-            Vector3 newPos = position * Matrix3.CreateFromQuaternion(preRotation);
+            Vector3 newPos = position * Matrix3.CreateFromQuaternion(preRotation); // i couldn't be asked to make it rotate the normals so lighting doesn't work with this
 
             data[0] = newPos.X;
             data[1] = newPos.Y;
@@ -74,6 +92,9 @@ namespace Steel_Engine
             data[5] = colour.Z;
             data[6] = texCoord.X;
             data[7] = texCoord.Y;
+            data[8] = vertexNormal.X;
+            data[9] = vertexNormal.Y;
+            data[10] = vertexNormal.Z;
 
             return data;
         }

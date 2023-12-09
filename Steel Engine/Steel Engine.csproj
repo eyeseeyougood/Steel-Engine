@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <Folder Include="EngineResources\EngineModels\" />
+    <Folder Include="EngineResources\NewFolder\" />
     <Folder Include="Resources\Textures\Animations\TestAnimation\" />
     <Folder Include="Temp\" />
     <Folder Include="Zamak\ServerCode\" />

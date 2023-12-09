@@ -66,15 +66,5 @@ namespace Steel_Engine
             AddLightGizmo(lo);
             return lo;
         }
-
-        public static Vector3 ColourFromRGB255(Vector3 RGB255)
-        {
-            return RGB255 / 255;
-        }
-        
-        public static Vector3 ColourFromRGB255(float RGB255X, float RGB255Y, float RGB255Z)
-        {
-            return new Vector3(RGB255X, RGB255Y, RGB255Z) / 255;
-        }
     }
 }

@@ -90,11 +90,11 @@ namespace Steel_Engine.GUI
 
             GUIText rebuildText1 = new GUIText(new Vector3(10f, -11f, 0), new Vector2(-1f, -1f), 0.04f, "Unlock", @"C:\Windows\Fonts\Arial.ttf", 300f, new Vector4(0, 0, 0, 0));
             rebuildText1.name = "RebuildText1";
-            rebuildText1.renderOrder = -1;
+            rebuildText1.renderOrder = 0;
 
             GUIText rebuildText2 = new GUIText(new Vector3(10f, -19f, 0), new Vector2(-1f, -1f), 0.04f, "Rebuild", @"C:\Windows\Fonts\Arial.ttf", 300f, new Vector4(0, 0, 0, 0));
             rebuildText2.name = "RebuildText2";
-            rebuildText2.renderOrder = -1;
+            rebuildText2.renderOrder = 0;
 
             // heirarchy
             GUIImage heirarchyBG = new GUIImage(new Vector3(39, -158f, 0), new Vector2(-1f, -1f), new Vector2(0.4f, 0.9f), new Vector3(45, 45, 45) / 255.0f);

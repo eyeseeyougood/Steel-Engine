@@ -16,13 +16,16 @@ namespace Steel_Engine.GUI
 {
     public class ImageReference
     {
-        public string name;
-        public string extention;
+        public string path;
 
-        public ImageReference(string name, string extention)
+        public ImageReference(string name, string extension)
         {
-            this.name = name;
-            this.extention = extention;
+            this.path = InfoManager.usingDataPath + @$"\Textures\{name}{extension}";
+        }
+
+        public ImageReference(string path)
+        {
+            this.path = path;
         }
     }
 

@@ -30,7 +30,10 @@ namespace Zamak
 
         public static void SendData(params object[] data)
         {
-            byte[] byteData = ObjectSerialiser.SerialiseObjects(data);
+            List<object> packetData = new List<object>();
+            packetData.Add("[{UMP}]");
+            packetData.AddRange(data);
+            byte[] byteData = ObjectSerialiser.SerialiseObjects(packetData.ToArray());
             udpClient.Send(byteData, byteData.Length).ToString();
         }
 

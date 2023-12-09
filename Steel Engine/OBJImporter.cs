@@ -15,6 +15,8 @@ namespace Steel_Engine
             List<string> newFaceData = new List<string>();
             List<string> newTextureData = new List<string>();
             List<string> newTextureIndices = new List<string>();
+            List<string> newVertexNormalData = new List<string>();
+            List<string> newVertexNormalIndices = new List<string>();
 
             string path = "";
             if (InfoManager.isBuild)
@@ -45,14 +47,24 @@ namespace Steel_Engine
                 {
                     newTextureIndices.Add(line.Replace("ti ", ""));
                 }
+                if (line.StartsWith("nd "))
+                {
+                    newVertexNormalData.Add(line.Replace("nd ", ""));
+                }
+                if (line.StartsWith("ni "))
+                {
+                    newVertexNormalIndices.Add(line.Replace("ni ", ""));
+                }
             }
 
             Vector3[] parsedVertexData = OBJParser.ParseVertexData(newVertexData);
             Vector3[] parsedFaceData = OBJParser.ParseFaceData(newFaceData);
             Vector2[] parsedTextureData = OBJParser.ParseTextureData(newTextureData);
             Vector3[] parsedTextureIndices = OBJParser.ParseTextureIndices(newTextureIndices);
+            Vector3[] parsedVertexNormalData = OBJParser.ParseVertexNormalData(newVertexNormalData);
+            Vector3[] parsedVertexNormalIndices = OBJParser.ParseVertexNormalIndices(newVertexNormalIndices);
 
-            Mesh newMesh = OBJParser.GenerateBasicTriangleMesh(parsedVertexData, parsedFaceData, parsedTextureData, parsedTextureIndices, optimised);
+            Mesh newMesh = OBJParser.GenerateBasicTriangleMesh(parsedVertexData, parsedFaceData, parsedTextureData, parsedTextureIndices, parsedVertexNormalData, parsedVertexNormalIndices, optimised);
 
             newMesh.loadedModel = name;
             newMesh.optimised = optimised;
@@ -60,27 +72,10 @@ namespace Steel_Engine
             return newMesh;
         }
 
-        public static Mesh LoadOBJ(string name, bool optimised) // obj must be triangulated fully for this to work
+        public static Mesh LoadOBJ(string name, bool optimised)
         {
-            string path = "";
-            if (InfoManager.isBuild)
-            {
-                path = InfoManager.dataPath + $@"\Models\{name}.obj";
-            }
-            else
-            {
-                path = InfoManager.devDataPath + $@"\Models\{name}.obj";
-            }
-
-            string pathSEO = "";
-            if (InfoManager.isBuild)
-            {
-                pathSEO = InfoManager.dataPath + $@"\Models\{name}.SEO";
-            }
-            else
-            {
-                pathSEO = InfoManager.devDataPath + $@"\Models\{name}.SEO";
-            }
+            string path = InfoManager.usingDataPath + $@"\Models\{name}.obj";
+            string pathSEO = InfoManager.usingDataPath + $@"\Models\{name}.SEO";
 
             if (File.Exists(pathSEO))
             {
@@ -93,7 +88,6 @@ namespace Steel_Engine
             {
                 bool keepLine = true;
                 if (line.StartsWith("#")) { keepLine = false; }
-                if (line.StartsWith("vn")) { keepLine = false; }
                 if (line.StartsWith("mtllib")) { keepLine = false; }
                 if (line.StartsWith("usemtl")) { keepLine = false; }
                 if (line.StartsWith("o")) { keepLine = false; }
@@ -105,6 +99,8 @@ namespace Steel_Engine
             List<string> newFaceData = ExtractFaceData(newObjData);
             List<string> newTextureData = ExtractTextureData(newObjData);
             List<string> newTextureIndices = ExtractTextureIndices(newObjData);
+            List<string> newVertexNormalData = ExtractVertexNormalData(newObjData);
+            List<string> newVertexNormalIndices = ExtractVertexNormalIndices(newObjData);
 
             List<string> finalText = new List<string>();
             foreach (string line in newVertexData)
@@ -123,13 +119,21 @@ namespace Steel_Engine
             {
                 finalText.Add("ti " + line);
             }
+            foreach (string line in newVertexNormalData)
+            {
+                finalText.Add("nd " + line);
+            }
+            foreach (string line in newVertexNormalIndices)
+            {
+                finalText.Add("ni " + line);
+            }
 
             File.WriteAllLines(pathSEO, finalText.ToArray());
 
             return LoadSEO(name, optimised);
         }
 
-        public static Mesh LoadOBJFromPath(string path, bool optimised) // obj must be triangulated fully for this to work
+        public static Mesh LoadOBJFromPath(string path, bool optimised)
         {
             // Data sanitisation
             List<string> newObjData = new List<string>();
@@ -137,7 +141,6 @@ namespace Steel_Engine
             {
                 bool keepLine = true;
                 if (line.StartsWith("#")) { keepLine = false; }
-                if (line.StartsWith("vn")) { keepLine = false; }
                 if (line.StartsWith("mtllib")) { keepLine = false; }
                 if (line.StartsWith("usemtl")) { keepLine = false; }
                 if (line.StartsWith("o")) { keepLine = false; }
@@ -149,13 +152,17 @@ namespace Steel_Engine
             List<string> newFaceData = ExtractFaceData(newObjData);
             List<string> newTextureData = ExtractTextureData(newObjData);
             List<string> newTextureIndices = ExtractTextureIndices(newObjData);
+            List<string> newVertexNormalData = ExtractVertexNormalData(newObjData);
+            List<string> newVertexNormalIndices = ExtractVertexNormalIndices(newObjData);
 
             Vector3[] parsedVertexData = OBJParser.ParseVertexData(newVertexData);
             Vector3[] parsedFaceData = OBJParser.ParseFaceData(newFaceData);
             Vector2[] parsedTextureData = OBJParser.ParseTextureData(newTextureData);
             Vector3[] parsedTextureIndices = OBJParser.ParseTextureIndices(newTextureIndices);
+            Vector3[] parsedVertexNormalData = OBJParser.ParseVertexNormalData(newVertexNormalData);
+            Vector3[] parsedVertexNormalIndices = OBJParser.ParseVertexNormalData(newVertexNormalIndices);
 
-            Mesh newMesh = OBJParser.GenerateBasicTriangleMesh(parsedVertexData, parsedFaceData, parsedTextureData, parsedTextureIndices, optimised);
+            Mesh newMesh = OBJParser.GenerateBasicTriangleMesh(parsedVertexData, parsedFaceData, parsedTextureData, parsedTextureIndices, parsedVertexNormalData, parsedVertexNormalIndices, optimised);
 
             File.WriteAllLines(path.Split('.')[0] + ".SEO", newObjData.ToArray());
 
@@ -223,6 +230,60 @@ namespace Steel_Engine
                 }
             }
             return textureCoords;
+        }
+        
+        private static List<string> ExtractVertexNormalData(List<string> objData)
+        {
+            List<string> originalNormalData = new List<string>();
+            foreach (string line in objData)
+            {
+                if (line.StartsWith("vn ")) { originalNormalData.Add(line); }
+            }
+
+            List<string> newNormalData = new List<string>();
+            foreach (string line in originalNormalData)
+            {
+                string data = line.Replace("vn ", "");
+                newNormalData.Add(data);
+            }
+
+            return newNormalData;
+        }
+        
+        private static List<string> ExtractVertexNormalIndices(List<string> objData)
+        {
+            List<string> originalFaceData = new List<string>();
+            foreach (string line in objData)
+            {
+                if (line.StartsWith("f")) { originalFaceData.Add(line); }
+            }
+
+            List<string> newFaceData = new List<string>();
+            foreach (string line in originalFaceData)
+            {
+                string data = line.Replace("f ", "");
+                string newFace = "";
+                string[] faces = data.Split(' ');
+                foreach (string face in faces)
+                {
+                    newFace += face.Split('/')[2] + " ";
+                }
+                string reformatted = "";
+                int index = 0;
+                foreach (char c in newFace)
+                {
+                    if (index == newFace.Length - 1)
+                    {
+                        break;
+                    }
+                    reformatted += c;
+                    index++;
+                }
+
+                newFaceData.Add(reformatted);
+            }
+
+            return newFaceData;
         }
 
         private static List<string> ExtractTextureIndices(List<string> objData)

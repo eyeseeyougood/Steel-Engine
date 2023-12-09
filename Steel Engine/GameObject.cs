@@ -258,7 +258,7 @@ namespace Steel_Engine
             // setup vertex buffer
             vertexBufferObject = GL.GenBuffer(); // get a name for VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject); // bind VBO
-            GL.BufferData(BufferTarget.ArrayBuffer, mesh.vertices.Count * 8 * sizeof(float), GetVertices(), BufferUsageHint.StaticDraw); // allocating GPU memory for VBO
+            GL.BufferData(BufferTarget.ArrayBuffer, mesh.vertices.Count * 11 * sizeof(float), GetVertices(), BufferUsageHint.StaticDraw); // allocating GPU memory for VBO
             // the number '8' in the line above represents the number of values per vertex (position(3) + colour(3) + texPos(2) = 8)
 
             vao = GL.GenVertexArray();
@@ -267,12 +267,15 @@ namespace Steel_Engine
             int posLocation = shader.GetAttribLocation("aPosition");
             int colLocation = shader.GetAttribLocation("aColour");
             int texCoordLocation = shader.GetAttribLocation("aTexCoord");
-            GL.VertexAttribPointer(posLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
-            GL.VertexAttribPointer(colLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
-            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
+            int normalLocation = shader.GetAttribLocation("aNormal");
+            GL.VertexAttribPointer(posLocation, 3, VertexAttribPointerType.Float, false, 11 * sizeof(float), 0);
+            GL.VertexAttribPointer(colLocation, 3, VertexAttribPointerType.Float, false, 11 * sizeof(float), 3 * sizeof(float));
+            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 11 * sizeof(float), 6 * sizeof(float));
+            GL.VertexAttribPointer(normalLocation, 3, VertexAttribPointerType.Float, false, 11 * sizeof(float), 8 * sizeof(float));
             GL.EnableVertexAttribArray(posLocation);
             GL.EnableVertexAttribArray(colLocation);
             GL.EnableVertexAttribArray(texCoordLocation);
+            GL.EnableVertexAttribArray(normalLocation);
 
             // init elementBufferObject
             int[] indices = mesh.GetIndices();
@@ -296,7 +299,7 @@ namespace Steel_Engine
             // setup vertex buffer
             vertexBufferObject = GL.GenBuffer(); // get a name for VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject); // bind VBO
-            GL.BufferData(BufferTarget.ArrayBuffer, mesh.vertices.Count * 8 * sizeof(float), GetVertices(preRotation), BufferUsageHint.StaticDraw); // allocating GPU memory for VBO
+            GL.BufferData(BufferTarget.ArrayBuffer, mesh.vertices.Count * 11 * sizeof(float), GetVertices(preRotation), BufferUsageHint.StaticDraw); // allocating GPU memory for VBO
             // the number '8' in the line above represents the number of values per vertex (position(3) + colour(3) + texPos(2) = 8)
 
             vao = GL.GenVertexArray();
@@ -305,12 +308,15 @@ namespace Steel_Engine
             int posLocation = shader.GetAttribLocation("aPosition");
             int colLocation = shader.GetAttribLocation("aColour");
             int texCoordLocation = shader.GetAttribLocation("aTexCoord");
-            GL.VertexAttribPointer(posLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
-            GL.VertexAttribPointer(colLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
-            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
+            int normalLocation = shader.GetAttribLocation("aNormal");
+            GL.VertexAttribPointer(posLocation, 3, VertexAttribPointerType.Float, false, 11 * sizeof(float), 0);
+            GL.VertexAttribPointer(colLocation, 3, VertexAttribPointerType.Float, false, 11 * sizeof(float), 3 * sizeof(float));
+            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 11 * sizeof(float), 6 * sizeof(float));
+            GL.VertexAttribPointer(normalLocation, 3, VertexAttribPointerType.Float, false, 11 * sizeof(float), 8 * sizeof(float));
             GL.EnableVertexAttribArray(posLocation);
             GL.EnableVertexAttribArray(colLocation);
             GL.EnableVertexAttribArray(texCoordLocation);
+            GL.EnableVertexAttribArray(normalLocation);
 
             // init elementBufferObject
             int[] indices = mesh.GetIndices();
@@ -348,8 +354,8 @@ namespace Steel_Engine
                 case RenderShader.ShadeFlat:
                     int posLocation = GL.GetAttribLocation(shader.Handle, "aPosition");
                     int colLocation = GL.GetAttribLocation(shader.Handle, "aColour");
-                    GL.VertexAttribPointer(posLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
-                    GL.VertexAttribPointer(colLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
+                    GL.VertexAttribPointer(posLocation, 3, VertexAttribPointerType.Float, false, 11 * sizeof(float), 0);
+                    GL.VertexAttribPointer(colLocation, 3, VertexAttribPointerType.Float, false, 11 * sizeof(float), 3 * sizeof(float));
                     GL.EnableVertexAttribArray(posLocation);
                     GL.EnableVertexAttribArray(colLocation);
 
@@ -364,8 +370,8 @@ namespace Steel_Engine
 
                     posLocation = GL.GetAttribLocation(shader.Handle, "aPosition");
                     int texPosLocation = GL.GetAttribLocation(shader.Handle, "aTexCoord");
-                    GL.VertexAttribPointer(posLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
-                    GL.VertexAttribPointer(texPosLocation, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
+                    GL.VertexAttribPointer(posLocation, 3, VertexAttribPointerType.Float, false, 11 * sizeof(float), 0);
+                    GL.VertexAttribPointer(texPosLocation, 2, VertexAttribPointerType.Float, false, 11 * sizeof(float), 6 * sizeof(float));
                     GL.EnableVertexAttribArray(posLocation);
                     GL.EnableVertexAttribArray(texPosLocation);
 
@@ -375,16 +381,20 @@ namespace Steel_Engine
 
                     break;
                 case RenderShader.ShadeLighting:
-                    shader.SetMatrix4($"lightModel", Matrix4.CreateTranslation(LightManager.lights[0].position));
+                    shader.SetVector3($"lightPosition", LightManager.lights[0].position);
                     shader.SetVector3($"lightColour", LightManager.lights[0].colour);
-                    shader.SetFloat($"lightIntensity", LightManager.lights[0].intensity);
+                    shader.SetVector3($"cameraPosition", InfoManager.engineCamera.Position);
+                    //shader.SetFloat($"lightIntensity", LightManager.lights[0].intensity);
 
                     posLocation = GL.GetAttribLocation(shader.Handle, "aPosition");
                     colLocation = GL.GetAttribLocation(shader.Handle, "aColour");
-                    GL.VertexAttribPointer(posLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
-                    GL.VertexAttribPointer(colLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
+                    int normLocation = GL.GetAttribLocation(shader.Handle, "aNormal");
+                    GL.VertexAttribPointer(posLocation, 3, VertexAttribPointerType.Float, false, 11 * sizeof(float), 0);
+                    GL.VertexAttribPointer(colLocation, 3, VertexAttribPointerType.Float, false, 11 * sizeof(float), 3 * sizeof(float));
+                    GL.VertexAttribPointer(normLocation, 3, VertexAttribPointerType.Float, false, 11 * sizeof(float), 8 * sizeof(float));
                     GL.EnableVertexAttribArray(posLocation);
                     GL.EnableVertexAttribArray(colLocation);
+                    GL.EnableVertexAttribArray(normLocation);
 
                     indices = mesh.GetIndices();
 
@@ -399,8 +409,8 @@ namespace Steel_Engine
 
                     posLocation = GL.GetAttribLocation(shader.Handle, "aPosition");
                     texPosLocation = GL.GetAttribLocation(shader.Handle, "aTexCoord");
-                    GL.VertexAttribPointer(posLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
-                    GL.VertexAttribPointer(texPosLocation, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
+                    GL.VertexAttribPointer(posLocation, 3, VertexAttribPointerType.Float, false, 11 * sizeof(float), 0);
+                    GL.VertexAttribPointer(texPosLocation, 2, VertexAttribPointerType.Float, false, 11 * sizeof(float), 6 * sizeof(float));
                     GL.EnableVertexAttribArray(posLocation);
                     GL.EnableVertexAttribArray(texPosLocation);
 
