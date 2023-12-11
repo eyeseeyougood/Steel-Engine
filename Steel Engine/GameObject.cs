@@ -15,7 +15,8 @@ namespace Steel_Engine
         ShadeFlat = 0,
         ShadeTextureUnit = 1,
         ShadeTextureUnitHue = 2,
-        ShadeLighting = 3
+        ShadeLighting = 3,
+        ShadeTextureLighting = 4
     }
 
     public class GameObject
@@ -394,6 +395,29 @@ namespace Steel_Engine
                     GL.VertexAttribPointer(normLocation, 3, VertexAttribPointerType.Float, false, 11 * sizeof(float), 8 * sizeof(float));
                     GL.EnableVertexAttribArray(posLocation);
                     GL.EnableVertexAttribArray(colLocation);
+                    GL.EnableVertexAttribArray(normLocation);
+
+                    indices = mesh.GetIndices();
+
+                    GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
+
+                    break;
+                case RenderShader.ShadeTextureLighting:
+                    texture0.Use(TextureUnit.Texture0);
+
+                    shader.SetVector3($"lightPosition", LightManager.lights[0].position);
+                    shader.SetVector3($"lightColour", LightManager.lights[0].colour);
+                    shader.SetVector3($"cameraPosition", InfoManager.engineCamera.Position);
+                    //shader.SetFloat($"lightIntensity", LightManager.lights[0].intensity);
+
+                    posLocation = GL.GetAttribLocation(shader.Handle, "aPosition");
+                    texPosLocation = GL.GetAttribLocation(shader.Handle, "aTexCoord");
+                    normLocation = GL.GetAttribLocation(shader.Handle, "aNormal");
+                    GL.VertexAttribPointer(posLocation, 3, VertexAttribPointerType.Float, false, 11 * sizeof(float), 0);
+                    GL.VertexAttribPointer(texPosLocation, 2, VertexAttribPointerType.Float, false, 11 * sizeof(float), 6 * sizeof(float));
+                    GL.VertexAttribPointer(normLocation, 3, VertexAttribPointerType.Float, false, 11 * sizeof(float), 8 * sizeof(float));
+                    GL.EnableVertexAttribArray(posLocation);
+                    GL.EnableVertexAttribArray(texPosLocation);
                     GL.EnableVertexAttribArray(normLocation);
 
                     indices = mesh.GetIndices();

@@ -62,6 +62,17 @@ namespace Steel_Engine
             return null;
         }
 
+        private static bool RequiresTexture(RenderShader vertexShader)
+        {
+            bool result = false;
+
+            if (vertexShader == RenderShader.ShadeTextureUnit) { result = true; }
+            if (vertexShader == RenderShader.ShadeTextureUnitHue) { result = true; }
+            if (vertexShader == RenderShader.ShadeTextureLighting) { result = true; }
+
+            return result;
+        }
+
         private static Scene ConstructScene(string[] lines, string path)
         {
             Scene scene = new Scene();
@@ -92,7 +103,7 @@ namespace Steel_Engine
                     {
                         go.mesh.SetColour(new Vector3(float.Parse(parts[15]), float.Parse(parts[16]), float.Parse(parts[17])));
                     }
-                    if (parts.Length > 18 && (vertShader == RenderShader.ShadeTextureUnit || vertShader == RenderShader.ShadeTextureUnitHue))
+                    if (parts.Length > 18 && RequiresTexture(vertShader))
                     {
                         string[] imageParts = parts[18].Split(".");
                         go.LoadTexture(imageParts[0], "."+imageParts[1]);
@@ -370,6 +381,9 @@ namespace Steel_Engine
                     break;
                 case RenderShader.ShadeTextureUnitHue:
                     result = "STUH";
+                    break;
+                case RenderShader.ShadeTextureLighting:
+                    result = "STL";
                     break;
             }
             return result;
