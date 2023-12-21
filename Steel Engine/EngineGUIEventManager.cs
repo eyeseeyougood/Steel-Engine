@@ -10,11 +10,13 @@ namespace Steel_Engine
 {
     public class EngineGUIEventManager
     {
-        public static void AddComponentEvent(float deltaTime, string buttonName, params object[] args)
+        public static void AddComponentEvent(string buttonName, params object[] args)
         {
             if (GUIManager.selectedHeirarchyObject != null)
             {
                 // make pop-up
+                GUIManager.GetElementByName("componentsView").visible = !GUIManager.GetElementByName("componentsView").visible;
+                GUIManager.GetElementByName("componentsView").active = GUIManager.GetElementByName("componentsView").visible;
             }
         }
 
@@ -23,7 +25,7 @@ namespace Steel_Engine
             BuildManager.UnlockRebuild();
         }
 
-        public static void CreateEmpty(float deltaTime, string buttonName, params object[] args)
+        public static void CreateEmpty(string buttonName, params object[] args)
         {
             GameObject go = new GameObject(RenderShader.ShadeFlat, RenderShader.ShadeFlat);
             go.id = SceneManager.gameObjects.Count+1;
@@ -52,7 +54,7 @@ namespace Steel_Engine
 
         public static void XPButtonHold(float deltaTime, string buttonName, params object[] args)
         {
-            float speed = 1;
+            float speed = 5;
             Vector3 move = new Vector3(1f, 0, 0) * speed;
             if (GUIManager.selectedHeirarchyObject != null)
                 SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedHeirarchyObject.name.Replace(" button object", ""))).position += move * deltaTime;
@@ -60,7 +62,7 @@ namespace Steel_Engine
 
         public static void XMButtonHold(float deltaTime, string buttonName, params object[] args)
         {
-            float speed = 1;
+            float speed = 5;
             Vector3 move = new Vector3(1f, 0, 0) * speed;
             if (GUIManager.selectedHeirarchyObject != null)
                 SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedHeirarchyObject.name.Replace(" button object", ""))).position -= move * deltaTime;
@@ -68,7 +70,7 @@ namespace Steel_Engine
 
         public static void YPButtonHold(float deltaTime, string buttonName, params object[] args)
         {
-            float speed = 1;
+            float speed = 5;
             Vector3 move = new Vector3(0, 1f, 0) * speed;
             if (GUIManager.selectedHeirarchyObject != null)
                 SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedHeirarchyObject.name.Replace(" button object", ""))).position += move * deltaTime;
@@ -76,7 +78,7 @@ namespace Steel_Engine
 
         public static void YMButtonHold(float deltaTime, string buttonName, params object[] args)
         {
-            float speed = 1;
+            float speed = 5;
             Vector3 move = new Vector3(0, 1f, 0) * speed;
             if (GUIManager.selectedHeirarchyObject != null)
                 SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedHeirarchyObject.name.Replace(" button object", ""))).position -= move * deltaTime;
@@ -84,7 +86,7 @@ namespace Steel_Engine
 
         public static void ZPButtonHold(float deltaTime, string buttonName, params object[] args)
         {
-            float speed = 1;
+            float speed = 5;
             Vector3 move = new Vector3(0, 0, 1f) * speed;
             if (GUIManager.selectedHeirarchyObject != null)
                 SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedHeirarchyObject.name.Replace(" button object", ""))).position -= move * deltaTime;
@@ -92,7 +94,7 @@ namespace Steel_Engine
 
         public static void ZMButtonHold(float deltaTime, string buttonName, params object[] args)
         {
-            float speed = 1;
+            float speed = 5;
             Vector3 move = new Vector3(0, 0, 1f) * speed;
             if (GUIManager.selectedHeirarchyObject != null)
                 SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedHeirarchyObject.name.Replace(" button object",""))).position += move * deltaTime;

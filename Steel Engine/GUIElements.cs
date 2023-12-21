@@ -71,8 +71,10 @@ namespace Steel_Engine.GUI
         public float zRotation;
         public Vector3 addedPosition;
         public Vector2 anchor;
+        public Vector2 size;
         public GUIElement parentGUI = null;
         public bool visible = true;
+        public bool active = true;
 
         public GameObject renderObject { get; private set; }
         public List<Texture> textures { get; private set; }
@@ -107,6 +109,7 @@ namespace Steel_Engine.GUI
                 addedPosition = parentGUI.addedPosition;
                 anchor = parentGUI.anchor;
                 renderOrder = parentGUI.renderOrder+1+localRenderOrder;
+                active = parentGUI.active;
             }
         }
 
@@ -119,6 +122,17 @@ namespace Steel_Engine.GUI
 
         public virtual void Render()
         {
+            // update parent localisations
+
+            if (parentGUI != null)
+            {
+                addedPosition = parentGUI.addedPosition;
+                anchor = parentGUI.anchor;
+                renderOrder = parentGUI.renderOrder + 1 + localRenderOrder;
+                active = parentGUI.active;
+            }
+
+            // rendering
             Vector3 camRight = InfoManager.engineCamera.Right;
             Vector3 camUp = InfoManager.engineCamera.Up;
             Vector2 remappedAnchor = Vector2.Zero;
@@ -133,7 +147,10 @@ namespace Steel_Engine.GUI
             renderObject.SetRotation(InfoManager.engineCamera.GetViewMatrix().ExtractRotation().Inverted());
             if (visible)
             {
-                renderObject.Render();
+                if ((parentGUI != null && parentGUI.active) || (parentGUI == null))
+                {
+                    renderObject.Render();
+                }
             }
         }
     }
@@ -146,7 +163,6 @@ namespace Steel_Engine.GUI
         public event GUIButtonHold buttonHold = new GUIButtonHold(_ButtonHold);
         public delegate void GUIButtonUp(string buttonName, params object[] args);
         public event GUIButtonUp buttonUp = new GUIButtonUp(_ButtonUp);
-        Vector2 scale;
         private Texture normalImage = null;
         private Texture pressedImage = null;
         private Texture currentImage = null;
@@ -175,21 +191,21 @@ namespace Steel_Engine.GUI
             bool mouseUp = InputManager.GetMouseButtonUp(MouseButton.Left);
             if (mousePressed)
             {
-                if (CheckBounds(mousePosition))
+                if (CheckBounds(mousePosition) && (active))
                 {
                     buttonDown.Invoke(name);
                 }
             }
             if (mouseUp)
             {
-                if (CheckBounds(mousePosition))
+                if (CheckBounds(mousePosition) && (active))
                 {
                     buttonUp.Invoke(name);
                 }
             }
             if (mouseDown)
             {
-                if (CheckBounds(mousePosition))
+                if (CheckBounds(mousePosition) && (active))
                 {
                     buttonHold.Invoke(deltaTime, name);
                     if (pressedImage != null)
@@ -255,9 +271,15 @@ namespace Steel_Engine.GUI
             return result;
         }
 
+        public void SetColour(Vector3 rgb1)
+        {
+            renderObject.mesh.SetColour(rgb1);
+            renderObject.Load();
+        }
+
         public GUIButton(Vector3 position, Vector2 anchor, Vector2 scale) : base(position, anchor, RenderShader.ShadeFlat, RenderShader.ShadeFlat)
         {
-            this.scale = scale;
+            this.size = scale;
         }
 
         public GUIButton(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string extension) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
@@ -266,19 +288,19 @@ namespace Steel_Engine.GUI
 
             normalImage = Texture.LoadFromFile(path, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
             renderObject.LoadTexture(normalImage);
-            this.scale = scale;
+            this.size = scale;
         }
 
         public GUIButton(Vector3 position, Vector2 anchor, Vector2 scale, string texturePath) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
             normalImage = Texture.LoadFromFile(texturePath, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
             renderObject.LoadTexture(normalImage);
-            this.scale = scale;
+            this.size = scale;
         }
 
         public override void Render()
         {
-            renderObject.scale = new Vector3(scale.X, scale.Y, 1f);
+            renderObject.scale = new Vector3(size.X, size.Y, 1f);
             base.Render();
         }
     }
@@ -287,7 +309,7 @@ namespace Steel_Engine.GUI
     {
         public string text;
         public string font;
-        public float size;
+        public float textSize;
         public float scale;
         private Rectangle rect;
         private Vector4 bgColour = Vector4.Zero;
@@ -302,7 +324,7 @@ namespace Steel_Engine.GUI
 
             this.text = text;
             this.font = font;
-            this.size = size;
+            this.textSize = size;
 
             if (!textures.Contains(texture))
                 textures.Add(texture);
@@ -324,7 +346,7 @@ namespace Steel_Engine.GUI
         {
             this.text = text;
             this.font = font;
-            this.size = size;
+            this.textSize = size;
 
             Bitmap data = GUIManager.Write_Text(text, font, size, bg255);
             byte[] imageData = InfoManager.BitmapToByteArray(data);
@@ -359,7 +381,7 @@ namespace Steel_Engine.GUI
 
             this.text = text;
             this.font = font;
-            this.size = size;
+            this.textSize = size;
 
             if (!textures.Contains(texture))
                 textures.Add(texture);
@@ -393,7 +415,7 @@ namespace Steel_Engine.GUI
         {
             this.text = text;
 
-            Bitmap data = GUIManager.Write_Text(text, font, size, bgColour, txtColour, rect, rect);
+            Bitmap data = GUIManager.Write_Text(text, font, textSize, bgColour, txtColour, rect, rect);
             byte[] imageData = InfoManager.BitmapToByteArray(data);
             Texture texture = Texture.FromData(text, data.Width, data.Height, imageData);
 
@@ -496,7 +518,7 @@ namespace Steel_Engine.GUI
 
         public GUIWorldImage(Vector3 position, Vector2 anchor, Vector2 scale, string texturePath) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            image = Texture.LoadFromFile(texturePath);
+            image = Texture.LoadFromFile(texturePath, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
             renderObject.LoadTexture(image);
             this.scale = scale;
         }
@@ -507,6 +529,88 @@ namespace Steel_Engine.GUI
             renderObject.SetRotation(InfoManager.engineCamera.GetViewMatrix().ExtractRotation().Inverted());
             renderObject.position = addedPosition;
             renderObject.Render();
+        }
+    }
+
+    public class GUIScrollView : GUIElement
+    {
+        private Vector3 colour;
+        public float padding = 0.0f;
+        public float spacing = 0.1f;
+        public float scrollValue = 0;
+        public float scrollStrength = 1;
+        public List<GUIElement> contents = new List<GUIElement>();
+
+        private void Init()
+        {
+            InputManager.onMouseWheelStateChanged += MouseScroll;
+        }
+
+        public GUIScrollView(Vector3 position, Vector2 anchor, Vector2 scale) : base(position, anchor, RenderShader.ShadeFlat, RenderShader.ShadeFlat)
+        {
+            size = scale;
+            renderObject.scale = new Vector3(scale.X, scale.Y, 1f);
+            Init();
+        }
+
+        public override void Tick(float deltaTime, params object[] args)
+        {
+            base.Tick(deltaTime, args);
+            foreach (GUIElement element in contents)
+            {
+                element.active = active;
+                element.Tick(deltaTime, args);
+            }
+        }
+
+        public void MouseScroll(Vector2i delta)
+        {
+            if (active)
+                scrollValue += delta.Y;
+        }
+
+        public void SetColour(Vector3 rgb1)
+        {
+            renderObject.mesh.SetColour(rgb1);
+            colour = rgb1;
+            renderObject.Load();
+        }
+
+        private bool CheckVisiblity(GUIElement element)
+        {
+            bool result = true;
+            if (element.anchor.Y > anchor.Y + size.Y)
+            {// is below the scroll view
+                result = false;
+            }
+            if (element.anchor.Y < anchor.Y - size.Y)
+            {// is above the scroll view
+                result = false;
+            }
+            return result;
+        }
+
+        public override void Render()
+        {
+            int index = 0;
+            if (!visible)
+                return;
+            base.Render();
+            if (scrollValue > 0)
+            {
+                scrollValue = 0;
+            }
+            foreach (GUIElement element in contents)
+            {
+                element.addedPosition = addedPosition - new Vector3(0, 0.0f, 0);
+                element.anchor = anchor - new Vector2(0, (size.Y-0.01f-padding) - element.size.Y*(2.1f+spacing)*index - (scrollValue*scrollStrength) / (15.5f+spacing));
+                bool visibility = CheckVisiblity(element);
+                //bool visibility = true;
+                element.visible = visibility;
+                element.active = visibility;
+                index++;
+                element.Render();
+            }
         }
     }
 }

@@ -10,11 +10,15 @@
 
   <ItemGroup>
     <Compile Remove="Resources\Scene\**" />
+    <Compile Remove="Resources\Textures\Animations\**" />
     <EmbeddedResource Remove="Resources\Scene\**" />
+    <EmbeddedResource Remove="Resources\Textures\Animations\**" />
     <None Remove="Resources\Scene\**" />
+    <None Remove="Resources\Textures\Animations\**" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="OpenTK" Version="4.8.0" />
     <PackageReference Include="StbImageSharp" Version="2.27.13" />
     <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
@@ -22,9 +26,8 @@
 
   <ItemGroup>
     <Folder Include="EngineResources\EngineModels\" />
-    <Folder Include="EngineResources\NewFolder\" />
-    <Folder Include="Resources\Textures\Animations\TestAnimation\" />
     <Folder Include="Temp\" />
+    <Folder Include="Zamak\ClientCode\" />
     <Folder Include="Zamak\ServerCode\" />
   </ItemGroup>
 

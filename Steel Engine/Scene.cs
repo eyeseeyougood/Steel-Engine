@@ -22,6 +22,9 @@ namespace Steel_Engine
 
         public void Load()
         {
+            AudioManager.StopDSO();
+            AudioManager.CleanupAudioSources();
+            AudioManager.PlayDSO();
             LightManager.lights.Clear();
             LightManager.lights.AddRange(lightObjects);
             SceneManager.cameras.Clear();
@@ -29,7 +32,7 @@ namespace Steel_Engine
             SceneManager.cameras[startingcameraID].SetMain();
             SceneManager.tilemaps.Clear();
             SceneManager.tilemaps.AddRange(tilemaps);
-            SceneManager.gameObjects.Clear();
+            SceneManager.CleanupGameObjects();
             SceneManager.gameObjects.AddRange(gameObjects);
             if (windowSize != new Vector2(-1f, -1f))
             {

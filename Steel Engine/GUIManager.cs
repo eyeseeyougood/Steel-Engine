@@ -73,26 +73,23 @@ namespace Steel_Engine.GUI
             zmButton.SetZRotation(90);
             zmButton.renderOrder = -1;
 
-            // add later
-            /*
-            GUIButton createEmpty = new GUIButton(new Vector3(-7.5f, -20f, 0), new Vector2(-1f, -1f), new Vector2(0.05f, 0.05f), plusB1Path);
+            GUIButton createEmpty = new GUIButton(new Vector3(20f, -22f, 0), new Vector2(-1f, -1f), new Vector2(0.05f, 0.05f), plusB1Path);
             createEmpty.SetPressedImage(plusB2Path);
             createEmpty.buttonDown += EngineGUIEventManager.CreateEmpty;
             createEmpty.renderOrder = -1;
-            */
 
             // Rebuild
-            GUIButton rebuildButton = new GUIButton(new Vector3(10f, -15f, 0), new Vector2(-1f, -1f), new Vector2(0.09f, 0.09f), PanelUnpressed);
+            GUIButton rebuildButton = new GUIButton(new Vector3(-2f, -15f, 0), new Vector2(-1f, -1f), new Vector2(0.09f, 0.09f), PanelUnpressed);
             rebuildButton.SetPressedImage(PanelPressed);
             rebuildButton.buttonHold += EngineGUIEventManager.UnlockRebuild;
             rebuildButton.renderOrder = -1;
             //rebuildButton.visible = false;
 
-            GUIText rebuildText1 = new GUIText(new Vector3(10f, -11f, 0), new Vector2(-1f, -1f), 0.04f, "Unlock", @"C:\Windows\Fonts\Arial.ttf", 300f, new Vector4(0, 0, 0, 0));
+            GUIText rebuildText1 = new GUIText(new Vector3(-2f, -11f, 0), new Vector2(-1f, -1f), 0.04f, "Unlock", @"C:\Windows\Fonts\Arial.ttf", 300f, new Vector4(0, 0, 0, 0));
             rebuildText1.name = "RebuildText1";
             rebuildText1.renderOrder = 0;
 
-            GUIText rebuildText2 = new GUIText(new Vector3(10f, -19f, 0), new Vector2(-1f, -1f), 0.04f, "Rebuild", @"C:\Windows\Fonts\Arial.ttf", 300f, new Vector4(0, 0, 0, 0));
+            GUIText rebuildText2 = new GUIText(new Vector3(-2f, -19f, 0), new Vector2(-1f, -1f), 0.04f, "Rebuild", @"C:\Windows\Fonts\Arial.ttf", 300f, new Vector4(0, 0, 0, 0));
             rebuildText2.name = "RebuildText2";
             rebuildText2.renderOrder = 0;
 
@@ -108,8 +105,6 @@ namespace Steel_Engine.GUI
             inspectorBG.name = "inspectorBG";
             inspectorBG.renderOrder = -2;
 
-            // add back later
-            /*
             GUIButton addComponentButton = new GUIButton(new Vector3(-38f, -20f, 0), new Vector2(1f, -1f), new Vector2(0.285f, 0.05f));
             addComponentButton.visible = false;
             addComponentButton.buttonDown += EngineGUIEventManager.AddComponentEvent;
@@ -118,7 +113,15 @@ namespace Steel_Engine.GUI
             GUIText addComponentText = new GUIText(Vector3.Zero, Vector2.Zero, 0.07f, "Add Component", @"C:\Windows\Fonts\Arial.ttf", 300f, new Vector4(0, 0, 0, 50));
             addComponentText.name = "addComponentText";
             addComponentText.parentGUI = addComponentButton;
-            */
+
+            GUIScrollView componentsView = new GUIScrollView(new Vector3(-39, 0, 0), new Vector2(1, 0), new Vector2(0.4f, 0.7f));
+            componentsView.name = "componentsView";
+            componentsView.padding = 0.02f;
+            componentsView.scrollStrength = 1.025f;
+            componentsView.renderOrder = 0;
+            componentsView.SetColour(new Vector3(0.3f, 0.3f, 0.3f));
+            componentsView.visible = false;
+            componentsView.active = false;
 
             AddGUIElement(simulatingText);
             AddGUIElement(xpButton);
@@ -132,10 +135,29 @@ namespace Steel_Engine.GUI
             AddGUIElement(rebuildText1);
             AddGUIElement(rebuildText2);
             AddGUIElement(heirarchyBG);
-            //AddGUIElement(createEmpty); // add later
+            AddGUIElement(createEmpty);
             AddGUIElement(inspectorBG);
-            //AddGUIElement(addComponentButton); // add later
-            //AddGUIElement(addComponentText);
+            AddGUIElement(addComponentButton);
+            AddGUIElement(addComponentText);
+            AddGUIElement(componentsView);
+
+            RefreshComponentsMenu();
+        }
+
+        public static void RefreshComponentsMenu()
+        {
+            GUIScrollView view = (GUIScrollView)GetElementByName("componentsView");
+            foreach (Type t in typeof(Component).Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Component))))
+            {
+                GUIButton componentButton = new GUIButton(new Vector3(0, 0, 0), new Vector2(0, 0), new Vector2(0.39f, 0.03f), InfoManager.usingDirectory + @$"EngineResources\EngineTextures\TestUp.png");
+                componentButton.name = $"{t.Name}ComponentButton";
+                componentButton.SetPressedImage(InfoManager.usingDirectory + @$"EngineResources\EngineTextures\TestDown.png");
+                GUIText componentText = new GUIText(new Vector3(0, 0, 0), new Vector2(0, 0), 0.3f, t.Name, @"C:\Windows\Fonts\Arial.ttf", 45, new Vector4(0,0,0,0), new Vector4(225, 225, 225, 255));
+                componentText.name = t.Name+"ComponentText";
+                componentText.parentGUI = componentButton;
+                AddGUIElement(componentText);
+                view.contents.Add(componentButton);
+            }
         }
 
         public static void RefreshHeirarchy()
@@ -170,13 +192,20 @@ namespace Steel_Engine.GUI
             {
                 guiElement.Tick(deltaTime, args);
             }
+            if (!InfoManager.isBuild)
+            {
+                if (GetElementByName("componentsView").visible && selectedHeirarchyObject == null)
+                {
+                    GetElementByName("componentsView").visible = false;
+                }
+            }
             guiElements.AddRange(heirarchyQueue);
             heirarchyQueue.Clear();
         }
 
         public static void Render()
         {
-            // sort list before render according to the render order of each item
+            // sort list before render according to the render order of each item7
             guiElements.Sort(new GUIElementComparer());
             foreach (GUIElement guiElement in guiElements)
             {

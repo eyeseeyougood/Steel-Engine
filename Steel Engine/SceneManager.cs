@@ -36,6 +36,17 @@ namespace Steel_Engine
             return scenes[currentSceneID];
         }
 
+        public static void CleanupGameObjects()
+        {
+            foreach (GameObject go in gameObjects)
+            {
+                gameLoad -= go.Load;
+                gameTick -= go.Tick;
+            }
+
+            gameObjects.Clear();
+        }
+
         public static void LoadScene(int buildIndex)
         {
             currentSceneID = buildIndex;
@@ -225,9 +236,9 @@ namespace Steel_Engine
             }
         }
 
-        public static void ChangeClearColour(Vector3 colour)
+        public static void ChangeClearColour(Vector3 rgb1)
         {
-            GL.ClearColor(colour.X, colour.Y, colour.Z, 1.0f);
+            GL.ClearColor(rgb1.X, rgb1.Y, rgb1.Z, 1.0f);
         }
 
         public static void Tick(double deltaTime)
@@ -387,6 +398,11 @@ namespace Steel_Engine
                     break;
             }
             return result;
+        }
+
+        public static int GetBuildIndex(Scene scene)
+        {
+            return scenes.IndexOf(scene);
         }
 
         public static SteelRay CalculateRay(Vector2 mousePosition)

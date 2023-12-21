@@ -22,6 +22,12 @@ namespace Steel_Engine
             {
                 File.Delete(InfoManager.currentDir + @"\Runtimes\Xq65.txt");
             }
+            Directory.Delete(InfoManager.dataPath + @"\Models\", true);
+            Directory.Delete(InfoManager.dataPath + @"\Audio\", true);
+            Directory.Delete(InfoManager.dataPath + @"\Scenes\", true);
+            Directory.Delete(InfoManager.dataPath + @"\Textures\", true);
+            Directory.Delete(InfoManager.currentDir + @"\Shaders\Coordinates\", true);
+            Directory.Delete(InfoManager.currentDir + @"\Temp\", true);
         }
 
         private static void CopyFolder(string src, string dst)
@@ -58,6 +64,10 @@ namespace Steel_Engine
 
             currentPath = InfoManager.dataPath + @"\Textures\";
             currentDevPath = InfoManager.devDataPath + @"\Textures\";
+            CopyFolder(currentDevPath, currentPath);
+
+            currentPath = InfoManager.dataPath + @"\Audio\";
+            currentDevPath = InfoManager.devDataPath + @"\Audio\";
             CopyFolder(currentDevPath, currentPath);
 
             currentPath = InfoManager.currentDir + @"\Shaders\Coordinates\";

@@ -16,6 +16,8 @@ namespace Steel_Engine
 {
     internal class SteelWindow : GameWindow
     {
+        private GameObject skybox;
+
         public SteelWindow(GameWindowSettings settings, NativeWindowSettings nativeSettings) : base(settings, nativeSettings)
         {
         }
@@ -53,17 +55,20 @@ namespace Steel_Engine
             InfoManager.setWindowTitle += SetWindowTitle;
             InfoManager.setWindowPosition += SetWindowPosition;
 
-            // Test Code
-            GameObject testObject = new GameObject(RenderShader.ShadeFlat, RenderShader.ShadeFlat);
-            testObject.scale = Vector3.One * 0.05f;
-            testObject.mesh = OBJImporter.LoadOBJ("Cube", true);
-            testObject.mesh.SetColour(Vector3.UnitX);
-            testObject.Load();
-            InfoManager.testObject = testObject;
-
             // set build mode
             InfoManager.isBuild = bool.Parse(File.ReadAllLines(InfoManager.currentDevPath + @"/BuildSettings/BuildSettings.txt")[0].Replace("isBuild ", ""));
             BuildManager.buildClientServerFiles = bool.Parse(File.ReadAllLines(InfoManager.currentDevPath + @"/BuildSettings/BuildSettings.txt")[2].Replace("isMultiplayer ", ""));
+
+            // skybox
+            if (!InfoManager.isBuild)
+            {
+                GL.ClearColor(0.9f, 0.9f, 0.9f, 1.0f);
+                skybox = new GameObject(RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit);
+                skybox.scale = Vector3.One * 1f;
+                skybox.mesh = OBJImporter.LoadOBJFromPath(InfoManager.usingDirectory + @"\EngineResources\EngineModels\Skybox.obj", true);
+                skybox.LoadTexture(InfoManager.usingDirectory + @"\EngineResources\EngineTextures\Skybox.png");
+                skybox.Load();
+            }
 
             // if is build then build all required files
             if (!File.Exists(InfoManager.currentDir + @"\Runtimes\Xq65.txt"))
@@ -97,6 +102,9 @@ namespace Steel_Engine
                 string[] multiplayerArgs = InfoManager.executingArgs.Skip(1).ToArray();
                 MultiplayerManager.Init(multiplayerArgs);
             }
+
+            // Init Audio
+            AudioManager.Init();
         }
 
         public void SetWindowSize(int x, int y)
@@ -125,6 +133,11 @@ namespace Steel_Engine
 
             if (!IsFocused) { return; }
 
+            // skybox
+            if (!InfoManager.isBuild)
+                skybox.position = InfoManager.engineCamera.Position;
+
+            // input
             InputManager.Tick(KeyboardState, MouseState, CursorState);
 
             if (InputManager.GetKeyDown(Keys.Escape))
@@ -139,13 +152,26 @@ namespace Steel_Engine
                 text.SetText(SceneManager.gameRunning ? 1 : 0);
             }
 
+            if (InputManager.GetKeyDown(Keys.T) && !InfoManager.isBuild)
+            {
+                int scene = SceneManager.GetBuildIndex(SceneManager.GetActiveScene());
+                SceneManager.scenes.Clear();
+                SceneManager.Init();
+                SceneManager.LoadScene(scene);
+            }
+
+            InfoManager.engineCamera.Tick(args.Time);
+
+            // skybox
+            if (!InfoManager.isBuild)
+                skybox.position = InfoManager.engineCamera.Position;
+
             InfoManager.Tick((float)args.Time);
             GUIManager.Tick((float)args.Time);
             SceneManager.Tick(args.Time);
             LightManager.Tick();
             MultiplayerManager.Tick((float)args.Time);
 
-            InfoManager.engineCamera.Tick(args.Time);
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -157,6 +183,10 @@ namespace Steel_Engine
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
+            GL.Disable(EnableCap.DepthTest);
+            if (!InfoManager.isBuild)
+                skybox.Render();
+            
             GL.Enable(EnableCap.DepthTest);
             foreach (GameObject gameObject in SceneManager.gameObjects)
             {
@@ -169,8 +199,11 @@ namespace Steel_Engine
             }
 
             GL.Disable(EnableCap.DepthTest);
+
             if (!InfoManager.isBuild)
+            {
                 GizmoManager.RenderGizmos();
+            }
             GUIManager.Render();
 
             SwapBuffers();
@@ -185,6 +218,8 @@ namespace Steel_Engine
         protected override void OnMouseWheel(MouseWheelEventArgs e)
         {
             base.OnMouseWheel(e);
+
+            InputManager.MouseWheelStateChanged(new Vector2i((int)e.OffsetX, (int)e.OffsetY));
         }
 
         protected override void OnResize(ResizeEventArgs e)

@@ -16,12 +16,22 @@ namespace Steel_Engine
         private static CursorState cursorState;
         public static Vector2 mousePosition;
 
+        public delegate void MouseWheelStateChange(Vector2i delta);
+        public static event MouseWheelStateChange onMouseWheelStateChanged = new MouseWheelStateChange(OnMouseWheelStateChanged);
+
+        private static void OnMouseWheelStateChanged(Vector2i delta) { }
+
         public static void Tick(KeyboardState keyState, MouseState mState, CursorState cState)
         {
             keyboardState = keyState;
             mouseState = mState;
             cursorState = cState;
             mousePosition = mouseState.Position;
+        }
+
+        public static void MouseWheelStateChanged(Vector2i delta)
+        {
+            onMouseWheelStateChanged.Invoke(delta);
         }
 
         public static CursorState GetCursorState()

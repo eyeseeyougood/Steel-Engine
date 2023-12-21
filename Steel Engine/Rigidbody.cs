@@ -20,7 +20,7 @@ namespace Steel_Engine
 
         public Dictionary<Vector3, Vector3> forces = new Dictionary<Vector3, Vector3>(); // pos (relative to center of mass), dir & mag
 
-        private Collider collider = null;
+        protected Collider collider = null;
 
         private bool oneTime = false;
 
@@ -48,7 +48,7 @@ namespace Steel_Engine
             }
         }
 
-        private void ApplyGravity()
+        protected void ApplyGravity()
         {
             Vector3 gravityForce = Time.timeScale * new Vector3(0, -1, 0) * InfoManager.gravityStrength / 100f;
             AddRelativeForce(new Vector3(0, 0, 0), gravityForce);
@@ -72,7 +72,7 @@ namespace Steel_Engine
             gameObject.Rotate(angularVelocity);
         }
 
-        private void ResolveCollisions()
+        protected virtual void ResolveCollisions()
         {
             if (collider == null)
                 return;
@@ -93,9 +93,10 @@ namespace Steel_Engine
                 if (collider.CheckSATCollision(col))
                 {
                     // calculate collision normal
-                    Vector3 collisionNormal = collider.CalculateCollisionNormal(col);
-                    gameObject.position += collisionNormal; // change based of how accurate / laggy it is
-                    velocity = new Vector3(velocity.X, 0f, velocity.Z);
+                    foreach (Vector3 point in collider.FindCollisionPoints(col))
+                    {
+                        AddRelativeForce(point - gameObject.position, (point-col.gameObject.position).Normalized()/20.0f);
+                    }
                     collided = true;
                 }
             }
@@ -123,6 +124,7 @@ namespace Steel_Engine
         public Vector3 CalculateTorque(Vector3 pos, Vector3 force)
         {
             Vector3 T = Vector3.Cross(pos, force);
+            T /= 2.0f;
             return T;
         }
 
@@ -162,7 +164,7 @@ namespace Steel_Engine
         {
             if ((angularVelocity - (angularVelocity * 0.01f)).Length > 0)
             {
-                angularVelocity -= angularVelocity * 0.01f;
+                angularVelocity -= angularVelocity * 0.05f;
             }
         }
 
@@ -171,7 +173,9 @@ namespace Steel_Engine
             ApplyAirResistance();
         }
 
-        public override void Tick(float deltaTime)
+        public override void Tick(float deltaTime) { }
+
+        public override void LateTick(float deltaTime)
         {
             centerOfMass = gameObject.position;
             CalculateVelocity();

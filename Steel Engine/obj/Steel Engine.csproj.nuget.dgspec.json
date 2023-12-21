@@ -47,6 +47,10 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "dependencies": {
+            "NAudio": {
+              "target": "Package",
+              "version": "[2.2.1, )"
+            },
             "OpenTK": {
               "target": "Package",
               "version": "[4.8.0, )"

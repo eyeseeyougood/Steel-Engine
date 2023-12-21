@@ -57,6 +57,10 @@ namespace Steel_Engine
                 }
             }
 
+            if (name == "Circle")
+            {
+            }
+
             Vector3[] parsedVertexData = OBJParser.ParseVertexData(newVertexData);
             Vector3[] parsedFaceData = OBJParser.ParseFaceData(newFaceData);
             Vector2[] parsedTextureData = OBJParser.ParseTextureData(newTextureData);
@@ -160,7 +164,7 @@ namespace Steel_Engine
             Vector2[] parsedTextureData = OBJParser.ParseTextureData(newTextureData);
             Vector3[] parsedTextureIndices = OBJParser.ParseTextureIndices(newTextureIndices);
             Vector3[] parsedVertexNormalData = OBJParser.ParseVertexNormalData(newVertexNormalData);
-            Vector3[] parsedVertexNormalIndices = OBJParser.ParseVertexNormalData(newVertexNormalIndices);
+            Vector3[] parsedVertexNormalIndices = OBJParser.ParseVertexNormalIndices(newVertexNormalIndices);
 
             Mesh newMesh = OBJParser.GenerateBasicTriangleMesh(parsedVertexData, parsedFaceData, parsedTextureData, parsedTextureIndices, parsedVertexNormalData, parsedVertexNormalIndices, optimised);
 

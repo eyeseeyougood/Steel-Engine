@@ -51,6 +51,11 @@ namespace Steel_Engine
             component.ComponentInit(this);
         }
 
+        public void SetMixFactor(float factor)
+        {
+            mixFactor = factor;
+        }
+
         public void ReloadTexture()
         {
             LoadTexture(texture0);
@@ -88,6 +93,10 @@ namespace Steel_Engine
             foreach (Component component in components)
             {
                 component.Tick(deltaTime);
+            }
+            foreach (Component component in components)
+            {
+                component.LateTick(deltaTime);
             }
         }
 

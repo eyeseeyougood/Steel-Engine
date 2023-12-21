@@ -28,7 +28,7 @@ namespace Steel_Engine.Tilemaps
 
         public Vector2i WorldSpaceToTileSpace(Vector2 worldSpacePosition)
         {
-            return new Vector2i((int)(MathF.Round((worldSpacePosition.X-position.X) / gridSize / 2) * gridSize * 2), (int)(MathF.Round((worldSpacePosition.Y-position.Y) / gridSize / 2) * gridSize * 2));
+            return new Vector2i((int)(MathF.Round((worldSpacePosition.X-position.X) / gridSize) * gridSize / 2), (int)(MathF.Round((worldSpacePosition.Y-position.Y) / gridSize) * gridSize / 2));
         }
 
         public void SetTile(Vector2i position, Tile tile)

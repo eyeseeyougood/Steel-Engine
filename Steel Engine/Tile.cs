@@ -29,6 +29,7 @@ namespace Steel_Engine.Tilemaps
         public Tile(Texture sprite)
         {
             texture = sprite;
+            scale = 1;
         }
 
         public Tile(Texture sprite, float scaleFactor)
