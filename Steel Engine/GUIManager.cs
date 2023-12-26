@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Steel_Engine.Common;
+using System.ComponentModel;
 
 namespace Steel_Engine.GUI
 {
@@ -15,9 +16,13 @@ namespace Steel_Engine.GUI
         public static List<GUIElement> guiElements = new List<GUIElement>();
         public static List<GUIElement> heirarchyObjects = new List<GUIElement>();
         public static List<GUIElement> heirarchyQueue = new List<GUIElement>();
-        public static List<GUIElement> inspectorObjects = new List<GUIElement>();
 
         public static GUIElement selectedHeirarchyObject = null;
+
+        public delegate void GUITick(float deltaTime);
+        public static event GUITick guiTick = new GUITick(GT);
+
+        private static void GT(float d) { }
 
         public static void LoadEngineGUI()
         {
@@ -101,13 +106,19 @@ namespace Steel_Engine.GUI
             RefreshHeirarchy();
 
             // inspector
-            GUIImage inspectorBG = new GUIImage(new Vector3(-39, -158f, 0), new Vector2(1f, -1f), new Vector2(0.4f, 0.9f), new Vector3(45, 45, 45) / 255.0f);
-            inspectorBG.name = "inspectorBG";
-            inspectorBG.renderOrder = -2;
+            GUIScrollView inspectorView = new GUIScrollView(new Vector3(-39, -158f, 0), new Vector2(1f, -1f), new Vector2(0.4f, 0.9f));
+            inspectorView.name = "inspectorView";
+            inspectorView.padding = 0.01f;
+            inspectorView.spacing = 0.01f;
+            inspectorView.scrollStrength = 1.025f;
+            inspectorView.renderOrder = -2;
+            inspectorView.SetColour(new Vector3(45, 45, 45) / 255.0f);
+            inspectorView.visible = true;
+            inspectorView.active = true;
 
             GUIButton addComponentButton = new GUIButton(new Vector3(-38f, -20f, 0), new Vector2(1f, -1f), new Vector2(0.285f, 0.05f));
             addComponentButton.visible = false;
-            addComponentButton.buttonDown += EngineGUIEventManager.AddComponentEvent;
+            addComponentButton.buttonDown += EngineGUIEventManager.ToggleComponentViewEvent;
             addComponentButton.renderOrder = -1;
 
             GUIText addComponentText = new GUIText(Vector3.Zero, Vector2.Zero, 0.07f, "Add Component", @"C:\Windows\Fonts\Arial.ttf", 300f, new Vector4(0, 0, 0, 50));
@@ -116,9 +127,10 @@ namespace Steel_Engine.GUI
 
             GUIScrollView componentsView = new GUIScrollView(new Vector3(-39, 0, 0), new Vector2(1, 0), new Vector2(0.4f, 0.7f));
             componentsView.name = "componentsView";
-            componentsView.padding = 0.02f;
+            componentsView.padding = 0.01f;
+            componentsView.spacing = 0.01f;
             componentsView.scrollStrength = 1.025f;
-            componentsView.renderOrder = 0;
+            componentsView.renderOrder = 1;
             componentsView.SetColour(new Vector3(0.3f, 0.3f, 0.3f));
             componentsView.visible = false;
             componentsView.active = false;
@@ -136,7 +148,7 @@ namespace Steel_Engine.GUI
             AddGUIElement(rebuildText2);
             AddGUIElement(heirarchyBG);
             AddGUIElement(createEmpty);
-            AddGUIElement(inspectorBG);
+            AddGUIElement(inspectorView);
             AddGUIElement(addComponentButton);
             AddGUIElement(addComponentText);
             AddGUIElement(componentsView);
@@ -144,17 +156,60 @@ namespace Steel_Engine.GUI
             RefreshComponentsMenu();
         }
 
+        public static void RefreshInspectorMenu()
+        {
+            // remove old entries
+            GUIScrollView inspectorView = ((GUIScrollView)GetElementByName("inspectorView"));
+            foreach (GUIElement element in inspectorView.contents)
+            {
+                GameObject go = SceneManager.gameObjects[int.Parse(element.name.Split(' ')[0])];
+
+                foreach (Component component in go.components)
+                {
+                    string elementName = element.name.Split(' ')[0] + " " + component.GetType().Name + "ComponentText";
+                    guiElements.Remove(GetElementByName(elementName));
+                }
+                guiTick -= element.Tick;
+            }
+            inspectorView.contents.Clear();
+
+            // add new entries
+            if (selectedHeirarchyObject != null)
+            {
+                // there is a selected object
+                GameObject go = SceneManager.gameObjects[int.Parse(selectedHeirarchyObject.name.Split(' ')[0])];
+                foreach (Component component in go.components)
+                {
+                    GUIImage componentPanel = new GUIImage(new Vector3(0, 0, 0), new Vector2(0, 0), new Vector2(0.39f, 0.03f), new Vector3(35, 35, 35)/255.0f);
+                    componentPanel.name = go.id + " " + $"{component.GetType().Name}ComponentImage";
+                    componentPanel.renderOrder = -1;
+                    componentPanel.onRender += component.OnDrawInspectorPanel;
+                    componentPanel.onRendered += component.OnInspectorPanelDrawn;
+                    GUIText componentText = new GUIText(new Vector3(0, -4f, 0), new Vector2(0, -1f), 0.3f, component.GetType().Name, @"C:\Windows\Fonts\Arial.ttf", 45, new Vector4(0, 0, 0, 0), new Vector4(225, 225, 225, 255));
+                    componentText.name = go.id + " " + component.GetType().Name + "ComponentText";
+                    componentText.parentGUI = componentPanel;
+                    componentText.renderOrder = 0;
+                    AddGUIElement(componentText);
+                    inspectorView.contents.Add(componentPanel);
+                }
+            }
+        }
+
         public static void RefreshComponentsMenu()
         {
+            // doesn't delete old entries
             GUIScrollView view = (GUIScrollView)GetElementByName("componentsView");
             foreach (Type t in typeof(Component).Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Component))))
             {
                 GUIButton componentButton = new GUIButton(new Vector3(0, 0, 0), new Vector2(0, 0), new Vector2(0.39f, 0.03f), InfoManager.usingDirectory + @$"EngineResources\EngineTextures\TestUp.png");
-                componentButton.name = $"{t.Name}ComponentButton";
+                componentButton.name = $"{t.Name} ComponentButton";
+                componentButton.renderOrder = 1;
+                componentButton.buttonDown += EngineGUIEventManager.AddComponentEvent;
                 componentButton.SetPressedImage(InfoManager.usingDirectory + @$"EngineResources\EngineTextures\TestDown.png");
                 GUIText componentText = new GUIText(new Vector3(0, 0, 0), new Vector2(0, 0), 0.3f, t.Name, @"C:\Windows\Fonts\Arial.ttf", 45, new Vector4(0,0,0,0), new Vector4(225, 225, 225, 255));
-                componentText.name = t.Name+"ComponentText";
+                componentText.name = t.Name+" ComponentText";
                 componentText.parentGUI = componentButton;
+                componentText.renderOrder = 2;
                 AddGUIElement(componentText);
                 view.contents.Add(componentButton);
             }
@@ -186,12 +241,9 @@ namespace Steel_Engine.GUI
             }
         }
 
-        public static void Tick(float deltaTime, params object[] args)
+        public static void Tick(float deltaTime)
         {
-            foreach (GUIElement guiElement in guiElements)
-            {
-                guiElement.Tick(deltaTime, args);
-            }
+            guiTick.Invoke(deltaTime);
             if (!InfoManager.isBuild)
             {
                 if (GetElementByName("componentsView").visible && selectedHeirarchyObject == null)
@@ -207,6 +259,10 @@ namespace Steel_Engine.GUI
         {
             // sort list before render according to the render order of each item7
             guiElements.Sort(new GUIElementComparer());
+            if (GetElementByName("componentsView").visible)
+            {
+
+            }
             foreach (GUIElement guiElement in guiElements)
             {
                 guiElement.Render();

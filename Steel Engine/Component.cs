@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Steel_Engine.GUI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,16 @@ namespace Steel_Engine
         public GameObject gameObject;
         public abstract void Tick(float deltaTime);
         public virtual void LateTick(float deltaTime) { }
+
+        public virtual void OnDrawInspectorPanel(GUIElement panel)
+        {
+            // make adjustments to panel (example)
+        }
+
+        public virtual void OnInspectorPanelDrawn(GUIElement panel)
+        {
+            // make adjustments to sub-objects (example)
+        }
 
         protected virtual void Init() { }
 

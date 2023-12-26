@@ -80,6 +80,9 @@ namespace Steel_Engine
                 }
             }
 
+            // Init Audio
+            AudioManager.Init();
+
             // load scene 0
             SceneManager.Init();
             SceneManager.LoadScene(0);
@@ -102,9 +105,6 @@ namespace Steel_Engine
                 string[] multiplayerArgs = InfoManager.executingArgs.Skip(1).ToArray();
                 MultiplayerManager.Init(multiplayerArgs);
             }
-
-            // Init Audio
-            AudioManager.Init();
         }
 
         public void SetWindowSize(int x, int y)

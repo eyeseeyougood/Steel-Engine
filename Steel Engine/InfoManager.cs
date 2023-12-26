@@ -29,8 +29,6 @@ namespace Steel_Engine
         public static Vector2 windowSize;
         public static Vector2i windowPosition;
 
-        public static GameObject testObject;
-
         public static bool isBuild;
 
         public static string[] executingArgs;

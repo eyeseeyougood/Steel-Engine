@@ -108,7 +108,6 @@ namespace Steel_Engine
             {
                 case "BoxCollider":
                     result = SAT3D(this, (BoxCollider)other, out Vector3 vec);
-                    Console.WriteLine(result);
                     break;
             }
 

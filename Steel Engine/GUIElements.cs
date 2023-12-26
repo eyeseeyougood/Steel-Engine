@@ -11,6 +11,7 @@ using System.Drawing;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Threading;
 using static System.Net.Mime.MediaTypeNames;
+using System.Xml.Linq;
 
 namespace Steel_Engine.GUI
 {
@@ -75,16 +76,27 @@ namespace Steel_Engine.GUI
         public GUIElement parentGUI = null;
         public bool visible = true;
         public bool active = true;
+        public bool useSize;
+        private Vector3 initialAddedPosition;
+        private Vector2 initialAnchor;
+
+        public delegate void RenderingObject(GUIElement self);
+        public event RenderingObject onRender = new RenderingObject(ORO);
+        public event RenderingObject onRendered = new RenderingObject(ORO);
 
         public GameObject renderObject { get; private set; }
         public List<Texture> textures { get; private set; }
         public Texture currentTexture { get; private set; }
         public int texID { get; private set; }
 
+        private static void ORO(GUIElement self) { }
+
         public GUIElement(Vector3 position, Vector2 anchor, RenderShader vShader, RenderShader fShader)
         {
             addedPosition = position;
             this.anchor = anchor;
+            initialAddedPosition = position;
+            initialAnchor = anchor;
             
             textures = new List<Texture>();
 
@@ -93,6 +105,8 @@ namespace Steel_Engine.GUI
             renderObject = new GameObject(vShader, fShader);
             renderObject.mesh = OBJImporter.LoadOBJFromPath(path, true);
             renderObject.Load();
+
+            GUIManager.guiTick += Tick;
         }
 
         public void SetZRotation(float rot) // not the fastest of functions because the whole objects gets reloaded every time
@@ -102,13 +116,18 @@ namespace Steel_Engine.GUI
             renderObject.Load(Quaternion.FromEulerAngles(new Vector3(0, 0, rot)));
         }
 
-        public virtual void Tick(float deltaTime, params object[] args)
+        public virtual void Tick(float deltaTime)
+        {
+            UpdateParentLocalisations();
+        }
+
+        public void UpdateParentLocalisations()
         {
             if (parentGUI != null)
             {
-                addedPosition = parentGUI.addedPosition;
-                anchor = parentGUI.anchor;
-                renderOrder = parentGUI.renderOrder+1+localRenderOrder;
+                addedPosition = parentGUI.addedPosition + initialAddedPosition;
+                anchor = parentGUI.anchor + new Vector2(parentGUI.size.X * initialAnchor.X, parentGUI.size.Y * initialAnchor.Y);
+                renderOrder = parentGUI.renderOrder + 1 + localRenderOrder;
                 active = parentGUI.active;
             }
         }
@@ -124,13 +143,9 @@ namespace Steel_Engine.GUI
         {
             // update parent localisations
 
-            if (parentGUI != null)
-            {
-                addedPosition = parentGUI.addedPosition;
-                anchor = parentGUI.anchor;
-                renderOrder = parentGUI.renderOrder + 1 + localRenderOrder;
-                active = parentGUI.active;
-            }
+            UpdateParentLocalisations();
+
+            onRender.Invoke(this);
 
             // rendering
             Vector3 camRight = InfoManager.engineCamera.Right;
@@ -145,11 +160,16 @@ namespace Steel_Engine.GUI
                 + camRight * addedPosition.X * 0.007f
                 + camUp * addedPosition.Y * 0.007f;
             renderObject.SetRotation(InfoManager.engineCamera.GetViewMatrix().ExtractRotation().Inverted());
+            if (useSize)
+            {
+                renderObject.scale = new Vector3(size.X, size.Y, 1f);
+            }
             if (visible)
             {
                 if ((parentGUI != null && parentGUI.active) || (parentGUI == null))
                 {
                     renderObject.Render();
+                    onRendered.Invoke(this);
                 }
             }
         }
@@ -157,19 +177,19 @@ namespace Steel_Engine.GUI
 
     public class GUIButton : GUIElement
     {
-        public delegate void GUIButtonDown(string buttonName, params object[] args);
+        public delegate void GUIButtonDown(string buttonName);
         public event GUIButtonDown buttonDown = new GUIButtonDown(_ButtonDown);
-        public delegate void GUIButtonHold(float deltaTime, string buttonName, params object[] args);
+        public delegate void GUIButtonHold(float deltaTime, string buttonName);
         public event GUIButtonHold buttonHold = new GUIButtonHold(_ButtonHold);
-        public delegate void GUIButtonUp(string buttonName, params object[] args);
+        public delegate void GUIButtonUp(string buttonName);
         public event GUIButtonUp buttonUp = new GUIButtonUp(_ButtonUp);
         private Texture normalImage = null;
         private Texture pressedImage = null;
         private Texture currentImage = null;
 
-        private static void _ButtonDown(string buttonName, params object[] args) { }
-        private static void _ButtonHold(float deltaTime, string buttonName, params object[] args) { }
-        private static void _ButtonUp(string buttonName, params object[] args) { }
+        private static void _ButtonDown(string buttonName) { }
+        private static void _ButtonHold(float deltaTime, string buttonName) { }
+        private static void _ButtonUp(string buttonName) { }
 
         public void SetPressedImage(string name, string extension)
         {
@@ -183,7 +203,7 @@ namespace Steel_Engine.GUI
             pressedImage = Texture.LoadFromFile(path, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
         }
 
-        public override void Tick(float deltaTime, params object[] args)
+        public override void Tick(float deltaTime)
         {
             Vector2 mousePosition = InputManager.mousePosition;
             bool mousePressed = InputManager.GetMouseButtonDown(MouseButton.Left);
@@ -191,21 +211,21 @@ namespace Steel_Engine.GUI
             bool mouseUp = InputManager.GetMouseButtonUp(MouseButton.Left);
             if (mousePressed)
             {
-                if (CheckBounds(mousePosition) && (active))
+                if (CheckBounds(mousePosition) && (active) && IsTopButton())
                 {
                     buttonDown.Invoke(name);
                 }
             }
             if (mouseUp)
             {
-                if (CheckBounds(mousePosition) && (active))
+                if (CheckBounds(mousePosition) && (active) && IsTopButton())
                 {
                     buttonUp.Invoke(name);
                 }
             }
             if (mouseDown)
             {
-                if (CheckBounds(mousePosition) && (active))
+                if (CheckBounds(mousePosition) && (active) && IsTopButton())
                 {
                     buttonHold.Invoke(deltaTime, name);
                     if (pressedImage != null)
@@ -224,7 +244,7 @@ namespace Steel_Engine.GUI
                 }
             }
 
-            base.Tick(deltaTime, args);
+            base.Tick(deltaTime);
         }
 
         private bool CheckBounds(Vector2 mousePosition)
@@ -271,6 +291,57 @@ namespace Steel_Engine.GUI
             return result;
         }
 
+        public bool IsTopButton() // a bit of a slower function
+        {
+            bool result = true;
+
+            foreach (GUIElement element in GUIManager.guiElements)
+            {
+                if (element.GetType() == typeof(GUIButton) && element.active)
+                {
+                    if (((GUIButton)element).CheckBounds(InputManager.mousePosition))
+                    {
+                        if (!CheckButtonHeight((GUIButton)element))
+                        {
+                            result = false;
+                            break;
+                        }
+                    }
+                }
+                else if (element.GetType() == typeof(GUIScrollView) && element.active)
+                {
+                    foreach (GUIElement _element in ((GUIScrollView)element).contents)
+                    {
+                        if (element.GetType() == typeof(GUIButton) && element.active)
+                        {
+                            if (!CheckButtonHeight((GUIButton)_element))
+                            {
+                                result = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private bool CheckButtonHeight(GUIButton button)
+        {
+            bool result = true;
+
+            if (button.CheckBounds(InputManager.mousePosition))
+            {
+                if (button.renderOrder > renderOrder)
+                {
+                    result = false;
+                }
+            }
+
+            return result;
+        }
+
         public void SetColour(Vector3 rgb1)
         {
             renderObject.mesh.SetColour(rgb1);
@@ -280,6 +351,7 @@ namespace Steel_Engine.GUI
         public GUIButton(Vector3 position, Vector2 anchor, Vector2 scale) : base(position, anchor, RenderShader.ShadeFlat, RenderShader.ShadeFlat)
         {
             this.size = scale;
+            useSize = true;
         }
 
         public GUIButton(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string extension) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
@@ -289,6 +361,7 @@ namespace Steel_Engine.GUI
             normalImage = Texture.LoadFromFile(path, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
             renderObject.LoadTexture(normalImage);
             this.size = scale;
+            useSize = true;
         }
 
         public GUIButton(Vector3 position, Vector2 anchor, Vector2 scale, string texturePath) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
@@ -296,13 +369,9 @@ namespace Steel_Engine.GUI
             normalImage = Texture.LoadFromFile(texturePath, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
             renderObject.LoadTexture(normalImage);
             this.size = scale;
+            useSize = true;
         }
 
-        public override void Render()
-        {
-            renderObject.scale = new Vector3(size.X, size.Y, 1f);
-            base.Render();
-        }
     }
 
     public class GUIText : GUIElement
@@ -436,22 +505,22 @@ namespace Steel_Engine.GUI
 
     public class GUIImage : GUIElement
     {
-        Vector2 scale;
         public Texture image = null;
 
-        public GUIImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector3 colour) : base(position, anchor, RenderShader.ShadeFlat, RenderShader.ShadeFlat)
+        public GUIImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector3 rgb1) : base(position, anchor, RenderShader.ShadeFlat, RenderShader.ShadeFlat)
         {
-            renderObject.mesh.SetColour(colour);
+            renderObject.mesh.SetColour(rgb1);
             renderObject.Load();
-            this.scale = scale;
+            size = scale;
+            useSize = true;
         }
 
-        public void SetColour(Vector4 colour)
+        public void SetColour(Vector4 rgb255)
         {
             Bitmap genImage = new Bitmap(1, 1);
-            genImage.SetPixel(0, 0, Color.FromArgb((int)colour.W, (int)colour.X, (int)colour.Y, (int)colour.Z));
+            genImage.SetPixel(0, 0, Color.FromArgb((int)rgb255.W, (int)rgb255.X, (int)rgb255.Y, (int)rgb255.Z));
             byte[] imageData = InfoManager.BitmapToByteArray(genImage);
-            Texture texture = Texture.FromData(colour.ToString(), genImage.Width, genImage.Height, imageData);
+            Texture texture = Texture.FromData(rgb255.ToString(), genImage.Width, genImage.Height, imageData);
 
             if (!textures.Contains(texture))
                 textures.Add(texture);
@@ -460,10 +529,11 @@ namespace Steel_Engine.GUI
             ApplyTexture(texture);
         }
 
-        public GUIImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector4 colour) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
+        public GUIImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector4 rgb255) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            SetColour(colour);
-            this.scale = scale;
+            SetColour(rgb255);
+            size = scale;
+            useSize = true;
         }
 
         public GUIImage(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string extension) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
@@ -472,13 +542,8 @@ namespace Steel_Engine.GUI
 
             image = Texture.LoadFromFile(path, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
             ApplyTexture(image);
-            this.scale = scale;
-        }
-
-        public override void Render()
-        {
-            renderObject.scale = new Vector3(scale.X, scale.Y, 1f);
-            base.Render();
+            size = scale;
+            useSize = true;
         }
     }
 
@@ -487,19 +552,19 @@ namespace Steel_Engine.GUI
         public Vector2 scale;
         public Texture image = null;
 
-        public GUIWorldImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector3 colour) : base(position, anchor, RenderShader.ShadeFlat, RenderShader.ShadeFlat)
+        public GUIWorldImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector3 rgb1) : base(position, anchor, RenderShader.ShadeFlat, RenderShader.ShadeFlat)
         {
-            renderObject.mesh.SetColour(colour);
+            renderObject.mesh.SetColour(rgb1);
             renderObject.Load();
             this.scale = scale;
         }
 
-        public GUIWorldImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector4 colour) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
+        public GUIWorldImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector4 rgb255) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            string path = InfoManager.usingDirectory + @$"\Temp\{colour}.png";
+            string path = InfoManager.usingDirectory + @$"\Temp\{rgb255}.png";
 
             Bitmap genImage = new Bitmap(1, 1);
-            genImage.SetPixel(0, 0, Color.FromArgb((int)colour.W, (int)colour.X, (int)colour.Y, (int)colour.Z));
+            genImage.SetPixel(0, 0, Color.FromArgb((int)rgb255.W, (int)rgb255.X, (int)rgb255.Y, (int)rgb255.Z));
             genImage.Save(path);
             image = Texture.LoadFromFile(path);
             renderObject.LoadTexture(image);
@@ -541,6 +606,72 @@ namespace Steel_Engine.GUI
         public float scrollStrength = 1;
         public List<GUIElement> contents = new List<GUIElement>();
 
+        public bool CheckBounds(Vector2 mousePosition)
+        {
+            bool result = false;
+
+            // Step 1: find line plane intersection point
+            SteelRay ray = SceneManager.CalculateRay(mousePosition);
+            SteelTriangle triangle = renderObject.mesh.triangles[0];
+            Vector3 p1 = triangle.GetVertex(0).position;
+            p1 = renderObject.position + InfoManager.engineCamera.Right * p1.X * renderObject.scale.X + InfoManager.engineCamera.Up * p1.Y * renderObject.scale.Y;
+            Vector3 p2 = triangle.GetVertex(1).position;
+            p2 = renderObject.position + InfoManager.engineCamera.Right * p2.X * renderObject.scale.X + InfoManager.engineCamera.Up * p2.Y * renderObject.scale.Y;
+            Vector3 p3 = triangle.GetVertex(2).position;
+            p3 = renderObject.position + InfoManager.engineCamera.Right * p3.X * renderObject.scale.X + InfoManager.engineCamera.Up * p3.Y * renderObject.scale.Y;
+            Vector3 intersectionPoint = MathFExtentions.LinePlaneIntersection(p1, p2, p3, ray.worldPosition, ray.worldDirection);
+
+            // Step 2: find two perpendicular vectors of quad and do dot product comparisons
+            Vector3 bottomLeftUp = p2 - p3;
+            Vector3 bottomLeftRight = p1 - p3;
+            Vector3 intersectionPointDifference = intersectionPoint - p3;
+
+            float verticalProduct = Vector3.Dot(intersectionPointDifference, bottomLeftUp.Normalized());
+            float horizontalProduct = Vector3.Dot(intersectionPointDifference, bottomLeftRight.Normalized());
+
+            // Step 3: check for dot product size and sign
+            if (verticalProduct >= 0) // is positive
+            {
+                if (verticalProduct <= bottomLeftUp.Length) // might change to LengthFast if too slow
+                {
+                    // is within the height of quad
+                    if (horizontalProduct >= 0)
+                    {
+                        if (horizontalProduct <= bottomLeftRight.Length)
+                        {
+                            // is within the width of the quad
+                            // and so is within the quad it self
+                            result = true;
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        public bool IsTopScrollView() // a bit of a slower function
+        {
+            bool result = true;
+
+            foreach (GUIElement element in GUIManager.guiElements)
+            {
+                if (element.GetType() == typeof(GUIScrollView) && element.active)
+                {
+                    if (((GUIScrollView)element).CheckBounds(InputManager.mousePosition))
+                    {
+                        if (element.renderOrder > renderOrder)
+                        {
+                            result = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
         private void Init()
         {
             InputManager.onMouseWheelStateChanged += MouseScroll;
@@ -549,23 +680,23 @@ namespace Steel_Engine.GUI
         public GUIScrollView(Vector3 position, Vector2 anchor, Vector2 scale) : base(position, anchor, RenderShader.ShadeFlat, RenderShader.ShadeFlat)
         {
             size = scale;
+            useSize = true;
             renderObject.scale = new Vector3(scale.X, scale.Y, 1f);
             Init();
         }
 
-        public override void Tick(float deltaTime, params object[] args)
+        public override void Tick(float deltaTime)
         {
-            base.Tick(deltaTime, args);
+            base.Tick(deltaTime);
             foreach (GUIElement element in contents)
             {
                 element.active = active;
-                element.Tick(deltaTime, args);
             }
         }
 
         public void MouseScroll(Vector2i delta)
         {
-            if (active)
+            if (active && CheckBounds(InputManager.mousePosition) && IsTopScrollView())
                 scrollValue += delta.Y;
         }
 
@@ -579,11 +710,11 @@ namespace Steel_Engine.GUI
         private bool CheckVisiblity(GUIElement element)
         {
             bool result = true;
-            if (element.anchor.Y > anchor.Y + size.Y)
+            if (element.anchor.Y + element.size.Y > anchor.Y + size.Y)
             {// is below the scroll view
                 result = false;
             }
-            if (element.anchor.Y < anchor.Y - size.Y)
+            if (element.anchor.Y - element.size.Y < anchor.Y - size.Y)
             {// is above the scroll view
                 result = false;
             }
@@ -600,17 +731,175 @@ namespace Steel_Engine.GUI
             {
                 scrollValue = 0;
             }
+            GUIElement prevElement = null;
             foreach (GUIElement element in contents)
             {
-                element.addedPosition = addedPosition - new Vector3(0, 0.0f, 0);
-                element.anchor = anchor - new Vector2(0, (size.Y-0.01f-padding) - element.size.Y*(2.1f+spacing)*index - (scrollValue*scrollStrength) / (15.5f+spacing));
+                element.addedPosition = addedPosition;
+                if (prevElement != null)
+                {
+                    element.anchor = prevElement.anchor - new Vector2(0, (-prevElement.size.Y) - (spacing) - element.size.Y);
+                }
+                else
+                {
+                    element.anchor = anchor - new Vector2(0, (size.Y-padding) - element.size.Y + 0.01f - (scrollValue * scrollStrength) / (15.5f + spacing));
+                }
                 bool visibility = CheckVisiblity(element);
-                //bool visibility = true;
+                //visibility = true;
                 element.visible = visibility;
                 element.active = visibility;
+                element.renderOrder = renderOrder + 1;
                 index++;
                 element.Render();
+                prevElement = element;
             }
+        }
+    }
+
+    // experimental (DO NOT USE) -- bodged together code
+    public class GUIWorldButton : GUIElement
+    {
+        public Vector2 scale;
+        public delegate void GUIButtonDown(string buttonName);
+        public event GUIButtonDown buttonDown = new GUIButtonDown(_ButtonDown);
+        public delegate void GUIButtonHold(float deltaTime, string buttonName);
+        public event GUIButtonHold buttonHold = new GUIButtonHold(_ButtonHold);
+        public delegate void GUIButtonUp(string buttonName);
+        public event GUIButtonUp buttonUp = new GUIButtonUp(_ButtonUp);
+        private Texture normalImage = null;
+        private Texture pressedImage = null;
+        private Texture currentImage = null;
+
+        private static void _ButtonDown(string buttonName) { }
+        private static void _ButtonHold(float deltaTime, string buttonName) { }
+        private static void _ButtonUp(string buttonName) { }
+
+        public void SetPressedImage(string name, string extension)
+        {
+            string path = InfoManager.usingDataPath + @$"/Textures/{name}{extension}";
+
+            pressedImage = Texture.LoadFromFile(path, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
+        }
+
+        public void SetPressedImage(string path)
+        {
+            pressedImage = Texture.LoadFromFile(path, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
+        }
+
+        public bool CheckBounds(Vector2 mousePosition)
+        {
+            bool result = false;
+
+            // Step 1: find line plane intersection point
+            SteelRay ray = SceneManager.CalculateRay(mousePosition);
+            SteelTriangle triangle = renderObject.mesh.triangles[0];
+            Vector3 p1 = triangle.GetVertex(0).position;
+            p1 = renderObject.position + InfoManager.engineCamera.Right * p1.X * renderObject.scale.X + InfoManager.engineCamera.Up * p1.Y * renderObject.scale.Y;
+            Vector3 p2 = triangle.GetVertex(1).position;
+            p2 = renderObject.position + InfoManager.engineCamera.Right * p2.X * renderObject.scale.X + InfoManager.engineCamera.Up * p2.Y * renderObject.scale.Y;
+            Vector3 p3 = triangle.GetVertex(2).position;
+            p3 = renderObject.position + InfoManager.engineCamera.Right * p3.X * renderObject.scale.X + InfoManager.engineCamera.Up * p3.Y * renderObject.scale.Y;
+            Vector3 intersectionPoint = MathFExtentions.LinePlaneIntersection(p1, p2, p3, ray.worldPosition, ray.worldDirection);
+
+            // Step 2: find two perpendicular vectors of quad and do dot product comparisons
+            Vector3 bottomLeftUp = p2 - p3;
+            Vector3 bottomLeftRight = p1 - p3;
+            Vector3 intersectionPointDifference = intersectionPoint - p3;
+
+            float verticalProduct = Vector3.Dot(intersectionPointDifference, bottomLeftUp.Normalized());
+            float horizontalProduct = Vector3.Dot(intersectionPointDifference, bottomLeftRight.Normalized());
+
+            // Step 3: check for dot product size and sign
+            if (verticalProduct >= 0) // is positive
+            {
+                if (verticalProduct <= bottomLeftUp.Length) // might change to LengthFast if too slow
+                {
+                    // is within the height of quad
+                    if (horizontalProduct >= 0)
+                    {
+                        if (horizontalProduct <= bottomLeftRight.Length)
+                        {
+                            // is within the width of the quad
+                            // and so is within the quad it self
+                            result = true;
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        public GUIWorldButton(Vector3 position, Vector2 anchor, Vector2 scale) : base(position, anchor, RenderShader.ShadeFlat, RenderShader.ShadeFlat)
+        {
+            this.scale = scale;
+        }
+
+        public GUIWorldButton(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string extension) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
+        {
+            string path = InfoManager.usingDataPath + @$"/Textures/{texture}{extension}";
+
+            normalImage = Texture.LoadFromFile(path, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
+            renderObject.LoadTexture(normalImage);
+            this.scale = scale;
+        }
+
+        public GUIWorldButton(Vector3 position, Vector2 anchor, Vector2 scale, string texturePath) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
+        {
+            normalImage = Texture.LoadFromFile(texturePath, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
+            renderObject.LoadTexture(normalImage);
+            this.scale = scale;
+        }
+
+        public override void Tick(float deltaTime)
+        {
+            Vector2 mousePosition = InputManager.mousePosition;
+            bool mousePressed = InputManager.GetMouseButtonDown(MouseButton.Left);
+            bool mouseDown = InputManager.GetMouseButton(MouseButton.Left);
+            bool mouseUp = InputManager.GetMouseButtonUp(MouseButton.Left);
+            if (mousePressed)
+            {
+                if (CheckBounds(mousePosition) && (active))
+                {
+                    buttonDown.Invoke(name);
+                }
+            }
+            if (mouseUp)
+            {
+                if (CheckBounds(mousePosition) && (active))
+                {
+                    buttonUp.Invoke(name);
+                }
+            }
+            if (mouseDown)
+            {
+                if (CheckBounds(mousePosition) && (active))
+                {
+                    buttonHold.Invoke(deltaTime, name);
+                    if (pressedImage != null)
+                    {
+                        renderObject.LoadTexture(pressedImage);
+                        currentImage = pressedImage;
+                    }
+                }
+            }
+            else
+            {
+                if (normalImage != null && currentImage != normalImage)
+                {
+                    renderObject.LoadTexture(normalImage);
+                    currentImage = normalImage;
+                }
+            }
+
+            base.Tick(deltaTime);
+        }
+
+        public override void Render()
+        {
+            renderObject.scale = new Vector3(scale.X, scale.Y, 1f);
+            renderObject.SetRotation(InfoManager.engineCamera.GetViewMatrix().ExtractRotation().Inverted());
+            renderObject.position = addedPosition;
+            renderObject.Render();
         }
     }
 }

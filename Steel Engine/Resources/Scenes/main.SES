@@ -1,3 +1,7 @@
-﻿/L 0 0 0 1 1 1 1
-/G 0 cube1 SL SL 2 -2 2 0 0 0 1 1 1 Sphere true 0.8 0.8 0.8 Player.png
+/L 0 0 0 1 1 1 1
+/G 0 cube1 SL SL 2 -2 2 0 0 0 1 1 1 Sphere True 0.8 0.8 0.8
+/G 1 cube2 SL SL -0.41801995 -2.6681406 2.7551985 0 0 0 1 1 1 Sphere True 0.8 0.8 0.8
 /V 0 0 0 0 0 0 0 90 Perspective
+/C S/BoxCollider:0:1
+/C S/Rigidbody:0
+/C DirectionalAudio.cs:1
