@@ -9,6 +9,7 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Steel_Engine.Common;
 using Steel_Engine.GUI;
+using Steel_Engine.ParticleSystem;
 using Steel_Engine.Tilemaps;
 using Zamak;
 
@@ -29,6 +30,9 @@ namespace Steel_Engine
 
             base.OnClosing(e);
         }
+
+        //TestCODE
+        private ParticleEmitter testEmitter;
 
         protected override void OnLoad()
         {
@@ -90,6 +94,14 @@ namespace Steel_Engine
             // load ui
             if (!InfoManager.isBuild)
                 GUIManager.LoadEngineGUI();
+
+            // TEST CODE (Particles)
+            testEmitter = new ParticleEmitter();
+            Particle testParticle = new Particle();
+            testParticle.colour = new Vector3(1, 0, 0);
+            testEmitter.particles.Add(testParticle);
+            testEmitter.mesh = OBJImporter.LoadOBJ("Cube", true);
+            testEmitter.Init();
 
             // once loaded, if is a build make it always running
             if (InfoManager.isBuild)
@@ -192,6 +204,7 @@ namespace Steel_Engine
             {
                 gameObject.Render();
             }
+            testEmitter.Render();
 
             foreach (Tilemap tilemap in SceneManager.tilemaps)
             {

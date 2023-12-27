@@ -90,7 +90,6 @@ namespace Steel_Engine
 
         public static byte[] BitmapToByteArray(Bitmap bitmap)
         {
-
             BitmapData bmpdata = null;
 
             try

@@ -24,6 +24,11 @@ namespace Steel_Engine
 
         private bool oneTime = false;
 
+        public delegate void Collision(Collider other);
+        public static event Collision onCollisionEnter = new Collision(OCE);
+
+        private static void OCE(Collider o) { }
+
         protected override void Init()
         {
             collider = gameObject.GetComponent<Collider>();
@@ -97,6 +102,7 @@ namespace Steel_Engine
                     {
                         AddRelativeForce(point - gameObject.position, (point-col.gameObject.position).Normalized()/20.0f);
                     }
+                    onCollisionEnter.Invoke(col);
                     collided = true;
                 }
             }
@@ -126,38 +132,6 @@ namespace Steel_Engine
             Vector3 T = Vector3.Cross(pos, force);
             T /= 2.0f;
             return T;
-        }
-
-        public bool VectorGreaterThanVal(Vector3 v1, float val)
-        {
-            if (v1.X > val)
-            {
-                if (v1.Y > val)
-                {
-                    if (v1.Z > val)
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        public bool VectorGreaterThanOEVal(Vector3 v1, float val)
-        {
-            if (v1.X >= val)
-            {
-                if (v1.Y >= val)
-                {
-                    if (v1.Z >= val)
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
         }
 
         public void ApplyAirResistance()

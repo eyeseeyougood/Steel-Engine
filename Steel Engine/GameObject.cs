@@ -13,10 +13,11 @@ namespace Steel_Engine
     {
         None = -1,
         ShadeFlat = 0,
-        ShadeTextureUnit = 1,
-        ShadeTextureUnitHue = 2,
-        ShadeLighting = 3,
-        ShadeTextureLighting = 4
+        ShadeFlatInstanced = 1,
+        ShadeTextureUnit = 2,
+        ShadeTextureUnitHue = 3,
+        ShadeLighting = 4,
+        ShadeTextureLighting = 5
     }
 
     public class GameObject
@@ -269,7 +270,7 @@ namespace Steel_Engine
             vertexBufferObject = GL.GenBuffer(); // get a name for VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject); // bind VBO
             GL.BufferData(BufferTarget.ArrayBuffer, mesh.vertices.Count * 11 * sizeof(float), GetVertices(), BufferUsageHint.StaticDraw); // allocating GPU memory for VBO
-            // the number '8' in the line above represents the number of values per vertex (position(3) + colour(3) + texPos(2) = 8)
+            // the number '11' in the line above represents the number of values per vertex (position(3) + colour(3) + texPos(2) + normal(3) = 11)
 
             vao = GL.GenVertexArray();
             GL.BindVertexArray(vao);
@@ -310,7 +311,7 @@ namespace Steel_Engine
             vertexBufferObject = GL.GenBuffer(); // get a name for VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject); // bind VBO
             GL.BufferData(BufferTarget.ArrayBuffer, mesh.vertices.Count * 11 * sizeof(float), GetVertices(preRotation), BufferUsageHint.StaticDraw); // allocating GPU memory for VBO
-            // the number '8' in the line above represents the number of values per vertex (position(3) + colour(3) + texPos(2) = 8)
+            // the number '11' in the line above represents the number of values per vertex (position(3) + colour(3) + texPos(2) + normal(3) = 11)
 
             vao = GL.GenVertexArray();
             GL.BindVertexArray(vao);
