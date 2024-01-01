@@ -20,6 +20,7 @@ namespace Steel_Engine.ParticleSystem
 
         private int meshVbo;
         private int instancesVbo;
+        private int ebo;
 
         private int vao;
 
@@ -29,6 +30,8 @@ namespace Steel_Engine.ParticleSystem
         public Vector3 scale;
         public Vector3 eRotation;
         public Quaternion qRotation { get; private set; }
+
+        private int[] indices;
 
         public Matrix4 GetModelMatrix()
         {
@@ -107,6 +110,8 @@ namespace Steel_Engine.ParticleSystem
         {
             int particleSizeInBytes = 13 * sizeof(float);
 
+            indices = mesh.GetIndices();
+
             vao = GL.GenVertexArray();
             GL.BindVertexArray(vao);
 
@@ -120,9 +125,15 @@ namespace Steel_Engine.ParticleSystem
             shader = new Shader(InfoManager.usingDirectory + @$"\Shaders\Coordinates\{RenderShader.ShadeFlatInstanced}.vert",
                     InfoManager.usingDirectory + @$"\Shaders\Coordinates\{RenderShader.ShadeFlatInstanced}.frag");
 
+            ebo = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ebo);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(float), indices, BufferUsageHint.StaticDraw);
+
+            GL.BindBuffer(BufferTarget.ArrayBuffer, meshVbo);
             GL.EnableVertexAttribArray(0);
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Vector3.SizeInBytes, 0);
 
+            GL.BindBuffer(BufferTarget.ArrayBuffer, instancesVbo);
             GL.EnableVertexAttribArray(1);
             GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, Vector3.SizeInBytes, 0);
             GL.VertexAttribDivisor(1, 1);
@@ -155,9 +166,31 @@ namespace Steel_Engine.ParticleSystem
             GL.BindVertexArray(vao);
 
             GL.BindBuffer(BufferTarget.ArrayBuffer, meshVbo);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, instancesVbo);
+            GL.EnableVertexAttribArray(0);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Vector3.SizeInBytes, 0);
 
-            GL.DrawArraysInstanced(PrimitiveType.Triangles, 0, mesh.vertices.Count, particles.Count);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, instancesVbo);
+            GL.EnableVertexAttribArray(1);
+            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, Vector3.SizeInBytes, 0);
+            GL.VertexAttribDivisor(1, 1);
+
+            GL.EnableVertexAttribArray(2);
+            GL.VertexAttribPointer(2, 4, VertexAttribPointerType.Float, false, Vector4.SizeInBytes, 3 * sizeof(float));
+            GL.VertexAttribDivisor(2, 1);
+
+            GL.EnableVertexAttribArray(3);
+            GL.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false, Vector3.SizeInBytes, 7 * sizeof(float));
+            GL.VertexAttribDivisor(3, 1);
+
+            GL.EnableVertexAttribArray(4);
+            GL.VertexAttribPointer(4, 3, VertexAttribPointerType.Float, false, Vector3.SizeInBytes, 10 * sizeof(float));
+            GL.VertexAttribDivisor(4, 1);
+
+            GL.BindBuffer(BufferTarget.ArrayBuffer, meshVbo);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, instancesVbo);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ebo);
+
+            GL.DrawElementsInstanced(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, IntPtr.Zero, particles.Count);
         }
     }
 }

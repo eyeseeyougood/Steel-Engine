@@ -84,6 +84,9 @@ namespace Steel_Engine
                 }
             }
 
+            // Init Gizmos
+            GizmoManager.Init();
+
             // Init Audio
             AudioManager.Init();
 
@@ -100,7 +103,7 @@ namespace Steel_Engine
             Particle testParticle = new Particle();
             testParticle.colour = new Vector3(1, 0, 0);
             testEmitter.particles.Add(testParticle);
-            testEmitter.mesh = OBJImporter.LoadOBJ("Cube", true);
+            testEmitter.mesh = OBJImporter.LoadOBJ("Cube", false);
             testEmitter.Init();
 
             // once loaded, if is a build make it always running
@@ -181,6 +184,7 @@ namespace Steel_Engine
             InfoManager.Tick((float)args.Time);
             GUIManager.Tick((float)args.Time);
             SceneManager.Tick(args.Time);
+            GizmoManager.Tick((float)args.Time);
             LightManager.Tick();
             MultiplayerManager.Tick((float)args.Time);
 

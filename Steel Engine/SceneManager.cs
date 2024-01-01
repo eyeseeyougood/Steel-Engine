@@ -411,7 +411,7 @@ namespace Steel_Engine
             float mouseY = mousePosition.Y;
 
             int viewportWidth = 1920;
-            int viewportHeight = 1040;
+            int viewportHeight = 1030;
 
             // Calculate the NDC (Normalized Device Coordinates)
             float normalizedX = (2.0f * mouseX) / viewportWidth - 1.0f;

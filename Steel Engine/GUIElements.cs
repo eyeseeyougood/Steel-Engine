@@ -768,7 +768,10 @@ namespace Steel_Engine.GUI
         private Texture normalImage = null;
         private Texture pressedImage = null;
         private Texture currentImage = null;
+        private bool isUI;
 
+        private Vector3 colour;
+        
         private static void _ButtonDown(string buttonName) { }
         private static void _ButtonHold(float deltaTime, string buttonName) { }
         private static void _ButtonUp(string buttonName) { }
@@ -785,19 +788,84 @@ namespace Steel_Engine.GUI
             pressedImage = Texture.LoadFromFile(path, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
         }
 
+        private bool CheckObjectBounds(Vector2 mousePosition)
+        {
+            bool result = false;
+
+            foreach (SteelTriangle tri in renderObject.mesh.triangles)
+            {
+                // Step 1: find line plane intersection point
+                SteelRay ray = SceneManager.CalculateRay(mousePosition);
+                Vector3 p1 = tri.GetVertex(0).position;
+                p1 = (new Vector4(p1, 1.0f)*renderObject.GetModelMatrix()).Xyz;
+                Vector3 p2 = tri.GetVertex(1).position;
+                p2 = (new Vector4(p2, 1.0f) * renderObject.GetModelMatrix()).Xyz;
+                Vector3 p3 = tri.GetVertex(2).position;
+                p3 = (new Vector4(p3, 1.0f) * renderObject.GetModelMatrix()).Xyz;
+                Vector3 intersectionPoint = MathFExtentions.LinePlaneIntersection(p1, p2, p3, ray.worldPosition, ray.worldDirection);
+
+                Vector3 transformedIntersectionPoint = (new Vector4(intersectionPoint, 1.0f) * renderObject.GetModelMatrix().Inverted()).Xyz;
+
+                p1 = tri.GetVertex(0).position;
+                p2 = tri.GetVertex(1).position;
+                p3 = tri.GetVertex(2).position;
+
+                // 2D implementation
+
+                // checking if point is in triangle
+                Vector3 up1 = p2 - p1;
+                Vector3 diffVector1 = transformedIntersectionPoint - p1;
+                Vector3 normal1 = up1.Normalized();
+                Vector3 axis1 = Vector3.Cross(up1, Vector3.Cross(up1, p3 - p1)).Normalized();
+                float dot1 = Vector3.Dot(diffVector1, axis1);
+                Vector3 up2 = p3 - p2;
+                Vector3 diffVector2 = transformedIntersectionPoint - p2;
+                Vector3 normal2 = up2.Normalized();
+                Vector3 axis2 = Vector3.Cross(up2, Vector3.Cross(up2, p1 - p2)).Normalized();
+                float dot2 = Vector3.Dot(diffVector2, axis2);
+                Vector3 up3 = p1 - p3;
+                Vector3 diffVector3 = transformedIntersectionPoint - p3;
+                Vector3 normal3 = up3.Normalized();
+                Vector3 axis3 = Vector3.Cross(up3, Vector3.Cross(up3, p2 - p3)).Normalized();
+                float dot3 = Vector3.Dot(diffVector3, axis3);
+
+                if (dot1 <= 0)
+                {
+                    if (dot2 <= 0)
+                    {
+                        if (dot3 <= 0)
+                        {
+                            // is inside 2D triangle
+                            result = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
         public bool CheckBounds(Vector2 mousePosition)
         {
             bool result = false;
+
+            if (!isUI)
+            {
+                result = CheckObjectBounds(mousePosition);
+                Console.WriteLine(result);
+                return result;
+            }
 
             // Step 1: find line plane intersection point
             SteelRay ray = SceneManager.CalculateRay(mousePosition);
             SteelTriangle triangle = renderObject.mesh.triangles[0];
             Vector3 p1 = triangle.GetVertex(0).position;
-            p1 = renderObject.position + InfoManager.engineCamera.Right * p1.X * renderObject.scale.X + InfoManager.engineCamera.Up * p1.Y * renderObject.scale.Y;
+            p1 = (new Vector4(p1, 1.0f) * renderObject.GetModelMatrix()).Xyz;
             Vector3 p2 = triangle.GetVertex(1).position;
-            p2 = renderObject.position + InfoManager.engineCamera.Right * p2.X * renderObject.scale.X + InfoManager.engineCamera.Up * p2.Y * renderObject.scale.Y;
+            p2 = (new Vector4(p2, 1.0f) * renderObject.GetModelMatrix()).Xyz;
             Vector3 p3 = triangle.GetVertex(2).position;
-            p3 = renderObject.position + InfoManager.engineCamera.Right * p3.X * renderObject.scale.X + InfoManager.engineCamera.Up * p3.Y * renderObject.scale.Y;
+            p3 = (new Vector4(p3, 1.0f) * renderObject.GetModelMatrix()).Xyz;
             Vector3 intersectionPoint = MathFExtentions.LinePlaneIntersection(p1, p2, p3, ray.worldPosition, ray.worldDirection);
 
             // Step 2: find two perpendicular vectors of quad and do dot product comparisons
@@ -832,6 +900,7 @@ namespace Steel_Engine.GUI
         public GUIWorldButton(Vector3 position, Vector2 anchor, Vector2 scale) : base(position, anchor, RenderShader.ShadeFlat, RenderShader.ShadeFlat)
         {
             this.scale = scale;
+            isUI = true;
         }
 
         public GUIWorldButton(Vector3 position, Vector2 anchor, Vector2 scale, string texture, string extension) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
@@ -841,6 +910,7 @@ namespace Steel_Engine.GUI
             normalImage = Texture.LoadFromFile(path, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
             renderObject.LoadTexture(normalImage);
             this.scale = scale;
+            isUI = true;
         }
 
         public GUIWorldButton(Vector3 position, Vector2 anchor, Vector2 scale, string texturePath) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
@@ -848,6 +918,30 @@ namespace Steel_Engine.GUI
             normalImage = Texture.LoadFromFile(texturePath, TextureMinFilter.Nearest, TextureMagFilter.Nearest);
             renderObject.LoadTexture(normalImage);
             this.scale = scale;
+            isUI = true;
+        }
+
+        public GUIWorldButton(Vector3 position, Vector3 scale, string modelName, Vector3 rgb1) : base(position, Vector2.Zero, RenderShader.ShadeFlat, RenderShader.ShadeFlat)
+        {
+            colour = rgb1;
+            renderObject.mesh = OBJImporter.LoadOBJ(modelName, true);
+            renderObject.mesh.SetColour(rgb1);
+            renderObject.scale = scale;
+            renderObject.Load();
+        }
+
+        public void SetModel(string name, bool optimised)
+        {
+            renderObject.mesh = OBJImporter.LoadOBJ(name, optimised);
+            renderObject.mesh.SetColour(colour);
+            renderObject.Load();
+        }
+
+        public void SetModelFromPath(string path, bool optimised)
+        {
+            renderObject.mesh = OBJImporter.LoadOBJFromPath(path, optimised);
+            renderObject.mesh.SetColour(colour);
+            renderObject.Load();
         }
 
         public override void Tick(float deltaTime)
@@ -865,7 +959,7 @@ namespace Steel_Engine.GUI
             }
             if (mouseUp)
             {
-                if (CheckBounds(mousePosition) && (active))
+                if ((active))
                 {
                     buttonUp.Invoke(name);
                 }
@@ -896,10 +990,14 @@ namespace Steel_Engine.GUI
 
         public override void Render()
         {
-            renderObject.scale = new Vector3(scale.X, scale.Y, 1f);
-            renderObject.SetRotation(InfoManager.engineCamera.GetViewMatrix().ExtractRotation().Inverted());
+            if (isUI)
+            {
+                renderObject.SetRotation(InfoManager.engineCamera.GetViewMatrix().ExtractRotation().Inverted());
+                renderObject.scale = new Vector3(scale.X, scale.Y, 1f);
+            }
             renderObject.position = addedPosition;
-            renderObject.Render();
+            if (visible)
+                renderObject.Render();
         }
     }
 }

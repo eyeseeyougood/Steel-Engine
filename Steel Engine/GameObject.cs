@@ -199,9 +199,24 @@ namespace Steel_Engine
             eRotation += rotation;
             qRotation = Quaternion.FromEulerAngles(eRotation);
         }
+
         public void Rotate(float x, float y, float z)
         {
             Vector3 rotation = new Vector3(x, y, z);
+            eRotation += rotation;
+            qRotation = Quaternion.FromEulerAngles(eRotation);
+        }
+
+        public void RotateDegrees(Vector3 rotation)
+        {
+            Vector3 newRot = new Vector3(MathHelper.DegreesToRadians(rotation.X), MathHelper.DegreesToRadians(rotation.Y), MathHelper.DegreesToRadians(rotation.Z));
+            eRotation += newRot;
+            qRotation = Quaternion.FromEulerAngles(eRotation);
+        }
+
+        public void RotateDegrees(float x, float y, float z)
+        {
+            Vector3 rotation = new Vector3(MathHelper.DegreesToRadians(x), MathHelper.DegreesToRadians(y), MathHelper.DegreesToRadians(y));
             eRotation += rotation;
             qRotation = Quaternion.FromEulerAngles(eRotation);
         }
@@ -369,7 +384,6 @@ namespace Steel_Engine
                     GL.VertexAttribPointer(colLocation, 3, VertexAttribPointerType.Float, false, 11 * sizeof(float), 3 * sizeof(float));
                     GL.EnableVertexAttribArray(posLocation);
                     GL.EnableVertexAttribArray(colLocation);
-
 
                     int[] indices = mesh.GetIndices();
 

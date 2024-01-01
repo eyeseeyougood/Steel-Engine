@@ -9,6 +9,36 @@ namespace Steel_Engine.Common
 {
     public static class MathFExtentions
     {
+        public static Vector3 FindClosestPointAxisAxis(Vector3 position1, Vector3 direction1, Vector3 position2, Vector3 direction2)
+        {
+            Vector3 delta = position2 - position1;
+
+            float a = Vector3.Dot(direction1, direction1);
+            float b = Vector3.Dot(direction1, direction2);
+            float c = Vector3.Dot(direction2, direction2);
+            float d = Vector3.Dot(direction1, delta);
+            float e = Vector3.Dot(direction2, delta);
+
+            float denominator = a * c - b * b;
+
+            // Check if the lines are parallel
+            if (denominator == 0)
+            {
+                return position1; // or any other appropriate handling
+            }
+
+            float t1 = (b * e - c * d) / denominator;
+            float t2 = (a * e - b * d) / denominator;
+
+            Vector3 closestPoint1 = position1 + direction1 * t1;
+            Vector3 closestPoint2 = position2 + direction2 * t2;
+
+            // Use the average of the closest points on both lines
+            Vector3 closestPoint = 0.5f * (closestPoint1 + closestPoint2);
+
+            return closestPoint1;
+        }
+
         public static Vector3 LinePlaneIntersection(Vector3 point1, Vector3 point2, Vector3 point3, Vector3 lineStart, Vector3 lineDirection)
         {
             // Calculate the normal vector of the plane using the cross product of two vectors on the plane.
