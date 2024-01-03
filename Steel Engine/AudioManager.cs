@@ -99,7 +99,7 @@ namespace Steel_Engine
         public static void StopDSO()
         {
             Console.WriteLine("stopped");
-            dso.Stop();
+            //dso.Stop();
         }
 
         public static void PlayDSO()

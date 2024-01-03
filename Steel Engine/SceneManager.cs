@@ -42,6 +42,7 @@ namespace Steel_Engine
             {
                 gameLoad -= go.Load;
                 gameTick -= go.Tick;
+                go.Cleanup();
             }
 
             gameObjects.Clear();

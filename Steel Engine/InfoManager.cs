@@ -24,6 +24,8 @@ namespace Steel_Engine
 
         public static float gravityStrength = 1f;
 
+        public static GameObject testObject; //TESTCODE
+
         public static Camera engineCamera;
 
         public static Vector2 windowSize;

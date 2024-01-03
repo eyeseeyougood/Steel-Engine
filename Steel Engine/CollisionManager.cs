@@ -14,6 +14,8 @@ namespace Steel_Engine
     [SteelComponent]
     public class Collider : Component
     {
+        public Vector3[] vertices;
+
         protected override void Init()
         {
             CollisionManager.colliders.Add(this);
@@ -29,15 +31,24 @@ namespace Steel_Engine
             return Vector3.Zero;
         }
 
-        public virtual bool CheckSATCollision(Collider other)
+        public virtual bool CheckSATCollision(Collider other, out Vector3 mtv)
         {
             bool result = false;
+            mtv = Vector3.Zero;
             return result;
         }
 
         public virtual Vector3[] FindCollisionPoints(Collider other)
         {
             return null;
+        }
+
+        public override void Cleanup()
+        {
+            if (CollisionManager.colliders.Contains(this))
+            {
+                CollisionManager.colliders.Remove(this);
+            }
         }
     }
 
@@ -46,8 +57,6 @@ namespace Steel_Engine
     {
         public Vector3 min;
         public Vector3 max;
-
-        public Vector3[] vertices;
 
         protected override void Init()
         {
@@ -100,17 +109,20 @@ namespace Steel_Engine
             vertices = finalVertices.ToArray();
         }
 
-        public override bool CheckSATCollision(Collider other)
+        public override bool CheckSATCollision(Collider other, out Vector3 mtv)
         {
+            Vector3 mtvResult = Vector3.Zero;
             bool result = false;
 
             switch (other.GetType().Name)
             {
                 case "BoxCollider":
                     result = SAT3D(this, (BoxCollider)other, out Vector3 vec);
+                    mtvResult = vec;
                     break;
             }
 
+            mtv = mtvResult;
             return result;
         }
 
@@ -134,7 +146,9 @@ namespace Steel_Engine
 
             SteelPlane3D[] planes = FindPlanes3D(box1, box2);
 
-            Vector3 totalTV = new Vector3(0, 0, 0);
+            List<Vector3> tvs = new List<Vector3>();
+
+            Vector3 collisionNormal = Vector3.Zero; // in this case i am making this the same as the mtv
 
             foreach (SteelPlane3D plane in planes)
             {
@@ -151,6 +165,11 @@ namespace Steel_Engine
                     Vector3 diff = dist * planeNormal;
                     projectedVertices[index] = vertex - diff;
                     index++;
+                    /*
+                    InfoManager.testObject.mesh.SetColour(Vector3.UnitX);
+                    GameObject go = GameObject.QuickCopy(InfoManager.testObject);
+                    go.position = vertex - diff;
+                    SceneManager.gameObjects.Add(go);*/
                 }
 
                 // project box2 onto the plane
@@ -162,6 +181,12 @@ namespace Steel_Engine
                     Vector3 diff = dist * planeNormal;
                     projectedVertices1[index] = vertex - diff;
                     index++;
+                    /*
+                    InfoManager.testObject.mesh.SetColour(Vector3.UnitZ);
+                    GameObject go = GameObject.QuickCopy(InfoManager.testObject);
+                    go.position = vertex-diff;
+                    SceneManager.gameObjects.Add(go);
+                    */
                 }
 
                 // Find orthonormal bases
@@ -195,30 +220,58 @@ namespace Steel_Engine
                 SteelShape2D shape2 = new SteelShape2D(convertedVertices1.ToArray());
 
                 // perform 2D SAT on projected shapes
-                if (!SAT2D(shape1, shape2, out float bum))
+                if (!SAT2D(shape1, shape2, out Vector2 mtv2D))
                 {
                     // there is a plane on which the objects don't overlap
                     result = false;
                     break;
                 }
+                else
+                {
+                    // the objects overlap on this plane
+                    // so we will re-project the mtv2D back into 3D
+                    Vector3 projectedMTV = new Vector3(mtv2D.X, mtv2D.Y, 0) * rotationMatrix.Inverted();
+                    tvs.Add(projectedMTV);
+                    /*
+                    InfoManager.testObject.mesh.SetColour(Vector3.UnitY);
+                    GameObject go = GameObject.QuickCopy(InfoManager.testObject);
+                    go.position = projectedMTV;
+                    SceneManager.gameObjects.Add(go);
+
+                    InfoManager.testObject.mesh.SetColour(new Vector3(1f, 0, 1f));
+                    GameObject go1 = GameObject.QuickCopy(InfoManager.testObject);
+                    go1.position = projectedMTV;
+                    SceneManager.gameObjects.Add(go1);*/
+                }
             }
 
-            if (result)
+            // find the minimum translation vector
+            if (tvs.Count > 0 && result)
             {
-                mtv = Vector3.Zero;
+                collisionNormal = tvs[0];
+                foreach (Vector3 tv in tvs)
+                {
+                    if (tv.Length < collisionNormal.Length) // OPTIMISATION -- length thingy again
+                    {
+                        collisionNormal = tv;
+                    }
+                
+                }
             }
 
-            mtv = Vector3.Zero;
+            mtv = collisionNormal;
             return result;
         }
 
-        public bool SAT2D(SteelShape2D shape1, SteelShape2D shape2, out float overlapDist)// overlapDist will be -1 if there isn't an overlap
+        public bool SAT2D(SteelShape2D shape1, SteelShape2D shape2, out Vector2 mtv)
         {
             bool result = true;
 
             Vector2[] axes = FindAxes2D(shape1, shape2);
 
-            Vector2 collisionNormal = Vector2.Zero;
+            List<Vector2> tvs = new List<Vector2>();
+
+            Vector2 collisionNormal = Vector2.Zero; // in this case im making the collision normal the same as the mtv
 
             foreach (Vector2 axis in axes)
             {
@@ -252,19 +305,59 @@ namespace Steel_Engine
                 else
                 {
                     // there is an overlap on this axis
-                    //if ()
+                    // step 1: find which way the overlap is (box1 on box2 or box2 on box1)
+                    // step 2: calculate the overlap distance
+                    // possibilities:
+                    // b1.1 --- b2.1 --- b1.2 --- b2.2
+                    // b1.1 --- b2.1 --- b2.2 --- b1.2
+                    // b2.1 --- b1.1 --- b2.2 --- b1.2
+                    // b2.1 --- b1.1 --- b1.2 --- b2.2
+                    // last edge case is that they are perfectly ontop of each other, but that just gets handled as if it were case 4
+                    float dist = 0;
+                    if (minDist < minDist1)
+                    {
+                        if (maxDist < maxDist1)
+                        {
+                            // case 1
+                            dist = -(maxDist - minDist1);
+                        }
+                        else if (maxDist >= maxDist1)
+                        {
+                            // case 2
+                            dist = -(maxDist1 - minDist);
+                        }
+                    }
+                    else if (minDist1 <= minDist)
+                    {
+                        if (maxDist1 < maxDist)
+                        {
+                            // case 3
+                            dist = maxDist1 - minDist;
+                        }
+                        else if (maxDist1 >= maxDist)
+                        {
+                            // case 4
+                            dist = maxDist - minDist1;
+                        }
+                    }
+                    tvs.Add(axis.Normalized() * dist);
                 }
             }
 
-            if (result)
+            // step 3: find the smallest translation vector (calculating the mtv)
+            if (tvs.Count > 0 && result)
             {
-                // there is an overlap
-                overlapDist = -1f;
+                collisionNormal = tvs[0];
+                foreach (Vector2 tv in tvs)
+                {
+                    if (tv.Length < collisionNormal.Length) // OPTIMISATION -- if running too slow, can switch to LengthFast for more speed but less accuracy
+                    {
+                        collisionNormal = tv;
+                    }
+                }
             }
-            else
-            {
-                overlapDist = -1f;
-            }
+
+            mtv = collisionNormal;
 
             return result;
         }
@@ -313,9 +406,9 @@ namespace Steel_Engine
             Vector2 prevVert1 = shape2.vertices[0];
             foreach (Vector2 vert in shape2.vertices)
             {
-                if (vert != prevVert)
+                if (vert != prevVert1)
                 {
-                    axes.Add(vert - prevVert);
+                    axes.Add(vert - prevVert1);
                     prevVert1 = vert;
                 }
             }

@@ -46,6 +46,14 @@ namespace Steel_Engine
 
         public List<Component> components = new List<Component>();
 
+        public void Cleanup()
+        {
+            foreach (Component comp in components)
+            {
+                comp.Cleanup();
+            }
+        }
+
         public void AddComponent(Component component) // for runtime adding of components
         {
             components.Add(component);

@@ -59,6 +59,12 @@ namespace Steel_Engine
             InfoManager.setWindowTitle += SetWindowTitle;
             InfoManager.setWindowPosition += SetWindowPosition;
 
+            //TESTCODE
+            InfoManager.testObject = new GameObject(RenderShader.ShadeFlat, RenderShader.ShadeFlat);
+            InfoManager.testObject.mesh = OBJImporter.LoadOBJ("Cube", true);
+            InfoManager.testObject.scale = Vector3.One * 0.1f;
+            InfoManager.testObject.Load();
+
             // set build mode
             InfoManager.isBuild = bool.Parse(File.ReadAllLines(InfoManager.currentDevPath + @"/BuildSettings/BuildSettings.txt")[0].Replace("isBuild ", ""));
             BuildManager.buildClientServerFiles = bool.Parse(File.ReadAllLines(InfoManager.currentDevPath + @"/BuildSettings/BuildSettings.txt")[2].Replace("isMultiplayer ", ""));

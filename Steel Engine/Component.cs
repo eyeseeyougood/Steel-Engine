@@ -23,6 +23,8 @@ namespace Steel_Engine
             // make adjustments to sub-objects (example)
         }
 
+        public virtual void Cleanup() { }
+
         protected virtual void Init() { }
 
         public void ComponentInit(GameObject boundObject)
