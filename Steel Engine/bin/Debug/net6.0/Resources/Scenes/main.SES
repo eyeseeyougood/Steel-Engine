@@ -1,6 +1,6 @@
 /L 0 2 0 1 1 1 1
-/G 0 cube1 SL SL 0 0 0 0 0 0 1 1 1 Sphere True 0.8 0.8 0.8
-/G 1 cube2 SL SL 0 -4 0 0 0 0 20 1 20 Cube True 0.8 0.8 0.8
+/G 0 cube1 SL SL 0 0 0 0 0 0 1 1 1 Cube True 0.8 0.8 0.8
+/G 1 cube2 SL SL 0 -6 0 0 0 45 20 1 20 Cube True 0.8 0.8 0.8
 /G 2 cube3 SL SL 0 -2 5 0 0 0 20 1 2 Cube True 0.8 0.8 0.8
 /V 0 0 0 0 0 0 0 90 Perspective
 /C S/BoxCollider:0:1:2

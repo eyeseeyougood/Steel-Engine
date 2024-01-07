@@ -65,7 +65,8 @@ namespace Steel_Engine
             {
                 if (!collisionPoints.ToList().ContainsAnInstanceEqualTo(vert))
                 {
-                    Vector3 gravityForce = Time.timeScale * new Vector3(0, -0.005f, 0) * InfoManager.gravityStrength / 1000f;
+                    //Vector3 gravityForce = Time.timeScale * new Vector3(0, -0.05f, 0) * InfoManager.gravityStrength / 1000f;
+                    Vector3 gravityForce = Time.timeScale * new Vector3(0, -1, 0) * InfoManager.gravityStrength / 100f;
                     AddRelativeForce(vert-gameObject.position, gravityForce);
                 }
             }
@@ -107,7 +108,7 @@ namespace Steel_Engine
                 if (col == collider)
                     continue;
 
-                if (collider.CheckSATCollision(col, out Vector3 mtv))
+                if (collider.CheckSATCollision(col, out Vector3 mtv, out Vector3 collisionNormal))
                 {
                     Console.WriteLine($"COLLIDING: {mtv}");
                     Console.WriteLine($"#ofColliders: {CollisionManager.colliders.Count}");
@@ -120,11 +121,19 @@ namespace Steel_Engine
 
                     foreach (Vector3 point in collisionPoints)
                     {
-                        AddRelativeForce(point - gameObject.position, (point-col.gameObject.position).Normalized()*(MathF.Abs(velocity.Y)/2));
+                        velocity -= velocity / 2;
+                        angularVelocity -= angularVelocity / 2;
+                        AddRelativeForce(point - gameObject.position, collisionNormal.Normalized()*(MathF.Abs(velocity.Length)/2));
+                        InfoManager.testObject.mesh.SetColour(Vector3.UnitX);
+                        GameObject go = GameObject.QuickCopy(InfoManager.testObject);
+                        go.position = point - gameObject.position;
+                        SceneManager.gameObjects.Add(go);
                     }
 
                     // apply ambient gravity
                     ApplyAmbientGravity(collisionPoints);
+
+                    // apply friction
 
                     onCollisionEnter.Invoke(col);
                     collided = true;
@@ -159,7 +168,7 @@ namespace Steel_Engine
         public Vector3 CalculateTorque(Vector3 pos, Vector3 force)
         {
             Vector3 T = Vector3.Cross(pos, force);
-            T /= mass/2;
+            T /= mass*2;
             return T;
         }
 

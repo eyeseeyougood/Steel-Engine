@@ -11,6 +11,20 @@ using System.Threading.Tasks;
 
 namespace Steel_Engine
 {
+    public class CollisionData3D
+    {
+        public Vector3 mtv;
+        public Vector3 collisionNormal;
+
+        public static CollisionData3D Zero() { return new CollisionData3D(Vector3.Zero, Vector3.Zero); }
+
+        public CollisionData3D(Vector3 mtv, Vector3 colNormal)
+        {
+            this.mtv = mtv;
+            collisionNormal = colNormal;
+        }
+    }
+
     [SteelComponent]
     public class Collider : Component
     {
@@ -31,10 +45,11 @@ namespace Steel_Engine
             return Vector3.Zero;
         }
 
-        public virtual bool CheckSATCollision(Collider other, out Vector3 mtv)
+        public virtual bool CheckSATCollision(Collider other, out Vector3 mtv, out Vector3 normal)
         {
             bool result = false;
             mtv = Vector3.Zero;
+            normal = Vector3.Zero;
             return result;
         }
 
@@ -109,20 +124,23 @@ namespace Steel_Engine
             vertices = finalVertices.ToArray();
         }
 
-        public override bool CheckSATCollision(Collider other, out Vector3 mtv)
+        public override bool CheckSATCollision(Collider other, out Vector3 mtv, out Vector3 collisionNormal)
         {
             Vector3 mtvResult = Vector3.Zero;
+            Vector3 colNormal = Vector3.Zero;
             bool result = false;
 
             switch (other.GetType().Name)
             {
                 case "BoxCollider":
-                    result = SAT3D(this, (BoxCollider)other, out Vector3 vec);
+                    result = SAT3D(this, (BoxCollider)other, out Vector3 vec, out Vector3 normal);
                     mtvResult = vec;
+                    colNormal = normal;
                     break;
             }
 
             mtv = mtvResult;
+            collisionNormal = colNormal;
             return result;
         }
 
@@ -140,15 +158,16 @@ namespace Steel_Engine
             return result;
         }
 
-        public bool SAT3D(BoxCollider box1, BoxCollider box2, out Vector3 mtv) // mtv = minimum translation vector
+        public bool SAT3D(BoxCollider box1, BoxCollider box2, out Vector3 mtv, out Vector3 normal) // mtv = minimum translation vector
         {
             bool result = true;
 
             SteelPlane3D[] planes = FindPlanes3D(box1, box2);
 
-            List<Vector3> tvs = new List<Vector3>();
+            List<CollisionData3D> data = new List<CollisionData3D>();
 
-            Vector3 collisionNormal = Vector3.Zero; // in this case i am making this the same as the mtv
+            Vector3 collisionNormal = Vector3.Zero;
+            Vector3 minimum = Vector3.Zero; // in this case i am making this the same as the mtv
 
             foreach (SteelPlane3D plane in planes)
             {
@@ -231,7 +250,8 @@ namespace Steel_Engine
                     // the objects overlap on this plane
                     // so we will re-project the mtv2D back into 3D
                     Vector3 projectedMTV = new Vector3(mtv2D.X, mtv2D.Y, 0) * rotationMatrix.Inverted();
-                    tvs.Add(projectedMTV);
+                    CollisionData3D colData = new CollisionData3D(projectedMTV, a);
+                    data.Add(colData);
                     /*
                     InfoManager.testObject.mesh.SetColour(Vector3.UnitY);
                     GameObject go = GameObject.QuickCopy(InfoManager.testObject);
@@ -246,20 +266,22 @@ namespace Steel_Engine
             }
 
             // find the minimum translation vector
-            if (tvs.Count > 0 && result)
+            CollisionData3D currentData = CollisionData3D.Zero();
+            if (data.Count > 0 && result)
             {
-                collisionNormal = tvs[0];
-                foreach (Vector3 tv in tvs)
+                minimum = data[0].mtv;
+                foreach (CollisionData3D col in data)
                 {
-                    if (tv.Length < collisionNormal.Length) // OPTIMISATION -- length thingy again
+                    if (col.mtv.Length < minimum.Length) // OPTIMISATION -- length thingy again
                     {
-                        collisionNormal = tv;
+                        minimum = col.mtv;
+                        currentData = col;
                     }
-                
                 }
             }
 
-            mtv = collisionNormal;
+            mtv = currentData.mtv;
+            normal = currentData.collisionNormal;
             return result;
         }
 
