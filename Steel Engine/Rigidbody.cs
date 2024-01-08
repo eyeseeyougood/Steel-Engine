@@ -14,7 +14,10 @@ namespace Steel_Engine
         public Vector3 velocity { get; private set; }
         public Vector3 angularVelocity { get; private set; }
 
-        public float mass = 1;
+        public float mass = 1f;
+        public float drag = 0.1f;
+        public float angularDrag = 0.1f;
+        public float bounciness = 1.5f;
 
         public Vector3 centerOfMass;
 
@@ -55,7 +58,7 @@ namespace Steel_Engine
 
         protected void ApplyGravity()
         {
-            Vector3 gravityForce = Time.timeScale * new Vector3(0, -1, 0) * InfoManager.gravityStrength / 100f;
+            Vector3 gravityForce = mass * Time.timeScale * new Vector3(0, -1, 0) * InfoManager.gravityStrength / 100f;
             AddRelativeForce(new Vector3(0, 0, 0), gravityForce);
         }
 
@@ -65,9 +68,8 @@ namespace Steel_Engine
             {
                 if (!collisionPoints.ToList().ContainsAnInstanceEqualTo(vert))
                 {
-                    //Vector3 gravityForce = Time.timeScale * new Vector3(0, -0.05f, 0) * InfoManager.gravityStrength / 1000f;
-                    Vector3 gravityForce = Time.timeScale * new Vector3(0, -1, 0) * InfoManager.gravityStrength / 100f;
-                    AddRelativeForce(vert-gameObject.position, gravityForce);
+                    Vector3 gravityForce = mass * Time.timeScale * new Vector3(0, -1, 0) * InfoManager.gravityStrength / 100f;
+                    AddRelativeForce(vert-gameObject.position, gravityForce/collisionPoints.Length);
                 }
             }
         }
@@ -121,17 +123,13 @@ namespace Steel_Engine
 
                     foreach (Vector3 point in collisionPoints)
                     {
-                        velocity -= velocity / 2;
-                        angularVelocity -= angularVelocity / 2;
-                        AddRelativeForce(point - gameObject.position, collisionNormal.Normalized()*(MathF.Abs(velocity.Length)/2));
-                        InfoManager.testObject.mesh.SetColour(Vector3.UnitX);
-                        GameObject go = GameObject.QuickCopy(InfoManager.testObject);
-                        go.position = point - gameObject.position;
-                        SceneManager.gameObjects.Add(go);
+                        float gravityForce = mass * Time.timeScale * InfoManager.gravityStrength / 100f;
+                        AddRelativeForce(point - gameObject.position, collisionNormal.Normalized()*gravityForce / collisionPoints.Length * bounciness);
                     }
 
                     // apply ambient gravity
-                    ApplyAmbientGravity(collisionPoints);
+                    if (collisionPoints.Length > 0)
+                        ApplyAmbientGravity(collisionPoints);
 
                     // apply friction
 
@@ -168,7 +166,7 @@ namespace Steel_Engine
         public Vector3 CalculateTorque(Vector3 pos, Vector3 force)
         {
             Vector3 T = Vector3.Cross(pos, force);
-            T /= mass*2;
+            T /= mass;
             return T;
         }
 
@@ -176,11 +174,11 @@ namespace Steel_Engine
         {
             if ((angularVelocity - (angularVelocity * 0.01f)).Length > 0)
             {
-                angularVelocity -= angularVelocity * 0.01f;
+                angularVelocity -= angularVelocity * 0.01f * angularDrag;
             }
             if ((velocity - (velocity * 0.01f)).Length > 0)
             {
-                velocity -= velocity * 0.01f;
+                velocity -= velocity * 0.01f * drag;
             }
         }
 
@@ -193,6 +191,7 @@ namespace Steel_Engine
 
         public override void LateTick(float deltaTime)
         {
+            Console.WriteLine(velocity);
             centerOfMass = gameObject.position;
             CalculateVelocity();
             ApplyVelocity();
