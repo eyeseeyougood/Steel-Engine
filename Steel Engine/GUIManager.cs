@@ -201,8 +201,16 @@ namespace Steel_Engine.GUI
             GUIScrollView view = (GUIScrollView)GetElementByName("componentsView");
             foreach (Type t in typeof(Component).Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Component))))
             {
+                string _namespace = "";
+                if (t.Namespace != null)
+                {
+                    if (t.Namespace.Length > 12)
+                    {
+                        _namespace = t.Namespace;
+                    }
+                }
                 GUIButton componentButton = new GUIButton(new Vector3(0, 0, 0), new Vector2(0, 0), new Vector2(0.39f, 0.03f), InfoManager.usingDirectory + @$"EngineResources\EngineTextures\TestUp.png");
-                componentButton.name = $"{t.Name} ComponentButton";
+                componentButton.name = $"{_namespace}.{t.Name} ComponentButton";
                 componentButton.renderOrder = 1;
                 componentButton.buttonDown += EngineGUIEventManager.AddComponentEvent;
                 componentButton.SetPressedImage(InfoManager.usingDirectory + @$"EngineResources\EngineTextures\TestDown.png");

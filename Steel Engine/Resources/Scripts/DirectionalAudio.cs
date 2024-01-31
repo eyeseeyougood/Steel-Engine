@@ -11,6 +11,9 @@ public class DirectionalAudio : Component
     protected override void Init()
     {
         audioSource = new AudioSource("The Lobster", 0.5f);
+
+        //TESTCODE
+        //SceneManager.gameObjects[1].GetComponent<Rigidbody>().isKinematic = true;
     }
 
     public override void Tick(float deltaTime)

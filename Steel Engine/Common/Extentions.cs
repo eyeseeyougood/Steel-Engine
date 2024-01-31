@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenTK.Graphics.OpenGL;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,6 +23,31 @@ namespace Steel_Engine.Common
             }
 
             return found;
+        }
+
+        public static string GetErrorString(ErrorCode errorCode)
+        {
+            switch (errorCode)
+            {
+                case ErrorCode.NoError:
+                    return "NoError";
+                case ErrorCode.InvalidEnum:
+                    return "InvalidEnum";
+                case ErrorCode.InvalidValue:
+                    return "InvalidValue";
+                case ErrorCode.InvalidOperation:
+                    return "InvalidOperation";
+                case ErrorCode.StackOverflow:
+                    return "StackOverflow";
+                case ErrorCode.StackUnderflow:
+                    return "StackUnderflow";
+                case ErrorCode.OutOfMemory:
+                    return "OutOfMemory";
+                case ErrorCode.TableTooLarge:
+                    return "TableTooLarge";
+                default:
+                    return $"Unknown OpenGL Error ({errorCode})";
+            }
         }
     }
 }

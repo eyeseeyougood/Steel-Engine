@@ -270,6 +270,7 @@ namespace Steel_Engine
             if (data.Count > 0 && result)
             {
                 minimum = data[0].mtv;
+                currentData = data[0];
                 foreach (CollisionData3D col in data)
                 {
                     if (col.mtv.Length < minimum.Length) // OPTIMISATION -- length thingy again

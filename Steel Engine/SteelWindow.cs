@@ -31,9 +31,6 @@ namespace Steel_Engine
             base.OnClosing(e);
         }
 
-        //TestCODE
-        private ParticleEmitter testEmitter;
-
         protected override void OnLoad()
         {
             base.OnLoad();
@@ -105,12 +102,20 @@ namespace Steel_Engine
                 GUIManager.LoadEngineGUI();
 
             // TEST CODE (Particles)
-            testEmitter = new ParticleEmitter();
-            Particle testParticle = new Particle();
-            testParticle.colour = new Vector3(1, 0, 0);
-            testEmitter.particles.Add(testParticle);
-            testEmitter.mesh = OBJImporter.LoadOBJ("Cube", false);
-            testEmitter.Init();
+            EmitterSettings particleSettings = new EmitterSettings(OBJImporter.LoadOBJ("Cube", true));
+            particleSettings.rate = 64;
+            particleSettings.lifetime = 2.0f;
+            particleSettings.spread = 10f;
+            particleSettings.rotationSpread = 180f;
+            particleSettings.particleScale = Vector3.One * 0.05f;
+            particleSettings.scaleSpread = 0.025f;
+            particleSettings.particleColour = new Vector3(0.5f, 0.1f, 0.3f);
+
+            ParticleEmitter testEmitter = new ParticleEmitter();
+            testEmitter.settings = particleSettings;
+            testEmitter.scale = new Vector3(1, 1, 1);
+            testEmitter.position = new Vector3(0, 0, 0);
+            SceneManager.gameObjects[0].AddComponent(testEmitter);
 
             // once loaded, if is a build make it always running
             if (InfoManager.isBuild)
@@ -214,7 +219,6 @@ namespace Steel_Engine
             {
                 gameObject.Render();
             }
-            testEmitter.Render();
 
             foreach (Tilemap tilemap in SceneManager.tilemaps)
             {

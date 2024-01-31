@@ -40,7 +40,13 @@ namespace Steel_Engine
                 if (!File.Exists(dst + @$"\{fileInfo.Name}"))
                     File.Copy(file, dst + @$"\{fileInfo.Name}");
                 else
-                    File.WriteAllBytes(dst + @$"\{fileInfo.Name}", File.ReadAllBytes(file));
+                {
+                    try
+                    {
+                        File.WriteAllBytes(dst + @$"\{fileInfo.Name}", File.ReadAllBytes(file));
+                    }
+                    catch { }
+                }
             }
         }
 

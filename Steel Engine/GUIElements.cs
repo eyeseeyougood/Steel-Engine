@@ -205,6 +205,9 @@ namespace Steel_Engine.GUI
 
         public override void Tick(float deltaTime)
         {
+            if (InputManager.GetCursorState() != OpenTK.Windowing.Common.CursorState.Normal)
+                return;
+
             Vector2 mousePosition = InputManager.mousePosition;
             bool mousePressed = InputManager.GetMouseButtonDown(MouseButton.Left);
             bool mouseDown = InputManager.GetMouseButton(MouseButton.Left);
@@ -853,7 +856,6 @@ namespace Steel_Engine.GUI
             if (!isUI)
             {
                 result = CheckObjectBounds(mousePosition);
-                Console.WriteLine(result);
                 return result;
             }
 

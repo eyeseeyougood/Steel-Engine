@@ -12,6 +12,7 @@ namespace Steel_Engine
         public GameObject gameObject;
         public abstract void Tick(float deltaTime);
         public virtual void LateTick(float deltaTime) { }
+        public virtual void OnGameObjectRendered() { }
 
         public virtual void OnDrawInspectorPanel(GUIElement panel)
         {

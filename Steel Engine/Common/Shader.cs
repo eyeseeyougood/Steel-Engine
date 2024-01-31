@@ -107,7 +107,8 @@ namespace Steel_Engine.Common
             if (code != (int)All.True)
             {
                 // We can use `GL.GetProgramInfoLog(program)` to get information about the error.
-                throw new Exception($"Error occurred whilst linking Program({program})");
+                var infoLog = GL.GetProgramInfoLog(program);
+                throw new Exception($"Error occurred whilst linking Program({program}), error code: ({code}), infoLog: ({infoLog})");
             }
         }
 
@@ -169,6 +170,34 @@ namespace Steel_Engine.Common
         {
             GL.UseProgram(Handle);
             GL.UniformMatrix4(_uniformLocations[name], true, ref data);
+        }
+
+        public void SetIntArray(string name, int[] data)
+        {
+            GL.UseProgram(Handle);
+            GL.Uniform1(_uniformLocations[name], data.Length, data);
+        }
+
+        public void SetVector3Array(string name, Vector3[] data)
+        {
+            GL.UseProgram(Handle);
+            int index = 0;
+            foreach (Vector3 vec in data)
+            {
+                GL.Uniform3(_uniformLocations[name] + index, vec);
+                index++;
+            }
+        }
+
+        public void SetVector4Array(string name, Vector4[] data)
+        {
+            GL.UseProgram(Handle);
+            int index = 0;
+            foreach (Vector4 vec in data)
+            {
+                GL.Uniform4(_uniformLocations[name] + index, vec);
+                index++;
+            }
         }
 
         /// <summary>

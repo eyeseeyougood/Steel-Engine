@@ -15,9 +15,11 @@ namespace Steel_Engine
         public Vector3 angularVelocity { get; private set; }
 
         public float mass = 1f;
-        public float drag = 0.1f;
-        public float angularDrag = 0.1f;
-        public float bounciness = 1.5f;
+        public float drag = 1f;
+        public float angularDrag = 1f;
+        public float bounciness = 1.00f;
+
+        public bool isKinematic;
 
         public Vector3 centerOfMass;
 
@@ -59,17 +61,22 @@ namespace Steel_Engine
         protected void ApplyGravity()
         {
             Vector3 gravityForce = mass * Time.timeScale * new Vector3(0, -1, 0) * InfoManager.gravityStrength / 100f;
+
             AddRelativeForce(new Vector3(0, 0, 0), gravityForce);
         }
 
         protected void ApplyAmbientGravity(Vector3[] collisionPoints)
         {
+            float spread = collider.vertices.Length - collisionPoints.Length;
+
+            if (spread == 0) { return; }
+
             foreach (Vector3 vert in collider.vertices)
             {
                 if (!collisionPoints.ToList().ContainsAnInstanceEqualTo(vert))
                 {
                     Vector3 gravityForce = mass * Time.timeScale * new Vector3(0, -1, 0) * InfoManager.gravityStrength / 100f;
-                    AddRelativeForce(vert-gameObject.position, gravityForce/collisionPoints.Length);
+                    AddRelativeForce(vert-gameObject.position, gravityForce/spread);
                 }
             }
         }
@@ -112,41 +119,57 @@ namespace Steel_Engine
 
                 if (collider.CheckSATCollision(col, out Vector3 mtv, out Vector3 collisionNormal))
                 {
-                    Console.WriteLine($"COLLIDING: {mtv}");
-                    Console.WriteLine($"#ofColliders: {CollisionManager.colliders.Count}");
-                    // apply impulse
                     gameObject.position += mtv;
 
-                    // calculate collision normal
-
-                    Vector3[] collisionPoints = collider.FindCollisionPoints(col);
-
-                    foreach (Vector3 point in collisionPoints)
+                    // calculate vab
+                    if (col.gameObject.GetComponent<Rigidbody>() != null)
                     {
-                        float gravityForce = mass * Time.timeScale * InfoManager.gravityStrength / 100f;
-                        AddRelativeForce(point - gameObject.position, collisionNormal.Normalized()*gravityForce / collisionPoints.Length * bounciness);
+                        Rigidbody other = col.gameObject.GetComponent<Rigidbody>();
+                        Vector3 vab = velocity - other.velocity;
+                        float vn = Vector3.Dot(vab, collisionNormal);
+
+                        float J = (-(1 + bounciness) * vn) / (Vector3.Dot(collisionNormal, collisionNormal / mass + collisionNormal / other.mass));
+
+                        velocity += J*collisionNormal;
+                        other.SetVelocity(other.velocity-J*collisionNormal);
+
+                        // angular velocity
+                        Vector3[] collisionPoints = collider.FindCollisionPoints(col);
+
+                        foreach (Vector3 point in collisionPoints)
+                        {
+                            angularVelocity += CalculateTorque(point - gameObject.position, collisionNormal*0.5f);
+                        }
+                    }
+                    else
+                    {
+                        Vector3 vab = velocity;
+                        float vn = Vector3.Dot(vab, collisionNormal);
+
+                        float J = (-(1 + bounciness) * vn) / (Vector3.Dot(collisionNormal, collisionNormal / mass + collisionNormal));
+
+                        velocity += J * collisionNormal / 2f;
+
+                        // angular velocity
+                        Vector3[] collisionPoints = collider.FindCollisionPoints(col);
+
+                        foreach (Vector3 point in collisionPoints)
+                        {
+                            angularVelocity += CalculateTorque(point - gameObject.position, collisionNormal*0.5f);
+                        }
                     }
 
-                    // apply ambient gravity
-                    if (collisionPoints.Length > 0)
-                        ApplyAmbientGravity(collisionPoints);
-
-                    // apply friction
 
                     onCollisionEnter.Invoke(col);
                     collided = true;
                 }
-                else
-                {
-                    Console.WriteLine("NOT COLLIDING");
-                }
             }
-            
+
             if (!collided)
             {
-                ApplyGravity();
+                if (!isKinematic)
+                    ApplyGravity();
             }
-            
         }
 
         public void CalculateAngularVelocity()
@@ -166,7 +189,7 @@ namespace Steel_Engine
         public Vector3 CalculateTorque(Vector3 pos, Vector3 force)
         {
             Vector3 T = Vector3.Cross(pos, force);
-            T /= mass;
+            T /= 60.0f * mass * angularDrag;
             return T;
         }
 
@@ -191,7 +214,6 @@ namespace Steel_Engine
 
         public override void LateTick(float deltaTime)
         {
-            Console.WriteLine(velocity);
             centerOfMass = gameObject.position;
             CalculateVelocity();
             ApplyVelocity();
@@ -199,6 +221,11 @@ namespace Steel_Engine
             ApplyAngularVelocity();
             ApplyFrictionalForces();
             ResolveCollisions();
+        }
+
+        public override void OnGameObjectRendered()
+        {
+            base.OnGameObjectRendered();
         }
     }
 }

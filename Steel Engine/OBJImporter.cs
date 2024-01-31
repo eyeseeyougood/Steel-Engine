@@ -57,7 +57,7 @@ namespace Steel_Engine
                 }
             }
 
-            if (name == "Circle")
+            if (name == "Cube")
             {
             }
 

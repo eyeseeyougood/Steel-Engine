@@ -13,11 +13,11 @@ namespace Steel_Engine
     {
         None = -1,
         ShadeFlat = 0,
-        ShadeFlatInstanced = 1,
-        ShadeTextureUnit = 2,
-        ShadeTextureUnitHue = 3,
-        ShadeLighting = 4,
-        ShadeTextureLighting = 5
+        ShadeTextureUnit = 1,
+        ShadeTextureUnitHue = 2,
+        ShadeLighting = 3,
+        ShadeTextureLighting = 4,
+        ShadeFlatParticles128 = 5
     }
 
     public class GameObject
@@ -316,7 +316,7 @@ namespace Steel_Engine
 
             elementBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, elementBufferObject);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(float), indices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(int), indices, BufferUsageHint.StaticDraw);
 
             // init shader
             shader.Use();
@@ -339,6 +339,9 @@ namespace Steel_Engine
             vao = GL.GenVertexArray();
             GL.BindVertexArray(vao);
 
+            // init shader
+            shader.Use();
+
             int posLocation = shader.GetAttribLocation("aPosition");
             int colLocation = shader.GetAttribLocation("aColour");
             int texCoordLocation = shader.GetAttribLocation("aTexCoord");
@@ -357,10 +360,7 @@ namespace Steel_Engine
 
             elementBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, elementBufferObject);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(float), indices, BufferUsageHint.StaticDraw);
-
-            // init shader
-            shader.Use();
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(int), indices, BufferUsageHint.StaticDraw);
 
             // init components
             foreach (Component component in components)
@@ -475,7 +475,13 @@ namespace Steel_Engine
                     GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
 
                     break;
-            }            
+            }
+
+            // render components
+            foreach (Component component in components)
+            {
+                component.OnGameObjectRendered();
+            }
         }
 
         public Texture GetLoadedTexture()
