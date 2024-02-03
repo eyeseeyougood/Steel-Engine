@@ -45,12 +45,13 @@ namespace Steel_Engine
 
         public static void CreateEmpty(string buttonName)
         {
+            GUIScrollView heirarchy = (GUIScrollView)GUIManager.GetElementByName("heirarchyBG");
             GameObject go = new GameObject(RenderShader.ShadeFlat, RenderShader.ShadeFlat);
             go.id = SceneManager.gameObjects.Count;
             go.name = "GameObject #" + go.id.ToString();
             SceneManager.gameObjects.Add(go);
             // make heirarchy object
-            GUIButton heirarchyButtonObject = new GUIButton(new Vector3(39, -3.5f * GUIManager.heirarchyObjects.Count - 35f, 0), new Vector2(-1f, -1f), new Vector2(0.38f, 0.03f));
+            GUIButton heirarchyButtonObject = new GUIButton(new Vector3(39, -3.5f * heirarchy.contents.Count - 35f, 0), new Vector2(-1f, -1f), new Vector2(0.38f, 0.03f));
             heirarchyButtonObject.visible = false;
             heirarchyButtonObject.renderOrder = -1;
             heirarchyButtonObject.name = go.id.ToString() + " button object";
@@ -62,12 +63,14 @@ namespace Steel_Engine
             heirarchyTextObject.name = go.id.ToString() + " text object";
             heirarchyTextObject.parentGUI = heirarchyButtonObject;
             heirarchyTextObject.localRenderOrder = 1;
-            GUIManager.heirarchyObjects.Add(heirarchyTextObject);
-            GUIManager.heirarchyObjects.Add(heirarchyButtonObject);
-            GUIManager.heirarchyObjects.Add(heirarchyImageObject);
+            GUIManager.AddGUIElement(heirarchyTextObject);
+            heirarchy.contents.Add(heirarchyButtonObject);
+            GUIManager.AddGUIElement(heirarchyImageObject);
+            /*
             GUIManager.heirarchyQueue.Add(heirarchyTextObject);
             GUIManager.heirarchyQueue.Add(heirarchyButtonObject);
             GUIManager.heirarchyQueue.Add(heirarchyImageObject);
+            */
         }
 
         public static void XPButtonHold(float deltaTime, string buttonName)
@@ -154,14 +157,7 @@ namespace Steel_Engine
             }
 
             // select new
-            GUIElement selectedButton = null;
-            foreach (GUIElement element in GUIManager.guiElements)
-            {
-                if (element.name == buttonName)
-                {
-                    selectedButton = element;
-                }
-            }
+            GUIElement selectedButton = GUIManager.GetElementByName(buttonName);
             GUIManager.selectedHeirarchyObject = selectedButton;
             if (prevSelectedObject != GUIManager.selectedHeirarchyObject)
             {

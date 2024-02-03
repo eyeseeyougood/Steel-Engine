@@ -212,6 +212,7 @@ namespace Steel_Engine.GUI
             bool mousePressed = InputManager.GetMouseButtonDown(MouseButton.Left);
             bool mouseDown = InputManager.GetMouseButton(MouseButton.Left);
             bool mouseUp = InputManager.GetMouseButtonUp(MouseButton.Left);
+
             if (mousePressed)
             {
                 if (CheckBounds(mousePosition) && (active) && IsTopButton())
@@ -297,7 +298,6 @@ namespace Steel_Engine.GUI
         public bool IsTopButton() // a bit of a slower function
         {
             bool result = true;
-
             foreach (GUIElement element in GUIManager.guiElements)
             {
                 if (element.GetType() == typeof(GUIButton) && element.active)
@@ -518,12 +518,12 @@ namespace Steel_Engine.GUI
             useSize = true;
         }
 
-        public void SetColour(Vector4 rgb255)
+        public void SetColour(Vector4 rgba255)
         {
             Bitmap genImage = new Bitmap(1, 1);
-            genImage.SetPixel(0, 0, Color.FromArgb((int)rgb255.W, (int)rgb255.X, (int)rgb255.Y, (int)rgb255.Z));
+            genImage.SetPixel(0, 0, Color.FromArgb((int)rgba255.W, (int)rgba255.X, (int)rgba255.Y, (int)rgba255.Z));
             byte[] imageData = InfoManager.BitmapToByteArray(genImage);
-            Texture texture = Texture.FromData(rgb255.ToString(), genImage.Width, genImage.Height, imageData);
+            Texture texture = Texture.FromData(rgba255.ToString(), genImage.Width, genImage.Height, imageData);
 
             if (!textures.Contains(texture))
                 textures.Add(texture);
@@ -532,9 +532,9 @@ namespace Steel_Engine.GUI
             ApplyTexture(texture);
         }
 
-        public GUIImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector4 rgb255) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
+        public GUIImage(Vector3 position, Vector2 anchor, Vector2 scale, Vector4 rgba255) : base(position, anchor, RenderShader.ShadeTextureUnit, RenderShader.ShadeTextureUnit)
         {
-            SetColour(rgb255);
+            SetColour(rgba255);
             size = scale;
             useSize = true;
         }
@@ -726,7 +726,6 @@ namespace Steel_Engine.GUI
 
         public override void Render()
         {
-            int index = 0;
             if (!visible)
                 return;
             base.Render();
@@ -747,12 +746,10 @@ namespace Steel_Engine.GUI
                     element.anchor = anchor - new Vector2(0, (size.Y-padding) - element.size.Y + 0.01f - (scrollValue * scrollStrength) / (15.5f + spacing));
                 }
                 bool visibility = CheckVisiblity(element);
-                //visibility = true;
-                element.visible = visibility;
                 element.active = visibility;
                 element.renderOrder = renderOrder + 1;
-                index++;
-                element.Render();
+                if (visibility)
+                    element.Render();
                 prevElement = element;
             }
         }

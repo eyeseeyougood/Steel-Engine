@@ -14,8 +14,6 @@ namespace Steel_Engine.GUI
     public static class GUIManager
     {
         public static List<GUIElement> guiElements = new List<GUIElement>();
-        public static List<GUIElement> heirarchyObjects = new List<GUIElement>();
-        public static List<GUIElement> heirarchyQueue = new List<GUIElement>();
 
         public static GUIElement selectedHeirarchyObject = null;
 
@@ -99,11 +97,13 @@ namespace Steel_Engine.GUI
             rebuildText2.renderOrder = 0;
 
             // heirarchy
-            GUIImage heirarchyBG = new GUIImage(new Vector3(39, -158f, 0), new Vector2(-1f, -1f), new Vector2(0.4f, 0.9f), new Vector3(45, 45, 45) / 255.0f);
-            heirarchyBG.name = "heirarchyBG";
-            heirarchyBG.renderOrder = -2;
-
-            RefreshHeirarchy();
+            GUIScrollView heirarchy = new GUIScrollView(new Vector3(39, -158f, 0), new Vector2(-1f, -1f), new Vector2(0.4f, 0.9f));
+            heirarchy.SetColour(new Vector3(45, 45, 45) / 255.0f);
+            heirarchy.name = "heirarchyBG";
+            heirarchy.renderOrder = -2;
+            heirarchy.padding = 0.01f;
+            heirarchy.spacing = 0.01f;
+            heirarchy.scrollStrength = 1.08f;
 
             // inspector
             GUIScrollView inspectorView = new GUIScrollView(new Vector3(-39, -158f, 0), new Vector2(1f, -1f), new Vector2(0.4f, 0.9f));
@@ -121,7 +121,7 @@ namespace Steel_Engine.GUI
             addComponentButton.buttonDown += EngineGUIEventManager.ToggleComponentViewEvent;
             addComponentButton.renderOrder = -1;
 
-            GUIText addComponentText = new GUIText(Vector3.Zero, Vector2.Zero, 0.07f, "Add Component", @"C:\Windows\Fonts\Arial.ttf", 300f, new Vector4(0, 0, 0, 50));
+            GUIText addComponentText = new GUIText(Vector3.Zero, Vector2.Zero, 0.07f, "Add Component", @"C:\Windows\Fonts\Arial.ttf", 300f, new Vector4(0, 0, 0, 50), new Vector4(230, 230, 230, 255));
             addComponentText.name = "addComponentText";
             addComponentText.parentGUI = addComponentButton;
 
@@ -146,14 +146,16 @@ namespace Steel_Engine.GUI
             AddGUIElement(rebuildButton);
             AddGUIElement(rebuildText1);
             AddGUIElement(rebuildText2);
-            AddGUIElement(heirarchyBG);
             AddGUIElement(createEmpty);
             AddGUIElement(inspectorView);
             AddGUIElement(addComponentButton);
             AddGUIElement(addComponentText);
             AddGUIElement(componentsView);
+            AddGUIElement(heirarchy);
 
             RefreshComponentsMenu();
+
+            RefreshHeirarchy();
         }
 
         public static void RefreshInspectorMenu()
@@ -225,27 +227,27 @@ namespace Steel_Engine.GUI
 
         public static void RefreshHeirarchy()
         {
-            heirarchyObjects.Clear();
+            GUIScrollView heirarchy = (GUIScrollView)GetElementByName("heirarchyBG");
+            heirarchy.contents.Clear();
             foreach (GameObject gameObject in SceneManager.gameObjects)
             {
-                GUIButton heirarchyButtonObject = new GUIButton(new Vector3(39, -3.5f * heirarchyObjects.Count - 35f, 0), new Vector2(-1f, -1f), new Vector2(0.38f, 0.03f));
+                GUIButton heirarchyButtonObject = new GUIButton(new Vector3(0, 0, 0), new Vector2(0, 0), new Vector2(0.38f, 0.03f));
                 heirarchyButtonObject.visible = false;
+                heirarchyButtonObject.active = true;
                 heirarchyButtonObject.renderOrder = -1;
                 heirarchyButtonObject.name = gameObject.id.ToString() + " button object";
                 heirarchyButtonObject.buttonDown += EngineGUIEventManager.SelectHeirarchyObject;
                 GUIImage heirarchyImageObject = new GUIImage(Vector3.Zero, Vector2.Zero, new Vector2(0.38f, 0.03f), new Vector4(0, 0, 0, 100));
                 heirarchyImageObject.parentGUI = heirarchyButtonObject;
                 heirarchyImageObject.name = gameObject.id.ToString() + " image object";
+                heirarchyImageObject.localRenderOrder = 0;
                 GUIText heirarchyTextObject = new GUIText(Vector3.Zero, Vector2.Zero, 0.07f, gameObject.name, @"C:\Windows\Fonts\Arial.ttf", 200f, new Vector4(0, 0, 0, 0), new Vector4(200, 200, 200, 255));
                 heirarchyTextObject.name = gameObject.id.ToString() + " text object";
                 heirarchyTextObject.parentGUI = heirarchyButtonObject;
                 heirarchyTextObject.localRenderOrder = 1;
-                heirarchyObjects.Add(heirarchyTextObject);
-                heirarchyObjects.Add(heirarchyButtonObject);
-                heirarchyObjects.Add(heirarchyImageObject);
                 AddGUIElement(heirarchyTextObject);
                 AddGUIElement(heirarchyImageObject);
-                AddGUIElement(heirarchyButtonObject);
+                heirarchy.contents.Add(heirarchyButtonObject);
             }
         }
 
@@ -259,18 +261,12 @@ namespace Steel_Engine.GUI
                     GetElementByName("componentsView").visible = false;
                 }
             }
-            guiElements.AddRange(heirarchyQueue);
-            heirarchyQueue.Clear();
         }
 
         public static void Render()
         {
-            // sort list before render according to the render order of each item7
+            // sort list before render according to the render order of each item
             guiElements.Sort(new GUIElementComparer());
-            if (GetElementByName("componentsView").visible)
-            {
-
-            }
             foreach (GUIElement guiElement in guiElements)
             {
                 guiElement.Render();
@@ -290,6 +286,16 @@ namespace Steel_Engine.GUI
                 if (element.name == name)
                 {
                     return element;
+                }
+                else if (element.GetType() == typeof(GUIScrollView))
+                {
+                    foreach (GUIElement _elem in ((GUIScrollView)element).contents)
+                    {
+                        if (_elem.name == name)
+                        {
+                            return _elem;
+                        }
+                    }
                 }
             }
             return null;
