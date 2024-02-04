@@ -31,12 +31,12 @@ namespace Steel_Engine
                 SteelRay ray = SceneManager.CalculateRay(InputManager.mousePosition);
                 Vector3 intersectionPoint = MathFExtentions.FindClosestPointAxisAxis(ray.worldPosition, ray.worldDirection, go.addedPosition, Vector3.UnitX);
                 Vector3 projectedPoint = new Vector3(-intersectionPoint.X, 0, 0);
-                SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedHeirarchyObject.name.Replace(" button object", ""))).position.X = projectedPoint.X;
+                SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedhierarchyObject.name.Replace(" button object", ""))).position.X = projectedPoint.X;
             }
 
-            if (GUIManager.selectedHeirarchyObject != null)
+            if (GUIManager.selectedhierarchyObject != null)
             {
-                go.addedPosition = SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedHeirarchyObject.name.Replace(" button object", ""))).position - Vector3.UnitX * 3;
+                go.addedPosition = SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedhierarchyObject.name.Replace(" button object", ""))).position - Vector3.UnitX * 3;
                 go.visible = true;
                 go.active = true;
             }

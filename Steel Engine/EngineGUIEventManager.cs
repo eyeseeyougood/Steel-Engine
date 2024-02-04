@@ -13,7 +13,7 @@ namespace Steel_Engine
     {
         public static void ToggleComponentViewEvent(string buttonName)
         {
-            if (GUIManager.selectedHeirarchyObject != null)
+            if (GUIManager.selectedhierarchyObject != null)
             {
                 // make pop-up
                 GUIManager.GetElementByName("componentsView").visible = !GUIManager.GetElementByName("componentsView").visible;
@@ -32,7 +32,7 @@ namespace Steel_Engine
             // instantiate the component
             Component comp = (Component)Activator.CreateInstance(component);
             // add it to the object and initiate it
-            GameObject go = SceneManager.gameObjects[int.Parse(GUIManager.selectedHeirarchyObject.name.Split(' ')[0])];
+            GameObject go = SceneManager.gameObjects[int.Parse(GUIManager.selectedhierarchyObject.name.Split(' ')[0])];
             go.AddComponent(comp); // AddComponent initialises the component
             // refresh inspector
             GUIManager.RefreshInspectorMenu();
@@ -45,31 +45,31 @@ namespace Steel_Engine
 
         public static void CreateEmpty(string buttonName)
         {
-            GUIScrollView heirarchy = (GUIScrollView)GUIManager.GetElementByName("heirarchyBG");
+            GUIScrollView hierarchy = (GUIScrollView)GUIManager.GetElementByName("hierarchyBG");
             GameObject go = new GameObject(RenderShader.ShadeFlat, RenderShader.ShadeFlat);
             go.id = SceneManager.gameObjects.Count;
             go.name = "GameObject #" + go.id.ToString();
             SceneManager.gameObjects.Add(go);
-            // make heirarchy object
-            GUIButton heirarchyButtonObject = new GUIButton(new Vector3(39, -3.5f * heirarchy.contents.Count - 35f, 0), new Vector2(-1f, -1f), new Vector2(0.38f, 0.03f));
-            heirarchyButtonObject.visible = false;
-            heirarchyButtonObject.renderOrder = -1;
-            heirarchyButtonObject.name = go.id.ToString() + " button object";
-            heirarchyButtonObject.buttonDown += SelectHeirarchyObject;
-            GUIImage heirarchyImageObject = new GUIImage(Vector3.Zero, Vector2.Zero, new Vector2(0.38f, 0.03f), new Vector4(0, 0, 0, 100));
-            heirarchyImageObject.parentGUI = heirarchyButtonObject;
-            heirarchyImageObject.name = go.id.ToString() + " image object";
-            GUIText heirarchyTextObject = new GUIText(Vector3.Zero, Vector2.Zero, 0.07f, go.name, @"C:\Windows\Fonts\Arial.ttf", 200f, new Vector4(0, 0, 0, 0), new Vector4(200, 200, 200, 255));
-            heirarchyTextObject.name = go.id.ToString() + " text object";
-            heirarchyTextObject.parentGUI = heirarchyButtonObject;
-            heirarchyTextObject.localRenderOrder = 1;
-            GUIManager.AddGUIElement(heirarchyTextObject);
-            heirarchy.contents.Add(heirarchyButtonObject);
-            GUIManager.AddGUIElement(heirarchyImageObject);
+            // make hierarchy object
+            GUIButton hierarchyButtonObject = new GUIButton(new Vector3(39, -3.5f * hierarchy.contents.Count - 35f, 0), new Vector2(-1f, -1f), new Vector2(0.38f, 0.03f));
+            hierarchyButtonObject.visible = false;
+            hierarchyButtonObject.renderOrder = -1;
+            hierarchyButtonObject.name = go.id.ToString() + " button object";
+            hierarchyButtonObject.buttonDown += SelecthierarchyObject;
+            GUIImage hierarchyImageObject = new GUIImage(Vector3.Zero, Vector2.Zero, new Vector2(0.38f, 0.03f), new Vector4(0, 0, 0, 100));
+            hierarchyImageObject.parentGUI = hierarchyButtonObject;
+            hierarchyImageObject.name = go.id.ToString() + " image object";
+            GUIText hierarchyTextObject = new GUIText(Vector3.Zero, Vector2.Zero, 0.07f, go.name, @"C:\Windows\Fonts\Arial.ttf", 200f, new Vector4(0, 0, 0, 0), new Vector4(200, 200, 200, 255));
+            hierarchyTextObject.name = go.id.ToString() + " text object";
+            hierarchyTextObject.parentGUI = hierarchyButtonObject;
+            hierarchyTextObject.localRenderOrder = 1;
+            GUIManager.AddGUIElement(hierarchyTextObject);
+            hierarchy.contents.Add(hierarchyButtonObject);
+            GUIManager.AddGUIElement(hierarchyImageObject);
             /*
-            GUIManager.heirarchyQueue.Add(heirarchyTextObject);
-            GUIManager.heirarchyQueue.Add(heirarchyButtonObject);
-            GUIManager.heirarchyQueue.Add(heirarchyImageObject);
+            GUIManager.hierarchyQueue.Add(hierarchyTextObject);
+            GUIManager.hierarchyQueue.Add(hierarchyButtonObject);
+            GUIManager.hierarchyQueue.Add(hierarchyImageObject);
             */
         }
 
@@ -77,9 +77,9 @@ namespace Steel_Engine
         {
             float speed = 5;
             Vector3 move = new Vector3(1f, 0, 0) * speed;
-            if (GUIManager.selectedHeirarchyObject != null)
+            if (GUIManager.selectedhierarchyObject != null)
             {
-                GameObject go = SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedHeirarchyObject.name.Replace(" button object", "")));
+                GameObject go = SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedhierarchyObject.name.Replace(" button object", "")));
                 go.position += move * deltaTime;
             }
         }
@@ -88,9 +88,9 @@ namespace Steel_Engine
         {
             float speed = 5;
             Vector3 move = new Vector3(1f, 0, 0) * speed;
-            if (GUIManager.selectedHeirarchyObject != null)
+            if (GUIManager.selectedhierarchyObject != null)
             {
-                GameObject go = SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedHeirarchyObject.name.Replace(" button object", "")));
+                GameObject go = SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedhierarchyObject.name.Replace(" button object", "")));
                 go.position -= move * deltaTime;
             }
         }
@@ -99,9 +99,9 @@ namespace Steel_Engine
         {
             float speed = 5;
             Vector3 move = new Vector3(0, 1f, 0) * speed;
-            if (GUIManager.selectedHeirarchyObject != null)
+            if (GUIManager.selectedhierarchyObject != null)
             {
-                GameObject go = SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedHeirarchyObject.name.Replace(" button object", "")));
+                GameObject go = SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedhierarchyObject.name.Replace(" button object", "")));
                 go.position += move * deltaTime;
             }
         }
@@ -110,9 +110,9 @@ namespace Steel_Engine
         {
             float speed = 5;
             Vector3 move = new Vector3(0, 1f, 0) * speed;
-            if (GUIManager.selectedHeirarchyObject != null)
+            if (GUIManager.selectedhierarchyObject != null)
             {
-                GameObject go = SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedHeirarchyObject.name.Replace(" button object", "")));
+                GameObject go = SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedhierarchyObject.name.Replace(" button object", "")));
                 go.position -= move * deltaTime;
             }
         }
@@ -121,9 +121,9 @@ namespace Steel_Engine
         {
             float speed = 5;
             Vector3 move = new Vector3(0, 0, 1f) * speed;
-            if (GUIManager.selectedHeirarchyObject != null)
+            if (GUIManager.selectedhierarchyObject != null)
             {
-                GameObject go = SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedHeirarchyObject.name.Replace(" button object", "")));
+                GameObject go = SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedhierarchyObject.name.Replace(" button object", "")));
                 go.position -= move * deltaTime;
             }
         }
@@ -132,23 +132,23 @@ namespace Steel_Engine
         {
             float speed = 5;
             Vector3 move = new Vector3(0, 0, 1f) * speed;
-            if (GUIManager.selectedHeirarchyObject != null)
+            if (GUIManager.selectedhierarchyObject != null)
             {
-                GameObject go = SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedHeirarchyObject.name.Replace(" button object", "")));
+                GameObject go = SceneManager.GetGameObjectByID(int.Parse(GUIManager.selectedhierarchyObject.name.Replace(" button object", "")));
                 go.position += move * deltaTime;
             }
         }
 
-        public static void SelectHeirarchyObject(string buttonName)
+        public static void SelecthierarchyObject(string buttonName)
         {
-            GUIElement prevSelectedObject = GUIManager.selectedHeirarchyObject;
+            GUIElement prevSelectedObject = GUIManager.selectedhierarchyObject;
 
             // unselect old
-            if (GUIManager.selectedHeirarchyObject != null)
+            if (GUIManager.selectedhierarchyObject != null)
             {
                 foreach (GUIElement element in GUIManager.guiElements)
                 {
-                    if (element.name == GUIManager.selectedHeirarchyObject.name.Replace(" button object", " image object"))
+                    if (element.name == GUIManager.selectedhierarchyObject.name.Replace(" button object", " image object"))
                     {
                         GUIImage _element = (GUIImage)element;
                         _element.SetColour(new Vector4(0, 0, 0, 100));
@@ -158,8 +158,8 @@ namespace Steel_Engine
 
             // select new
             GUIElement selectedButton = GUIManager.GetElementByName(buttonName);
-            GUIManager.selectedHeirarchyObject = selectedButton;
-            if (prevSelectedObject != GUIManager.selectedHeirarchyObject)
+            GUIManager.selectedhierarchyObject = selectedButton;
+            if (prevSelectedObject != GUIManager.selectedhierarchyObject)
             {
                 foreach (GUIElement element in GUIManager.guiElements) // make blue
                 {
@@ -172,7 +172,7 @@ namespace Steel_Engine
             }
             else
             {
-                GUIManager.selectedHeirarchyObject = null;
+                GUIManager.selectedhierarchyObject = null;
                 foreach (GUIElement element in GUIManager.guiElements) // make black (unselect)
                 {
                     if (element.name == buttonName.Replace(" button object", " image object"))

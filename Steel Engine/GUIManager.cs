@@ -15,7 +15,7 @@ namespace Steel_Engine.GUI
     {
         public static List<GUIElement> guiElements = new List<GUIElement>();
 
-        public static GUIElement selectedHeirarchyObject = null;
+        public static GUIElement selectedhierarchyObject = null;
 
         public delegate void GUITick(float deltaTime);
         public static event GUITick guiTick = new GUITick(GT);
@@ -96,14 +96,14 @@ namespace Steel_Engine.GUI
             rebuildText2.name = "RebuildText2";
             rebuildText2.renderOrder = 0;
 
-            // heirarchy
-            GUIScrollView heirarchy = new GUIScrollView(new Vector3(39, -158f, 0), new Vector2(-1f, -1f), new Vector2(0.4f, 0.9f));
-            heirarchy.SetColour(new Vector3(45, 45, 45) / 255.0f);
-            heirarchy.name = "heirarchyBG";
-            heirarchy.renderOrder = -2;
-            heirarchy.padding = 0.01f;
-            heirarchy.spacing = 0.01f;
-            heirarchy.scrollStrength = 1.08f;
+            // hierarchy
+            GUIScrollView hierarchy = new GUIScrollView(new Vector3(39, -158f, 0), new Vector2(-1f, -1f), new Vector2(0.4f, 0.9f));
+            hierarchy.SetColour(new Vector3(45, 45, 45) / 255.0f);
+            hierarchy.name = "hierarchyBG";
+            hierarchy.renderOrder = -2;
+            hierarchy.padding = 0.01f;
+            hierarchy.spacing = 0.01f;
+            hierarchy.scrollStrength = 1.08f;
 
             // inspector
             GUIScrollView inspectorView = new GUIScrollView(new Vector3(-39, -158f, 0), new Vector2(1f, -1f), new Vector2(0.4f, 0.9f));
@@ -151,11 +151,11 @@ namespace Steel_Engine.GUI
             AddGUIElement(addComponentButton);
             AddGUIElement(addComponentText);
             AddGUIElement(componentsView);
-            AddGUIElement(heirarchy);
+            AddGUIElement(hierarchy);
 
             RefreshComponentsMenu();
 
-            RefreshHeirarchy();
+            Refreshhierarchy();
         }
 
         public static void RefreshInspectorMenu()
@@ -176,10 +176,10 @@ namespace Steel_Engine.GUI
             inspectorView.contents.Clear();
 
             // add new entries
-            if (selectedHeirarchyObject != null)
+            if (selectedhierarchyObject != null)
             {
                 // there is a selected object
-                GameObject go = SceneManager.gameObjects[int.Parse(selectedHeirarchyObject.name.Split(' ')[0])];
+                GameObject go = SceneManager.gameObjects[int.Parse(selectedhierarchyObject.name.Split(' ')[0])];
                 foreach (Component component in go.components)
                 {
                     GUIImage componentPanel = new GUIImage(new Vector3(0, 0, 0), new Vector2(0, 0), new Vector2(0.39f, 0.03f), new Vector3(35, 35, 35)/255.0f);
@@ -225,29 +225,29 @@ namespace Steel_Engine.GUI
             }
         }
 
-        public static void RefreshHeirarchy()
+        public static void Refreshhierarchy()
         {
-            GUIScrollView heirarchy = (GUIScrollView)GetElementByName("heirarchyBG");
-            heirarchy.contents.Clear();
+            GUIScrollView hierarchy = (GUIScrollView)GetElementByName("hierarchyBG");
+            hierarchy.contents.Clear();
             foreach (GameObject gameObject in SceneManager.gameObjects)
             {
-                GUIButton heirarchyButtonObject = new GUIButton(new Vector3(0, 0, 0), new Vector2(0, 0), new Vector2(0.38f, 0.03f));
-                heirarchyButtonObject.visible = false;
-                heirarchyButtonObject.active = true;
-                heirarchyButtonObject.renderOrder = -1;
-                heirarchyButtonObject.name = gameObject.id.ToString() + " button object";
-                heirarchyButtonObject.buttonDown += EngineGUIEventManager.SelectHeirarchyObject;
-                GUIImage heirarchyImageObject = new GUIImage(Vector3.Zero, Vector2.Zero, new Vector2(0.38f, 0.03f), new Vector4(0, 0, 0, 100));
-                heirarchyImageObject.parentGUI = heirarchyButtonObject;
-                heirarchyImageObject.name = gameObject.id.ToString() + " image object";
-                heirarchyImageObject.localRenderOrder = 0;
-                GUIText heirarchyTextObject = new GUIText(Vector3.Zero, Vector2.Zero, 0.07f, gameObject.name, @"C:\Windows\Fonts\Arial.ttf", 200f, new Vector4(0, 0, 0, 0), new Vector4(200, 200, 200, 255));
-                heirarchyTextObject.name = gameObject.id.ToString() + " text object";
-                heirarchyTextObject.parentGUI = heirarchyButtonObject;
-                heirarchyTextObject.localRenderOrder = 1;
-                AddGUIElement(heirarchyTextObject);
-                AddGUIElement(heirarchyImageObject);
-                heirarchy.contents.Add(heirarchyButtonObject);
+                GUIButton hierarchyButtonObject = new GUIButton(new Vector3(0, 0, 0), new Vector2(0, 0), new Vector2(0.38f, 0.03f));
+                hierarchyButtonObject.visible = false;
+                hierarchyButtonObject.active = true;
+                hierarchyButtonObject.renderOrder = -1;
+                hierarchyButtonObject.name = gameObject.id.ToString() + " button object";
+                hierarchyButtonObject.buttonDown += EngineGUIEventManager.SelecthierarchyObject;
+                GUIImage hierarchyImageObject = new GUIImage(Vector3.Zero, Vector2.Zero, new Vector2(0.38f, 0.03f), new Vector4(0, 0, 0, 100));
+                hierarchyImageObject.parentGUI = hierarchyButtonObject;
+                hierarchyImageObject.name = gameObject.id.ToString() + " image object";
+                hierarchyImageObject.localRenderOrder = 0;
+                GUIText hierarchyTextObject = new GUIText(Vector3.Zero, Vector2.Zero, 0.07f, gameObject.name, @"C:\Windows\Fonts\Arial.ttf", 200f, new Vector4(0, 0, 0, 0), new Vector4(200, 200, 200, 255));
+                hierarchyTextObject.name = gameObject.id.ToString() + " text object";
+                hierarchyTextObject.parentGUI = hierarchyButtonObject;
+                hierarchyTextObject.localRenderOrder = 1;
+                AddGUIElement(hierarchyTextObject);
+                AddGUIElement(hierarchyImageObject);
+                hierarchy.contents.Add(hierarchyButtonObject);
             }
         }
 
@@ -256,7 +256,7 @@ namespace Steel_Engine.GUI
             guiTick.Invoke(deltaTime);
             if (!InfoManager.isBuild)
             {
-                if (GetElementByName("componentsView").visible && selectedHeirarchyObject == null)
+                if (GetElementByName("componentsView").visible && selectedhierarchyObject == null)
                 {
                     GetElementByName("componentsView").visible = false;
                 }
