@@ -26,5 +26,8 @@ void main(void)
 	vertexColour = aColour;
 
 	vertexPosition = vec3(vec4(aPosition, 1.0) * model);
-	normal = aNormal;
+
+	mat3 rotationMatrix = mat3(model[0].xyz, model[1].xyz, model[2].xyz);
+
+	normal = aNormal * rotationMatrix;
 }
