@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <Folder Include="EngineResources\EngineModels\" />
+    <Folder Include="Monel\" />
     <Folder Include="Resources\Scripts\" />
     <Folder Include="Temp\" />
     <Folder Include="Zamak\ClientCode\" />

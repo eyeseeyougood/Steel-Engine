@@ -27,5 +27,7 @@ void main(void)
 
 	texCoord = aTexCoord;
 
-	normal = aNormal;
+	mat3 rotationMatrix = mat3(model[0].xyz, model[1].xyz, model[2].xyz);
+
+	normal = aNormal * rotationMatrix;
 }
