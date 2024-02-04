@@ -6,5 +6,3 @@
 /V 0 0 0 0 0 0 0 90 Perspective
 /C S/BoxCollider:0:1:2:3
 /C S/Rigidbody:0
-/C DirectionalAudio.cs:1
-/C MoveTest.cs:0

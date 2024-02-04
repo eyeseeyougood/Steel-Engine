@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <Folder Include="EngineResources\EngineModels\" />
+    <Folder Include="Resources\Scripts\" />
     <Folder Include="Temp\" />
     <Folder Include="Zamak\ClientCode\" />
     <Folder Include="Zamak\ServerCode\" />
