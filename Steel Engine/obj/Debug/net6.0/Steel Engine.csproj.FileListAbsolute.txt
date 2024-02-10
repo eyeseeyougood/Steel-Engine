@@ -40,3 +40,10 @@ C:\Users\Mati\source\repos\Steel Engine\Steel Engine\bin\Debug\net6.0\NAudio.Cor
 C:\Users\Mati\source\repos\Steel Engine\Steel Engine\bin\Debug\net6.0\NAudio.Midi.dll
 C:\Users\Mati\source\repos\Steel Engine\Steel Engine\bin\Debug\net6.0\NAudio.Wasapi.dll
 C:\Users\Mati\source\repos\Steel Engine\Steel Engine\bin\Debug\net6.0\NAudio.WinMM.dll
+C:\Users\Mati\source\repos\Steel Engine\Steel Engine\bin\Debug\net6.0\FireSharp.dll
+C:\Users\Mati\source\repos\Steel Engine\Steel Engine\bin\Debug\net6.0\Microsoft.Threading.Tasks.Extensions.Desktop.dll
+C:\Users\Mati\source\repos\Steel Engine\Steel Engine\bin\Debug\net6.0\Microsoft.Threading.Tasks.Extensions.dll
+C:\Users\Mati\source\repos\Steel Engine\Steel Engine\bin\Debug\net6.0\Microsoft.Threading.Tasks.dll
+C:\Users\Mati\source\repos\Steel Engine\Steel Engine\bin\Debug\net6.0\System.Net.Http.Extensions.dll
+C:\Users\Mati\source\repos\Steel Engine\Steel Engine\bin\Debug\net6.0\System.Net.Http.Primitives.dll
+C:\Users\Mati\source\repos\Steel Engine\Steel Engine\bin\Debug\net6.0\Newtonsoft.Json.dll

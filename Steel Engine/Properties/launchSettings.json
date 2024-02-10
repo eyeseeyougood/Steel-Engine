@@ -1,7 +1,8 @@
 {
   "profiles": {
     "Steel Engine": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "/M -M Client eyeseeyougood 127.0.0.1"
     }
   }
 }

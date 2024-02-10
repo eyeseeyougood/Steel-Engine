@@ -98,31 +98,27 @@ namespace Steel_Engine
 
         public static void StopDSO()
         {
-            Console.WriteLine("stopped");
+            // TESTCODE ???
             //dso.Stop();
         }
 
         public static void PlayDSO()
         {
-            Console.WriteLine("started");
             dso.Play();
         }
 
         public static void PlayAudio(WaveChannel32 channel)
         {
-            Console.WriteLine("added");
             mixer.AddInputStream(channel);
         }
 
         public static void StopAudio(WaveChannel32 channel)
         {
-            Console.WriteLine("removed");
             mixer.RemoveInputStream(channel);
         }
 
         public static void CleanupAudioSources()
         {
-            Console.WriteLine("cleaned up");
             mixer = new MixingWaveProvider32();
             dso = new DirectSoundOut(DirectSoundOut.DSDEVID_DefaultPlayback);
             dso.Init(mixer);

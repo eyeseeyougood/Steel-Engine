@@ -52,6 +52,9 @@ namespace Steel_Engine
         public delegate void OnSetWindowPosition(Vector2i position);
         public static event OnSetWindowPosition setWindowPosition;
 
+        public delegate void OnCloseWindow();
+        public static event OnCloseWindow closeWindow;
+
         public static void Tick(float deltaTime)
         {
             usingDirectory = currentDevPath;
@@ -88,6 +91,11 @@ namespace Steel_Engine
         public static void SetWindowPosition(Vector2i position)
         {
             setWindowPosition.Invoke(position);
+        }
+
+        public static void CloseWindow()
+        {
+            closeWindow.Invoke();
         }
 
         public static byte[] BitmapToByteArray(Bitmap bitmap)

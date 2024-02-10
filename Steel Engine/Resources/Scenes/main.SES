@@ -1,8 +1,2 @@
-/L 0 0 0 0.7 0.5 0.7 1
-/G 0 cube1 STL STL 0 0 0 0 0 0 1 1 1 Cube True 0.8 0.8 0.8 Stone.png
-/G 1 cube2 SL SL 0 -6 0 45 0 0 20 1 20 Cube True 0.8 0.8 0.8
-/G 2 cube3 SL SL 0 -5 5 0 0 0 20 1 2 Cube True 0.8 0.8 0.8
-/G 3 cube4 STL STL 1.5 4 1.5 0 0 0 1 1 1 Monkey True 0.8 0.8 0.8 Stone.png
-/V 0 0 0 0 0 0 0 90 Perspective
-/C S/BoxCollider:0:1:2:3
-/C S/Rigidbody:0
+/G 0 cube1 SF SF 0 0 0 0 0 0 1 1 1 Cube True 0.8 0.8 0.8
+/V 0 0 0 0 0 0 0 90 Orthographic

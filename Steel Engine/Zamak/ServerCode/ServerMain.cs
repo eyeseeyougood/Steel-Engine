@@ -6,8 +6,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Zamak;
 
-namespace Zamak
+namespace Steel_Engine.Zamak
 {
     public static class ServerMain
     {
@@ -55,7 +56,7 @@ namespace Zamak
                         if (!cl.ContainsValue((string)objectData[1]))
                         {
                             cl.Add(rep.Address, (string)objectData[1]);
-                            udpClient.Send(ObjectSerialiser.SerialiseObjects(new object[]{$"Join attempt successfull, new client ({objectData[1]})"}), rep);
+                            udpClient.Send(ObjectSerialiser.SerialiseObjects(new object[] { $"Join attempt successfull, new client ({objectData[1]})" }), rep);
                         }
                         break;
                     case "[{RelayZC RQ}]":

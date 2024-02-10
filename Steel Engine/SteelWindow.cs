@@ -9,6 +9,7 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Steel_Engine.Common;
 using Steel_Engine.GUI;
+using Steel_Engine.Monel;
 using Steel_Engine.ParticleSystem;
 using Steel_Engine.Tilemaps;
 using Zamak;
@@ -55,6 +56,7 @@ namespace Steel_Engine
             InfoManager.setWindowState += SetWindowState;
             InfoManager.setWindowTitle += SetWindowTitle;
             InfoManager.setWindowPosition += SetWindowPosition;
+            InfoManager.closeWindow += Close;
 
             //TESTCODE
             InfoManager.testObject = new GameObject(RenderShader.ShadeFlat, RenderShader.ShadeFlat);
@@ -113,6 +115,20 @@ namespace Steel_Engine
             if (MultiplayerManager.isMultiplayer)
             {
                 string[] multiplayerArgs = InfoManager.executingArgs.Skip(1).ToArray();
+                if (multiplayerArgs[0].ToLower() == "-m")
+                {
+                    MultiplayerManager.multiplayerType = MultiplayerType.Monel;
+                }
+                else
+                {
+                    MultiplayerManager.multiplayerType = MultiplayerType.Zamak;
+                }
+
+                foreach (Type t in typeof(MonelLink).Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(MonelLink))))
+                {
+                    MonelLinkManager.monelLink = (MonelLink)Activator.CreateInstance(t);
+                    break;
+                }
                 MultiplayerManager.Init(multiplayerArgs);
             }
         }

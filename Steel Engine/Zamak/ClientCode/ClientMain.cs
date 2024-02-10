@@ -6,8 +6,9 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Steel_Engine;
+using Zamak;
 
-namespace Zamak
+namespace Steel_Engine.Zamak
 {
     public static class ClientMain
     {
